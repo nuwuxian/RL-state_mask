@@ -37,10 +37,10 @@ class MLP(nn.module):
         return dist, value
 
     # cpu level
-    def inference(self, obs):
-        obs = np.expand_dim(obs, 0)
-        obs = torch.Tensor(obs)
-        value = self.critic(obs)
+    def inference(self, x):
+        x = np.expand_dim(x, 0)
+        x = torch.Tensor(x)
+        value = self.critic(x)
         probs = self.actor(x)
         probs = torch.squeeze(x, 0)
         dis = Categorical(probs)

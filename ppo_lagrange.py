@@ -52,7 +52,7 @@ import pyspiel
 from open_spiel.python.utils import data_logger
 from open_spiel.python.utils import file_logger
 from open_spiel.python.utils import spawn
-from open_spiel.python.utils import stats
+from open_spiel.python.utils import stat
 from model import MLP
 
 # Time to wait for processes to join.
@@ -99,7 +99,8 @@ class Config(collections.namedtuple(
         "observation_shape",
         "output_size",
         "quiet",
-        "az_path"
+        "az_path",
+        "n_epochs"
     ])):
   """A config for the model/experiment."""
   pass
@@ -473,26 +474,29 @@ def learner(*, game, config, actors, evaluators, broadcast_fn, logger):
 
         # shift data to gpu
         obs = torch.Tensor(batch.obs).to(config.device)
-        actions = torch.Tensor(actions).to(config.device)
-        log_probs = torch.Tensor(log_probs).to(config.device)
-        returns = torch.Tensor(returns).to(config.device)
+        actions = torch.Tensor(batch.actions).to(config.device)
+        log_probs = torch.Tensor(batch.log_probs).to(config.device)
+        returns = torch.Tensor(batch.returns).to(config.device)
+
+        # normalize the advs
+        advs = (batch.advs - batch.advs.mean())/(batch.advs.std() + 1e-8)
         advs = torch.Tensor(advs).to(config.device)
 
         # ppo update
         dist, value = model(obs)
         new_log_probs = dist.log_prob(actions)
         ratio = (new_log_probs - log_probs).exp() # new_prob/old_prob
-        surr1 = ratio * batch.advs
+        surr1 = ratio * advs
         surr2 = torch.clamp(ratio, 1.0 - clip_param, 1.0 + clip_param) * advs
         actor_loss = - torch.min(surr1, surr2).mean()
         
-        critic_loss = (batch.returns - value).pow(2).mean()
+        critic_loss = (returns - value).pow(2).mean()
         entropy = dist.entropy().mean()
 
-        num_masks = torch.sum(action)
+        num_masks = torch.sum(actions)
 
-        action_roll = torch.roll(action, 1, 0)
-        cont = torch.sum(torch.square(action - action_roll))
+        actions_roll = torch.roll(actions, 1, 0)
+        cont = torch.sum(torch.square(actions - actions_roll))
 
         loss = C_1 * critic_loss + actor_loss - C_2 * entropy + lambda_1 * num_masks + lambda_2 * cont 
         losses.append(Losses(actor_loss.item(), critic_loss.item(), entroy().item()))
