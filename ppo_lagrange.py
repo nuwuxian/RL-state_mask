@@ -45,6 +45,10 @@ import traceback
 
 import numpy as np
 
+import torch
+import torch.nn as nn
+import torch.optim as optim
+
 from open_spiel.python.algorithms import mcts
 from open_spiel.python.algorithms.alpha_zero import evaluator as evaluator_lib
 from open_spiel.python.algorithms.alpha_zero import model as az_model
@@ -52,7 +56,7 @@ import pyspiel
 from open_spiel.python.utils import data_logger
 from open_spiel.python.utils import file_logger
 from open_spiel.python.utils import spawn
-from open_spiel.python.utils import stat
+from open_spiel.python.utils import stats
 from model import MLP
 
 # Time to wait for processes to join.
@@ -113,7 +117,7 @@ class TrajectoryState(object):
     self.obs = obs 
     self.action = action
     self.log_prob = log_prob
-    self.return_ = return_
+    self._return_ = _return
     self.adv= adv
 
 class Trajectory(object):
@@ -121,8 +125,8 @@ class Trajectory(object):
     self.states = []
     self.returns = None
 
-  def add(obs, action, log_prob, return_, adv):
-    self.states.append(TrajectoryState(obs, action, log_prob, return_, adv))
+  def add(self, obs, action, log_prob, _return, adv):
+    self.states.append(TrajectoryState(obs, action, log_prob, _return, adv))
 
 class TrainInput(collections.namedtuple(
     "TrainInput", "observation legals_mask policy value")):
@@ -187,8 +191,6 @@ class Buffer(object):
 
 def load_pretrain(az_path):
     return az_model.Model.from_checkpoint(az_path)
-
-
 
 def watcher(fn):
   """A decorator to fn/processes that gives a logger and logs exceptions."""
@@ -279,13 +281,10 @@ def _play_game(logger, game_num, game, bots, mask_net, temperature, temperature_
         mb_values.append(value)
         mb_dones.append(False)
         mb_logpacs.append(log_prob[0])
-
       action_str = state.action_to_string(state.current_player(), action)
       actions.append(action_str)
-
       logger.opt_print("Player {} sampled action: {}".format(
           state.current_player(), action_str))
-
       state.apply_action(action)
   
   trajectory.returns = state.returns()
@@ -313,7 +312,7 @@ def _play_game(logger, game_num, game, bots, mask_net, temperature, temperature_
   mb_returns = mb_advs + mb_values
 
   for t in range(nsteps):
-    trajectory.states.append(mb_obs[i], mb_actions[i], mb_logpacs[i], mb_returns[i], mb_advs[i])
+    trajectory.states.append(mb_obs[t], mb_actions[t], mb_logpacs[t], mb_returns[t], mb_advs[t])
 
   logger.opt_print("Next state:\n{}".format(state))
 
@@ -407,7 +406,7 @@ def learner(*, game, config, actors, evaluators, broadcast_fn, logger):
 
   # build model for masknet
   model = MLP(config.nn_width, config.nn_depth, 2).to(config.device)
-  save_path = baseline_model.save_checkpoint(0)
+  save_path = model.save_checkpoint(0)
   logger.print("Initial checkpoint:", save_path)
   # build optimizer
   optimizer = optim.Adam(model.parameters(), lr=config.learning_rate)
@@ -492,7 +491,7 @@ def learner(*, game, config, actors, evaluators, broadcast_fn, logger):
         cont = torch.sum(torch.square(actions - actions_roll))
 
         loss = C_1 * critic_loss + actor_loss - C_2 * entropy + lambda_1 * num_masks + lambda_2 * cont 
-        losses.append(Losses(actor_loss.item(), critic_loss.item(), entroy().item()))
+        losses.append(Losses(actor_loss.item(), critic_loss.item(), entropy().item()))
 
         optimizer.zero_grad() 
         loss.backward() 
