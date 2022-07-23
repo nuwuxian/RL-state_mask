@@ -263,19 +263,17 @@ def _play_game(logger, game_num, game, bots, mask_net, temperature, temperature_
         action = root.best_child().action
       else:
         action = np.random.choice(len(policy), p=policy)
-
       # add masknet
       if state.current_player() == EXP_ID:
         # return dis is a tensor, value is a scalar
-        dist, value = mask_net.inference(state.observation_tensor())
+        obs = np.array(state.observation_tensor())
+        dist, value = mask_net.inference(obs)
         mask_action = dist.sample()
         log_prob = dist.log_prob(mask_action).detach().numpy()
         mask_action = mask_action.detach().numpy()
-
         if mask_action[0] == 0:
           action = np.random.choice(len(policy), p=policy)
-        
-        mb_obs.append(state.observation_tensor())
+        mb_obs.append(obs)
         mb_rewards.append(0)
         mb_actions.apppend(mask_action[0])
         mb_values.append(value)
@@ -296,8 +294,7 @@ def _play_game(logger, game_num, game, bots, mask_net, temperature, temperature_
 
   nsteps = len(mb_actions)
   mb_values = np.asarray(mb_values, dtype=np.float32)
-  _, last_values = mask_net.inference(state.observation_tensor())
-
+  _, last_values = mask_net.inference(np.array(state.observation_tensor()))
 
   # discount/bootstrap off value fn
   mb_returns = np.zeros_like(mb_values)
@@ -347,7 +344,7 @@ def update_checkpoint(logger, queue, model, az_evaluator):
 def actor(*, config, game, logger, queue):
   """An actor process runner that generates games and returns trajectories."""
   logger.print("Initializing model")
-  model = MLP(config.nn_width * config.nn_depth, 2, [64, 64])
+  model = MLP(config.nn_width, config.nn_depth, 2)
   logger.print("Initializing bots")
   base_model = load_pretrain(config.az_path)
   az_evaluator = evaluator_lib.AlphaZeroEvaluator(game, base_model)
@@ -367,7 +364,7 @@ def evaluator(*, game, config, logger, queue):
   """A process that plays the latest checkpoint vs standard MCTS."""
   results = Buffer(config.evaluation_window)
   logger.print("Initializing model")
-  model = MLP(config.nn_width * config.nn_depth, 2, [64, 64])
+  model = MLP(config.nn_width, config.nn_depth, 2)
   logger.print("Initializing bots")
   base_model = load_pretrain(config.az_path)
   az_evaluator = evaluator_lib.AlphaZeroEvaluator(game, base_model)
@@ -400,8 +397,6 @@ def evaluator(*, game, config, logger, queue):
         trajectory.returns[az_player],
         trajectory.returns[1 - az_player],
         len(results), np.mean(results.data)))
-
-
 @watcher
 def learner(*, game, config, actors, evaluators, broadcast_fn, logger):
   """A learner that consumes the replay buffer and trains the network."""
@@ -411,7 +406,7 @@ def learner(*, game, config, actors, evaluators, broadcast_fn, logger):
   logger.print("Initializing model")
 
   # build model for masknet
-  model = MLP(config.nn_width * config.nn_depth, 2, [64, 64]).to(config.device)
+  model = MLP(config.nn_width, config.nn_depth, 2).to(config.device)
   save_path = baseline_model.save_checkpoint(0)
   logger.print("Initial checkpoint:", save_path)
   # build optimizer
@@ -489,10 +484,8 @@ def learner(*, game, config, actors, evaluators, broadcast_fn, logger):
         surr1 = ratio * advs
         surr2 = torch.clamp(ratio, 1.0 - clip_param, 1.0 + clip_param) * advs
         actor_loss = - torch.min(surr1, surr2).mean()
-        
         critic_loss = (returns - value).pow(2).mean()
         entropy = dist.entropy().mean()
-
         num_masks = torch.sum(actions)
 
         actions_roll = torch.roll(actions, 1, 0)
@@ -504,7 +497,6 @@ def learner(*, game, config, actors, evaluators, broadcast_fn, logger):
         optimizer.zero_grad() 
         loss.backward() 
         optimizer.step()
-
     # Always save a checkpoint, either for keeping or for loading the weights to
     # the actors. It only allows numbers, so use -1 as "latest".
     save_path = model.save_checkpoint(

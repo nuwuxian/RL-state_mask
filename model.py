@@ -4,7 +4,7 @@ from torch.distributions import Categorical
 
 class MLP(nn.module):
 
-  def __init__(self, num_inputs, outputs, hidden_size, path):
+  def __init__(self, width, depth, out_num, path):
     super(MLP, self).__init()
 
     self.critic = nn.Sequential()
@@ -12,19 +12,15 @@ class MLP(nn.module):
 
     self._path = path
 
-    for i in range(len(hidden_size)):
-      if i == 0:
-        self.critic.add_module('mlp_%d' %i, nn.Linear(num_inputs, hidden_size[i]))
-        self.actor.add_module('mlp_%d' %i, nn.Linear(num_inputs, hidden_size[i]))
-      elif i != len - 1:
-        self.critic.add_module('mlp_%d' %i, nn.Linear(hidden_size[i-1], hidden_size[i]))
-        self.actor.add_module('mlp_%d' %i, nn.Linear(hidden_size[i-1], hidden_size[i]))
+    for i in range(depth+1):
+      if i != depth:
+        self.critic.add_module('mlp_%d' %i, nn.Linear(width, width))
+        self.actor.add_module('mlp_%d' %i, nn.Linear(width, width))
       else:
-        self.critic.add_module('mlp_%d' %i, nn.Linear(hidden_size[i], 1))
-        self.actor.add_module('mlp_%d' %i, nn.Linear(hidden_size[i], outputs))
+        self.critic.add_module('mlp_%d' %i, nn.Linear(width, 1))
+        self.actor.add_module('mlp_%d' %i, nn.Linear(width, out_num))
         self.actor.add_module('mlp_%d' %i, nn.Softmax(dim=1))
-
-      if i != len - 1:
+      if i != depth:
         self.critic.add_module('relu_%d' %i, nn.ReLu())
         self.actor.add_module('relu_%d' %i, nn.ReLu())
 
@@ -59,4 +55,3 @@ class MLP(nn.module):
     def load_checkppoint(self, path):
         checkpoint = torch.load(path, map_location=lambda storage, loc:s storage)
         self.load_state_dict(checkpoint['state_dict'])
-
