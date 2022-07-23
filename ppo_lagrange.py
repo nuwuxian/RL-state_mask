@@ -116,11 +116,11 @@ class TrajectoryState(object):
     self.obs = obs 
     self.action = action
     self.log_prob = log_prob
-    self._return_ = _return
+    self._return= _return
     self.adv= adv
 
 class Trajectory(object):
-  def __init(self):
+  def __init__(self):
     self.states = []
     self.returns = None
 
@@ -128,7 +128,7 @@ class Trajectory(object):
     self.states.append(TrajectoryState(obs, action, log_prob, _return, adv))
 
 class TrainInput(collections.namedtuple(
-    "TrainInput", "observation legals_mask policy value")):
+    "TrainInput", "obs actions log_probs returns advs")):
   """Inputs for training the Model."""
 
   @staticmethod
@@ -143,7 +143,7 @@ class TrainInput(collections.namedtuple(
     )
 
 
-class Losses(collections.namedtuple("Losses", "policy value l2")):
+class Losses(collections.namedtuple("Losses", "policy value entropy")):
   """Losses from a training step."""
 
   @property
@@ -289,10 +289,10 @@ def _play_game(logger, game_num, game, bots, mask_net, temperature, temperature_
   trajectory.returns = state.returns()
   mb_rewards[-1] = state.returns()[EXP_ID]
   done = True
-  
+
   nsteps = len(mb_actions)
   mb_values = np.asarray(mb_values, dtype=np.float32)
-  _, last_values = mask_net.inference(np.array(state.observation_tensor()))
+  last_values = 0
 
   # discount/bootstrap off value fn
   mb_returns = np.zeros_like(mb_values)
@@ -307,17 +307,13 @@ def _play_game(logger, game_num, game, bots, mask_net, temperature, temperature_
          nextvalues = mb_values[t+1]
       delta = mb_rewards[t] + GAMMA * nextvalues * nextnonterminal - mb_values[t]
       mb_advs[t] = lastgaelam = delta + GAMMA * LAM * nextnonterminal * lastgaelam
-
   mb_returns = mb_advs + mb_values
-
   for t in range(nsteps):
-    trajectory.states.append(mb_obs[t], mb_actions[t], mb_logpacs[t], mb_returns[t], mb_advs[t])
-
+    trajectory.add(mb_obs[t], mb_actions[t], mb_logpacs[t], mb_returns[t], mb_advs[t])
+    
   logger.opt_print("Next state:\n{}".format(state))
-
   logger.print("Game {}: Returns: {}; Actions: {}".format(
       game_num, " ".join(map(str, trajectory.returns)), " ".join(actions)))
-
   return trajectory
 
 
@@ -453,7 +449,7 @@ def learner(*, game, config, device, actors, evaluators, broadcast_fn, logger):
       else:
         outcomes.add(2)
       replay_buffer.extend(
-          TrainInput(s.obs, s.action, s.log_prob, s.return_, s.adv)
+          TrainInput(s.obs, s.action, s.log_prob, s._return, s.adv)
           for s in trajectory.states)
 
       if num_states >= learn_rate:
@@ -463,7 +459,7 @@ def learner(*, game, config, device, actors, evaluators, broadcast_fn, logger):
   def learn(step):
     losses = []
     """Sample from the replay buffer, update weights and save a checkpoint."""
-    for epoch in range(config.n_epchos):
+    for epoch in range(config.n_epochs):
       for _ in range(len(replay_buffer) // config.train_batch_size):
         data = replay_buffer.sample(config.train_batch_size)
         batch = TrainInput.stack(data)
@@ -493,7 +489,7 @@ def learner(*, game, config, device, actors, evaluators, broadcast_fn, logger):
         cont = torch.sum(torch.square(actions - actions_roll))
 
         loss = C_1 * critic_loss + actor_loss - C_2 * entropy + lambda_1 * num_masks + lambda_2 * cont 
-        losses.append(Losses(actor_loss.item(), critic_loss.item(), entropy().item()))
+        losses.append(Losses(actor_loss.item(), critic_loss.item(), entropy.item()))
 
         optimizer.zero_grad() 
         loss.backward() 

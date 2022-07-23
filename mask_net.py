@@ -7,12 +7,9 @@ import numpy as np
 class MLP(nn.Module):
     def __init__(self, input, width, depth, out_num, path):
         super(MLP, self).__init__()
-
         self.critic = []
         self.actor = []
-
         self._path = path
-
         for i in range(depth+1):
             if i != depth:
                 self.critic.append(nn.Linear(input, width))
@@ -27,14 +24,11 @@ class MLP(nn.Module):
                 self.actor.append(nn.ReLU())
         self.critic = nn.Sequential(*self.critic)
         self.actor = nn.Sequential(*self.actor)
-        print(self.actor)
-        
     # gpu level
     def forward(self, x):
         values = self.critic(x)
         probs = self.actor(x)
         dist = Categorical(probs)
-
         return dist, values
 
     # cpu level
