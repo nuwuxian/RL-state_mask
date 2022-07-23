@@ -52,13 +52,12 @@ import torch.optim as optim
 from open_spiel.python.algorithms import mcts
 from open_spiel.python.algorithms.alpha_zero import evaluator as evaluator_lib
 from open_spiel.python.algorithms.alpha_zero import model as az_model
+from open_spiel.python.algorithms.alpha_zero.mask_net import MLP
 import pyspiel
 from open_spiel.python.utils import data_logger
 from open_spiel.python.utils import file_logger
 from open_spiel.python.utils import spawn
 from open_spiel.python.utils import stats
-from model import MLP
-
 # Time to wait for processes to join.
 JOIN_WAIT_DELAY = 0.001
 
@@ -104,7 +103,7 @@ class Config(collections.namedtuple(
         "output_size",
         "quiet",
         "az_path",
-        "n_epochs"
+        "n_epochs",
     ])):
   """A config for the model/experiment."""
   pass
@@ -277,7 +276,7 @@ def _play_game(logger, game_num, game, bots, mask_net, temperature, temperature_
           action = np.random.choice(len(policy), p=policy)
         mb_obs.append(obs)
         mb_rewards.append(0)
-        mb_actions.apppend(mask_action[0])
+        mb_actions.append(mask_action[0])
         mb_values.append(value)
         mb_dones.append(False)
         mb_logpacs.append(log_prob[0])
@@ -290,7 +289,7 @@ def _play_game(logger, game_num, game, bots, mask_net, temperature, temperature_
   trajectory.returns = state.returns()
   mb_rewards[-1] = state.returns()[EXP_ID]
   done = True
-
+  
   nsteps = len(mb_actions)
   mb_values = np.asarray(mb_values, dtype=np.float32)
   _, last_values = mask_net.inference(np.array(state.observation_tensor()))
@@ -343,7 +342,8 @@ def update_checkpoint(logger, queue, model, az_evaluator):
 def actor(*, config, game, logger, queue):
   """An actor process runner that generates games and returns trajectories."""
   logger.print("Initializing model")
-  model = MLP(config.nn_width, config.nn_depth, 2)
+  input_size = int(np.prod(config.observation_shape))
+  model = MLP(input_size, config.nn_width, config.nn_depth, 2, config.path)
   logger.print("Initializing bots")
   base_model = load_pretrain(config.az_path)
   az_evaluator = evaluator_lib.AlphaZeroEvaluator(game, base_model)
@@ -363,7 +363,8 @@ def evaluator(*, game, config, logger, queue):
   """A process that plays the latest checkpoint vs standard MCTS."""
   results = Buffer(config.evaluation_window)
   logger.print("Initializing model")
-  model = MLP(config.nn_width, config.nn_depth, 2)
+  input_size = int(np.prod(config.observation_shape))
+  model = MLP(input_size, config.nn_width, config.nn_depth, 2, config.path)
   logger.print("Initializing bots")
   base_model = load_pretrain(config.az_path)
   az_evaluator = evaluator_lib.AlphaZeroEvaluator(game, base_model)
@@ -387,7 +388,7 @@ def evaluator(*, game, config, logger, queue):
             verbose=False,
             dont_return_chance_node=True)
     ]
-    trajectory = _play_game(logger, game_num, game, bots, temperature=1,
+    trajectory = _play_game(logger, game_num, game, bots, model, temperature=1,
                             temperature_drop=0)
     results.append(trajectory.returns[az_player])
     queue.put((difficulty, trajectory.returns[az_player]))
@@ -397,7 +398,7 @@ def evaluator(*, game, config, logger, queue):
         trajectory.returns[1 - az_player],
         len(results), np.mean(results.data)))
 @watcher
-def learner(*, game, config, actors, evaluators, broadcast_fn, logger):
+def learner(*, game, config, device, actors, evaluators, broadcast_fn, logger):
   """A learner that consumes the replay buffer and trains the network."""
   logger.also_to_stdout = True
   replay_buffer = Buffer(config.replay_buffer_size)
@@ -405,7 +406,8 @@ def learner(*, game, config, actors, evaluators, broadcast_fn, logger):
   logger.print("Initializing model")
 
   # build model for masknet
-  model = MLP(config.nn_width, config.nn_depth, 2).to(config.device)
+  input_size = int(np.prod(config.observation_shape))
+  model = MLP(input_size, config.nn_width, config.nn_depth, 2, config.path).to(device)
   save_path = model.save_checkpoint(0)
   logger.print("Initial checkpoint:", save_path)
   # build optimizer
@@ -467,14 +469,14 @@ def learner(*, game, config, actors, evaluators, broadcast_fn, logger):
         batch = TrainInput.stack(data)
 
         # shift data to gpu
-        obs = torch.Tensor(batch.obs).to(config.device)
-        actions = torch.Tensor(batch.actions).to(config.device)
-        log_probs = torch.Tensor(batch.log_probs).to(config.device)
-        returns = torch.Tensor(batch.returns).to(config.device)
+        obs = torch.Tensor(batch.obs).to(device)
+        actions = torch.Tensor(batch.actions).to(device)
+        log_probs = torch.Tensor(batch.log_probs).to(device)
+        returns = torch.Tensor(batch.returns).to(device)
 
         # normalize the advs
         advs = (batch.advs - batch.advs.mean())/(batch.advs.std() + 1e-8)
-        advs = torch.Tensor(advs).to(config.device)
+        advs = torch.Tensor(advs).to(device)
 
         # ppo update
         dist, value = model(obs)
@@ -591,9 +593,6 @@ def alpha_zero(config: Config):
       output_size=game.num_distinct_actions())
   use_cuda = torch.cuda.is_available()
   device = torch.device("cuda" if use_cuda else "cpu")
-  config.device = device
-
-
   print("Starting game", config.game)
   if game.num_players() != 2:
     sys.exit("AlphaZero can only handle 2-player games.")
@@ -604,6 +603,7 @@ def alpha_zero(config: Config):
     raise ValueError("Game must have sequential turns.")
   if game_type.chance_mode != pyspiel.GameType.ChanceMode.DETERMINISTIC:
     raise ValueError("Game must be deterministic.")
+  
 
   path = config.path
   if not path:
@@ -632,7 +632,7 @@ def alpha_zero(config: Config):
       proc.queue.put(msg)
 
   try:
-    learner(game=game, config=config, actors=actors,  # pylint: disable=missing-kwoa
+    learner(game=game, config=config, device=device, actors=actors,  # pylint: disable=missing-kwoa
             evaluators=evaluators, broadcast_fn=broadcast)
   except (KeyboardInterrupt, EOFError):
     print("Caught a KeyboardInterrupt, stopping early.")
