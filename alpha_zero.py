@@ -17,14 +17,15 @@
 from absl import app
 from absl import flags
 
-from open_spiel.python.algorithms.ppo_lagrange import alpha_zero
+#from open_spiel.python.algorithms.ppo_lagrange import alpha_zero
+from open_spiel.python.algorithms import ppo_lagrange
 from open_spiel.python.algorithms.alpha_zero import model as model_lib
 from open_spiel.python.utils import spawn
 
 flags.DEFINE_string("game", "connect_four", "Name of the game.")
 flags.DEFINE_integer("uct_c", 2, "UCT's exploration constant.")
-flags.DEFINE_integer("max_simulations", 3, "How many simulations to run.")
-flags.DEFINE_integer("train_batch_size", 2 ** 5, "Batch size for learning.")
+flags.DEFINE_integer("max_simulations", 300, "How many simulations to run.")
+flags.DEFINE_integer("train_batch_size", 2 ** 10, "Batch size for learning.")
 flags.DEFINE_integer("replay_buffer_size", 2 ** 16,
                      "How many states to store in the replay buffer.")
 flags.DEFINE_integer("replay_buffer_reuse", 3,
@@ -40,10 +41,10 @@ flags.DEFINE_integer("temperature_drop", 10,  # Less than AZ due to short games.
 flags.DEFINE_enum("nn_model", "mlp", model_lib.Model.valid_model_types,
                   "What type of model should be used?.")
 flags.DEFINE_integer("nn_width", 2 ** 7, "How wide should the network be.")
-flags.DEFINE_integer("nn_depth", 2, "How deep should the network be.")
-flags.DEFINE_string("path", "/home/xkw5132/models/", "Where to save checkpoints.")
+flags.DEFINE_integer("nn_depth", 10, "How deep should the network be.")
+flags.DEFINE_string("path", "/home/zxc5262/models/", "Where to save checkpoints.")
 flags.DEFINE_integer("checkpoint_freq", 100, "Save a checkpoint every N steps.")
-flags.DEFINE_integer("actors", 1, "How many actors to run.")
+flags.DEFINE_integer("actors", 20, "How many actors to run.")
 flags.DEFINE_integer("evaluators", 1, "How many evaluators to run.")
 flags.DEFINE_integer("evaluation_window", 100,
                      "How many games to average results over.")
@@ -60,7 +61,8 @@ FLAGS = flags.FLAGS
 
 
 def main(unused_argv):
-  config = alpha_zero.Config(
+  #config = alpha_zero.Config(
+  config = ppo_lagrange.Config(
       game=FLAGS.game,
       path=FLAGS.path,
       learning_rate=FLAGS.learning_rate,
@@ -87,12 +89,12 @@ def main(unused_argv):
       nn_depth=FLAGS.nn_depth,
       observation_shape=None,
       output_size=None,
-      az_path='/home/xkw5132/alpha_zero_checkpoints/checkpoint--1',
+      az_path='/data/zelei/open_spiel/open_spiel/python/examples/connect_four/alpha_zero_checkpoints/checkpoint--1',
       n_epochs=10,
       quiet=FLAGS.quiet,
   )
-  alpha_zero.alpha_zero(config)
-
+  #alpha_zero.alpha_zero(config)
+  ppo_lagrange.alpha_zero(config)
 
 if __name__ == "__main__":
   with spawn.main_handler():

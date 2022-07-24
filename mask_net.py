@@ -45,10 +45,11 @@ class MLP(nn.Module):
     def save_checkpoint(self, step):
         name = 'model_%d.pth' %(step)
         save_path = os.path.join(self._path, "checkpoints", name)
-        torch.save(self.state_dict(), name)
+        torch.save(self.state_dict(), save_path)
         return save_path
 
     # cpu level
     def load_checkpoint(self, path):
+        #print("path location", path)
         checkpoint = torch.load(path, map_location=lambda storage, loc:storage)
-        self.load_state_dict(checkpoint['state_dict'])
+        self.load_state_dict(checkpoint)
