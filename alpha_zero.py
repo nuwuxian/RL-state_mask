@@ -93,8 +93,9 @@ def main(unused_argv):
       n_epochs=10,
       quiet=FLAGS.quiet,
   )
-  #alpha_zero.alpha_zero(config)
-  ppo_lagrange.alpha_zero(config)
+
+  #ppo_lagrange.alpha_zero(config)
+  ppo_lagrange.alpha_zero_test(config)
 
 if __name__ == "__main__":
   with spawn.main_handler():
