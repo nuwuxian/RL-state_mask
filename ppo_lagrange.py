@@ -316,6 +316,47 @@ def _play_game(logger, game_num, game, bots, mask_net, temperature, temperature_
       game_num, " ".join(map(str, trajectory.returns)), " ".join(actions)))
   return trajectory
 
+def baseline_play_game(logger, game_num, game, bots, temperature, temperature_drop):
+  """Play one game, return the trajectory."""
+  trajectory = Trajectory()
+  actions = []
+  state = game.new_initial_state()
+  random_state = np.random.RandomState()
+  logger.opt_print(" Starting game {} ".format(game_num).center(60, "-"))
+  logger.opt_print("Initial state:\n{}".format(state))
+  while not state.is_terminal():
+    if state.is_chance_node():
+      # For chance nodes, rollout according to chance node's probability
+      # distribution
+      outcomes = state.chance_outcomes()
+      action_list, prob_list = zip(*outcomes)
+      action = random_state.choice(action_list, p=prob_list)
+      state.apply_action(action)
+    else:
+      root = bots[state.current_player()].mcts_search(state)
+      policy = np.zeros(game.num_distinct_actions())
+      for c in root.children:
+        policy[c.action] = c.explore_count
+      policy = policy**(1 / temperature)
+      policy /= policy.sum()
+      if len(actions) >= temperature_drop:
+        action = root.best_child().action
+      else:
+        action = np.random.choice(len(policy), p=policy)
+
+      action_str = state.action_to_string(state.current_player(), action)
+      actions.append(action_str)
+      logger.opt_print("Player {} sampled action: {}".format(
+          state.current_player(), action_str))
+      state.apply_action(action)
+  logger.opt_print("Next state:\n{}".format(state))
+
+  trajectory.returns = state.returns()
+  logger.print("Game {}: Returns: {}; Actions: {}".format(
+      game_num, " ".join(map(str, trajectory.returns)), " ".join(actions)))
+  return trajectory
+
+
 
 def update_checkpoint(logger, queue, model, az_evaluator):
   """Read the queue for a checkpoint to load, or an exit signal."""
@@ -643,3 +684,107 @@ def alpha_zero(config: Config):
         proc.join(JOIN_WAIT_DELAY)
     for proc in evaluators:
       proc.join()
+
+@watcher
+def test_masknet(*, game, config, logger):
+  logger.print("Initializing model")
+  input_size = int(np.prod(config.observation_shape))
+  model = MLP(input_size, config.nn_width, config.nn_depth, 2, config.path)
+  logger.print("Initializing bots")
+  base_model = load_pretrain(config.az_path)
+  az_evaluator = evaluator_lib.AlphaZeroEvaluator(game, base_model)
+  model.load_checkpoint("/home/zxc5262/models/checkpoints/model_-1.pth")
+  random_evaluator = mcts.RandomRolloutEvaluator()
+
+  results = []
+
+  logger.print("Testing masknet")
+
+  for game_num in range(500):
+
+    az_player = EXP_ID
+    bots = [
+        _init_bot(config, game, az_evaluator, True),
+        mcts.MCTSBot(
+            game,
+            config.uct_c,
+            config.max_simulations,
+            random_evaluator,
+            solve=True,
+            verbose=False,
+            dont_return_chance_node=True)
+    ]
+    trajectory = _play_game(logger, game_num, game, bots, model, temperature=1,
+                            temperature_drop=0)
+    results.append(trajectory.returns[az_player])
+  
+    logger.print("AZ: {}, MCTS: {}, AZ avg/{}: {:.3f}".format(
+        trajectory.returns[az_player],
+        trajectory.returns[1 - az_player],
+        len(results), np.mean(results)))
+
+@watcher
+def test_baseline(*, game, config, logger):
+  logger.print("Initializing model")
+  input_size = int(np.prod(config.observation_shape))
+  logger.print("Initializing bots")
+  base_model = load_pretrain(config.az_path)
+  az_evaluator = evaluator_lib.AlphaZeroEvaluator(game, base_model)
+  random_evaluator = mcts.RandomRolloutEvaluator()
+
+  results = []
+
+  logger.print("Testing baseline")
+
+  for game_num in range(500):
+
+    az_player = EXP_ID
+    bots = [
+        _init_bot(config, game, az_evaluator, True),
+        mcts.MCTSBot(
+            game,
+            config.uct_c,
+            config.max_simulations,
+            random_evaluator,
+            solve=True,
+            verbose=False,
+            dont_return_chance_node=True)
+    ]
+    trajectory = baseline_play_game(logger, game_num, game, bots, temperature=1,
+                            temperature_drop=0)
+    results.append(trajectory.returns[az_player])
+  
+    logger.print("AZ: {}, MCTS: {}, AZ avg/{}: {:.3f}".format(
+        trajectory.returns[az_player],
+        trajectory.returns[1 - az_player],
+        len(results), np.mean(results)))
+
+
+def alpha_zero_test(config: Config):
+  game = pyspiel.load_game(config.game)
+  config = config._replace(
+    observation_shape=game.observation_tensor_shape(),
+    output_size=game.num_distinct_actions())
+  use_cuda = torch.cuda.is_available()
+  device = torch.device("cuda" if use_cuda else "cpu")
+  print("Starting game", config.game)
+  if game.num_players() != 2:
+    sys.exit("AlphaZero can only handle 2-player games.")
+  game_type = game.get_type()
+  if game_type.reward_model != pyspiel.GameType.RewardModel.TERMINAL:
+    raise ValueError("Game must have terminal rewards.")
+  if game_type.dynamics != pyspiel.GameType.Dynamics.SEQUENTIAL:
+    raise ValueError("Game must have sequential turns.")
+  if game_type.chance_mode != pyspiel.GameType.ChanceMode.DETERMINISTIC:
+    raise ValueError("Game must be deterministic.")
+  
+
+  path = config.path
+
+  test_baseline(game=game, config=config)
+  #test_masknet(game=game, config=config)
+  
+
+
+
+
