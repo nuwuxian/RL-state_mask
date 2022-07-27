@@ -47,8 +47,8 @@ flags.DEFINE_integer("actors", 20, "How many actors to run.")
 flags.DEFINE_integer("evaluators", 1, "How many evaluators to run.")
 flags.DEFINE_integer("evaluation_window", 100,
                      "How many games to average results over.")
-flag.DEFINE_bool("test_masknet", False, "test masknet or baseline")
-flag.DEFINE_bool("is_training", False, "training or testing")
+flags.DEFINE_bool("test_masknet", False, "test masknet or baseline")
+flags.DEFINE_bool("is_training", False, "training or testing")
 flags.DEFINE_integer(
     "eval_levels", 7,
     ("Play evaluation games vs MCTS+Solver, with max_simulations*10^(n/2)"
@@ -93,7 +93,7 @@ def main(unused_argv):
       az_path='/data/zelei/open_spiel/open_spiel/python/examples/connect_four/alpha_zero_checkpoints/checkpoint--1',
       n_epochs=10,
       test_masknet=FLAGS.test_masknet,
-      quiet=FLAGS.quiet,
+      quiet=FLAGS.quiet
   )
   if FLAGS.is_training:
     ppo_lagrange.alpha_zero(config)
