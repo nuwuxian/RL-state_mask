@@ -17,7 +17,6 @@
 from absl import app
 from absl import flags
 
-#from open_spiel.python.algorithms.ppo_lagrange import alpha_zero
 from open_spiel.python.algorithms import ppo_lagrange
 from open_spiel.python.algorithms.alpha_zero import model as model_lib
 from open_spiel.python.utils import spawn
@@ -48,6 +47,8 @@ flags.DEFINE_integer("actors", 20, "How many actors to run.")
 flags.DEFINE_integer("evaluators", 1, "How many evaluators to run.")
 flags.DEFINE_integer("evaluation_window", 100,
                      "How many games to average results over.")
+flag.DEFINE_bool("test_masknet", False, "test masknet or baseline")
+flag.DEFINE_bool("is_training", False, "training or testing")
 flags.DEFINE_integer(
     "eval_levels", 7,
     ("Play evaluation games vs MCTS+Solver, with max_simulations*10^(n/2)"
@@ -61,7 +62,7 @@ FLAGS = flags.FLAGS
 
 
 def main(unused_argv):
-  #config = alpha_zero.Config(
+
   config = ppo_lagrange.Config(
       game=FLAGS.game,
       path=FLAGS.path,
@@ -91,11 +92,13 @@ def main(unused_argv):
       output_size=None,
       az_path='/data/zelei/open_spiel/open_spiel/python/examples/connect_four/alpha_zero_checkpoints/checkpoint--1',
       n_epochs=10,
+      test_masknet=FLAGS.test_masknet,
       quiet=FLAGS.quiet,
   )
-
-  #ppo_lagrange.alpha_zero(config)
-  ppo_lagrange.alpha_zero_test(config)
+  if FLAGS.is_training:
+    ppo_lagrange.alpha_zero(config)
+  else:
+    ppo_lagrange.alpha_zero_test(config)
 
 if __name__ == "__main__":
   with spawn.main_handler():
