@@ -31,6 +31,8 @@ Links to relevant articles/papers:
     has an open access link to the AlphaZero science paper.
 """
 
+### /home/zxc5262/anaconda3/envs/pong/lib/python3.7/site-packages/open_spiel/python/algorithms/
+
 import collections
 import datetime
 import functools
@@ -104,7 +106,7 @@ class Config(collections.namedtuple(
         "quiet",
         "az_path",
         "n_epochs",
-        "test_masknet",
+        "test_masknet"
     ])):
   """A config for the model/experiment."""
   pass
@@ -123,6 +125,10 @@ class TrajectoryState(object):
 class Trajectory(object):
   def __init__(self):
     self.states = []
+    self.eps_len = 0
+    self.act_seq = []
+    self.mask_pos = []
+    self.mask_probs = []
     self.returns = None
 
   def add(self, obs, action, log_prob, _return, adv):
@@ -244,6 +250,7 @@ def _play_game(logger, game_num, game, bots, mask_net, temperature, temperature_
   logger.opt_print(" Starting game {} ".format(game_num).center(60, "-"))
   logger.opt_print("Initial state:\n{}".format(state))
 
+
   if mask_net != None:
      mb_obs, mb_rewards, mb_actions, mb_values, mb_dones, mb_logpacs = [],[],[],[],[],[]
 
@@ -276,17 +283,22 @@ def _play_game(logger, game_num, game, bots, mask_net, temperature, temperature_
         mask_action = mask_action.detach().numpy()
         if mask_action[0] == 0:
           action = np.random.choice(len(policy), p=policy)
+          trajectory.mask_pos.append(trajectory.eps_len)
         mb_obs.append(obs)
         mb_rewards.append(0)
         mb_actions.append(mask_action[0])
         mb_values.append(value)
         mb_dones.append(False)
         mb_logpacs.append(log_prob[0])
+        trajectory.mask_probs.append(log_prob[0])
       action_str = state.action_to_string(state.current_player(), action)
       actions.append(action_str)
       logger.opt_print("Player {} sampled action: {}".format(
           state.current_player(), action_str))
       state.apply_action(action)
+    
+    trajectory.act_seq.append(action)
+    trajectory.eps_len += 1
   
   trajectory.returns = state.returns()
   if mask_net != None:
@@ -646,6 +658,9 @@ def alpha_zero(config: Config):
     for proc in evaluators:
       proc.join()
 
+
+
+
 @watcher
 def test(*, game, config, logger):
   logger.print("Initializing model")
@@ -661,25 +676,20 @@ def test(*, game, config, logger):
   random_evaluator = mcts.RandomRolloutEvaluator()
   # define alphazero and pure mcts
   az_player = EXP_ID
-  bots = [
-      _init_bot(config, game, az_evaluator, True),
-      mcts.MCTSBot(
-          game,
-          config.uct_c,
-          config.max_simulations,
-          random_evaluator,
-          solve=True,
-          verbose=False,
-          dont_return_chance_node=True)
-  ]
+
   results = []
   if config.test_masknet:
-     logger.print("Testing masknet")
+    logger.print("Testing masknet")
+    path = "/home/zxc5262/models/recording/"
+
   else:
-     logger.print("Testing baseline")
+    logger.print("Testing baseline")
 
   for game_num in range(500):
-    
+    bots = [
+      _init_bot(config, game, az_evaluator, True),
+      _init_bot(config, game, az_evaluator, True)
+    ]
     trajectory = _play_game(logger, game_num, game, bots, model, temperature=1,
                             temperature_drop=0)
     results.append(trajectory.returns[az_player])
@@ -688,6 +698,32 @@ def test(*, game, config, logger):
         trajectory.returns[az_player],
         trajectory.returns[1 - az_player],
         len(results), np.mean(results)))
+    
+    #trajectory.add(mb_obs[t], mb_actions[t], mb_logpacs[t], mb_returns[t], mb_advs[t])
+    if config.test_masknet:
+      mask_probs = trajectory.mask_probs
+      mask_pos = trajectory.mask_pos
+      action_seq = trajectory.act_seq
+      eps_len = trajectory.eps_len
+
+      mask_pos_filename = path + "mask_pos_" + str(game_num) + ".out" 
+      np.savetxt(mask_pos_filename, mask_pos)
+
+      eps_len_filename = path + "eps_len_" + str(game_num) + ".out" 
+      np.savetxt(eps_len_filename, [eps_len])
+
+      act_seq_filename = path + "act_seq_" + str(game_num) + ".out" 
+      np.savetxt(act_seq_filename, action_seq)
+
+      mask_probs_filename = path + "mask_probs_" + str(game_num) + ".out" 
+      np.savetxt(mask_probs_filename, mask_probs)
+  
+  if config.test_masknet:
+    print("Average winning rate: ", np.mean(results))
+
+    np.savetxt(path + "reward_record.out", results)
+
+
 
 
 def alpha_zero_test(config: Config):
