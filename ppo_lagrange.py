@@ -299,6 +299,8 @@ def _play_game(logger, game_num, game, bots, mask_net, temperature, temperature_
     
     trajectory.act_seq.append(action)
     trajectory.eps_len += 1
+
+    logger.opt_print("Next state:\n{}".format(state))
   
   trajectory.returns = state.returns()
   if mask_net != None:
@@ -659,7 +661,129 @@ def alpha_zero(config: Config):
       proc.join()
 
 
+def select_steps(path, critical):
+  if critical:
+    critical_steps_starts = []
+    critical_steps_ends = []
+  else:
+    non_critical_steps_starts = []
+    non_critical_steps_ends = []
 
+  for i_episode in range(50):
+    mask_probs_path = path + "mask_probs_" + str(i_episode) + ".out"
+    mask_probs = np.loadtxt(mask_probs_path)
+
+    confs = mask_probs
+
+    iteration_ends_path =  path + "eps_len_" + str(i_episode) + ".out"
+    iteration_ends = np.loadtxt(iteration_ends_path)
+
+    k = int(iteration_ends * 0.4)
+
+    if critical:
+    #find the top k:
+      idx = np.argpartition(confs, -k)[-k:]  # Indices not sorted
+
+    else:
+    #find the bottom k:
+
+      idx = np.argpartition(confs, k)[:k]  # Indices not sorted
+
+    #idx[np.argsort(x[idx])]  # Indices sorted by value from smallest to largest
+
+    idx.sort()
+
+
+    steps_start = idx[0]
+    steps_end = idx[0]
+
+    ans = 0
+    count = 0
+
+    tmp_end = idx[0]
+    tmp_start = idx[0]
+
+    for i in range(1, len(idx)):
+     
+      # Check if the current element is
+      # equal to previous element +1
+      if idx[i] == idx[i - 1] + 1:
+        count += 1
+        tmp_end = idx[i]
+             
+      # Reset the count
+      else:
+        count = 1
+        tmp_start = idx[i]
+        tmp_end = idx[i]
+             
+        # Update the maximum
+      if count > ans:
+        ans = count
+        steps_start = tmp_start
+        steps_end = tmp_end
+
+    if critical:
+      critical_steps_starts.append(steps_start)
+      critical_steps_ends.append(steps_end)
+
+    else:
+      non_critical_steps_starts.append(steps_start)
+      non_critical_steps_ends.append(steps_end)
+      
+  if critical:
+    np.savetxt(path + "critical_steps_starts.out", critical_steps_starts)
+    np.savetxt(path + "critical_steps_ends.out", critical_steps_ends)
+  else:
+    np.savetxt(path + "non_critical_steps_starts.out", non_critical_steps_starts)
+    np.savetxt(path + "non_critical_steps_ends.out", non_critical_steps_ends)
+
+def replay(logger, game_num, game, bots, path, critical_step_start, critical_step_end, temperature, temperature_drop):
+  trajectory = Trajectory()
+  actions = []
+  state = game.new_initial_state()
+  random_state = np.random.RandomState()
+  logger.opt_print(" Starting game {} ".format(game_num).center(60, "-"))
+  logger.opt_print("Initial state:\n{}".format(state))
+
+  action_sequence_path = path + "act_seq_" + str(game_num) + ".out"
+  recorded_actions = np.loadtxt(action_sequence_path)
+
+  while not state.is_terminal():
+    if state.is_chance_node():
+      # For chance nodes, rollout according to chance node's probability
+      # distribution
+      outcomes = state.chance_outcomes()
+      action_list, prob_list = zip(*outcomes)
+      action = random_state.choice(action_list, p=prob_list)
+      state.apply_action(action)
+    else:
+      if trajectory.eps_len < critical_step_start:
+        action = int(recorded_actions[trajectory.eps_len])
+
+      elif trajectory.eps_len <= critical_step_end:
+        action = np.random.choice(state.legal_actions())
+
+      else:
+        root = bots[state.current_player()].mcts_search(state)
+        policy = np.zeros(game.num_distinct_actions())
+        for c in root.children:
+          policy[c.action] = c.explore_count
+        policy = policy**(1 / temperature)
+        policy /= policy.sum()
+
+        action = root.best_child().action
+      
+      state.apply_action(action)    
+    
+    trajectory.eps_len += 1
+  
+  trajectory.returns = state.returns()
+    
+  logger.opt_print("Next state:\n{}".format(state))
+  logger.print("Game {}: Returns: {};".format(
+      game_num, " ".join(map(str, trajectory.returns))))
+  return trajectory
 
 @watcher
 def test(*, game, config, logger):
@@ -685,7 +809,7 @@ def test(*, game, config, logger):
   else:
     logger.print("Testing baseline")
 
-  for game_num in range(500):
+  for game_num in range(50):
     bots = [
       _init_bot(config, game, az_evaluator, True),
       _init_bot(config, game, az_evaluator, True)
@@ -720,8 +844,31 @@ def test(*, game, config, logger):
   
   if config.test_masknet:
     print("Average winning rate: ", np.mean(results))
-
     np.savetxt(path + "reward_record.out", results)
+
+    select_steps(path, critical=True)
+
+    critical_steps_starts = np.loadtxt(path + "critical_steps_starts.out")
+    critical_steps_ends = np.loadtxt(path + "critical_steps_ends.out")
+
+    replay_results= []
+    for game_num in range(50):
+      bots = [
+        _init_bot(config, game, az_evaluator, True),
+        _init_bot(config, game, az_evaluator, True)
+      ]
+      critical_step_start = critical_steps_starts[game_num]
+      critical_step_end = critical_steps_ends[game_num]
+      trajectory = replay(logger, game_num, game, bots, path, critical_step_start, critical_step_end, temperature=1,
+                              temperature_drop=0)
+      replay_results.append(trajectory.returns[az_player])
+      print("Replay Test " + str(game_num) + " :")
+      print("Current average winning rate: ", np.mean(replay_results))
+
+    np.savetxt(path + "replay_reward_record.out", replay_results)
+
+
+
 
 
 
