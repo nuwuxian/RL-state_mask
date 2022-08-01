@@ -29,7 +29,8 @@ class MLP(nn.Module):
         values = self.critic(x)
         probs = self.actor(x)
         dist = Categorical(probs)
-        return dist, values
+        log_probs = torch.log(probs)
+        return dist, values, log_probs
 
     # cpu level
     def inference(self, x):
