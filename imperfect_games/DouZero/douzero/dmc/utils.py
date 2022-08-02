@@ -59,15 +59,6 @@ def get_batch(free_queue,
         free_queue.put(m)
     return batch
 
-# buffers['done'][index][t, ...] = done_buf[p][t]
-#                     buffers['reward'][index][t, ...] = reward_buf[p][t]
-#                     buffers['obs_x_no_action'][index][t, ...] = obs_x_no_action_buf[t]
-#                     buffers['action'][index][t, ...] = action_buf[t]
-#                     buffers['value'][index][t, ...] = value_buf[t]
-#                     buffers['logpac'][index][t, ...] = logpac_buf[t]
-#                     buffers['obs_z'][index][t, ...] = obs_z_buf[t]
-#                     buffers['ret'][index][t, ...] = ret_buff[t]
-#                     buffers['adv'][index][t, ...] = adv_buf[t]
 def create_buffers(flags, device_iterator):
     """
     We create buffers for different positions as well as
@@ -89,7 +80,7 @@ def create_buffers(flags, device_iterator):
                 ret = dict(size=(T,), dtype=torch.float32),
                 adv = dict(size=(T,), dtype=torch.float32),
                 obs_x_no_action=dict(size=(T, x_dim), dtype=torch.int8),
-                obs_action=dict(size=(T, 1), dtype=torch.int8),
+                act=dict(size=(T, 1), dtype=torch.int8),
                 obs_z=dict(size=(T, 5, 162), dtype=torch.int8),
             )
             _buffers: Buffers = {key: [] for key in specs}
@@ -147,7 +138,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                     if mask_action == 0:
                         action = np.random.choice(obs['legal_actions'])
                     log_prob = dist.log_prob(mask_action)
-                    action_buf.append(mask_action)
+                    act_buf.append(mask_action)
                     value_buf.append(value)
                     logpac_buf.append(log_prob)
                     # psuedo fill
@@ -188,7 +179,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                     buffers['done'][index][t, ...] = done_buf[p][t]
                     buffers['reward'][index][t, ...] = reward_buf[p][t]
                     buffers['obs_x_no_action'][index][t, ...] = obs_x_no_action_buf[t]
-                    buffers['action'][index][t, ...] = action_buf[t]
+                    buffers['act'][index][t, ...] = act_buf[t]
                     buffers['value'][index][t, ...] = value_buf[t]
                     buffers['logpac'][index][t, ...] = logpac_buf[t]
                     buffers['obs_z'][index][t, ...] = obs_z_buf[t]
@@ -199,12 +190,11 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                 episode_return_buf = episode_return_buf[T:]
                 target_buf = target_buf[T:]
                 obs_x_no_action_buf = obs_x_no_action_buf[T:]
-                obs_action_buf = obs_action_buf[T:]
+                act_buf = act_buf[T:]
                 obs_z_buf = obs_z_buf[T:]
                 ret_buf = ret_buf[T:]
                 adv_buf = adv_buf[T:]
                 size -= T
-
     except KeyboardInterrupt:
         pass  
     except Exception as e:

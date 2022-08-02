@@ -5,13 +5,13 @@ import timeit
 import pprint
 from collections import deque
 import numpy as np
-
 import torch
 from torch import multiprocessing as mp
 from torch import nn
 
 from .file_writer import FileWriter
 from .models import Model
+from .masknet import MaskNet
 from .utils import get_batch, log, create_env, create_buffers, create_optimizers, act
 
 mean_episode_return_buf = {p:deque(maxlen=100) for p in ['landlord', 'landlord_up', 'landlord_down']}
@@ -29,7 +29,7 @@ def learn(position,
           lock):
 
     """ppo update."""
-    
+
 
     """Performs a learning (optimization) step."""
     if flags.training_device != "cpu":
@@ -80,6 +80,7 @@ def train(flags):
     checkpointpath = os.path.expandvars(
         os.path.expanduser('%s/%s/%s' % (flags.savedir, flags.xpid, 'model.tar')))
 
+    position = flags.position
     T = flags.unroll_length
     B = flags.batch_size
 
@@ -90,12 +91,18 @@ def train(flags):
         assert flags.num_actor_devices <= len(flags.gpu_devices.split(',')), 'The number of actor devices can not exceed the number of available devices'
 
     # Initialize actor models
-    models = {}
+    models, mask_models = {}, {}
     for device in device_iterator:
+        # create baseline model
         model = Model(device=device)
         model.share_memory()
         model.eval()
         models[device] = model
+        # create masknet model
+        masknet = MaskNet(device=device, postion=position)
+        masknet.share_memory()
+        masknet.eval()
+        mask_models[device] = model
 
     # Initialize buffers
     buffers = create_buffers(flags, device_iterator)
@@ -107,13 +114,12 @@ def train(flags):
     full_queue = {}
         
     for device in device_iterator:
-        _free_queue = {'landlord': ctx.SimpleQueue(), 'landlord_up': ctx.SimpleQueue(), 'landlord_down': ctx.SimpleQueue()}
-        _full_queue = {'landlord': ctx.SimpleQueue(), 'landlord_up': ctx.SimpleQueue(), 'landlord_down': ctx.SimpleQueue()}
+        _free_queue, _full_queue = ctx.SimpleQueue(), ctx.SimpleQueue()
         free_queue[device] = _free_queue
         full_queue[device] = _full_queue
 
     # Learner model for training
-    learner_model = Model(device=flags.training_device)
+    learner_model = Masknet(device=flags.training_device, position=position)
 
     # Create optimizers
     optimizers = create_optimizers(flags, learner_model)

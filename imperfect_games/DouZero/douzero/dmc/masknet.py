@@ -146,5 +146,8 @@ class MaskNet:
     def eval(self):
         self.model.eval()
 
+    def get_model(self):
+        return self.model
+
     def parameters(self):
         return self.model.parameters()
