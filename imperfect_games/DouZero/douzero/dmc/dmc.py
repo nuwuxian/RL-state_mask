@@ -27,6 +27,10 @@ def learn(position,
           optimizer,
           flags,
           lock):
+
+    """ppo update."""
+    
+
     """Performs a learning (optimization) step."""
     if flags.training_device != "cpu":
         device = torch.device('cuda:'+str(flags.training_device))

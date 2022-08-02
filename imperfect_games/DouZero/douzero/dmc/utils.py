@@ -59,22 +59,15 @@ def get_batch(free_queue,
         free_queue.put(m)
     return batch
 
-def create_optimizers(flags, learner_model):
-    """
-    Create three optimizers for the three positions
-    """
-    positions = ['landlord', 'landlord_up', 'landlord_down']
-    optimizers = {}
-    for position in positions:
-        optimizer = torch.optim.RMSprop(
-            learner_model.parameters(position),
-            lr=flags.learning_rate,
-            momentum=flags.momentum,
-            eps=flags.epsilon,
-            alpha=flags.alpha)
-        optimizers[position] = optimizer
-    return optimizers
-
+# buffers['done'][index][t, ...] = done_buf[p][t]
+#                     buffers['reward'][index][t, ...] = reward_buf[p][t]
+#                     buffers['obs_x_no_action'][index][t, ...] = obs_x_no_action_buf[t]
+#                     buffers['action'][index][t, ...] = action_buf[t]
+#                     buffers['value'][index][t, ...] = value_buf[t]
+#                     buffers['logpac'][index][t, ...] = logpac_buf[t]
+#                     buffers['obs_z'][index][t, ...] = obs_z_buf[t]
+#                     buffers['ret'][index][t, ...] = ret_buff[t]
+#                     buffers['adv'][index][t, ...] = adv_buf[t]
 def create_buffers(flags, device_iterator):
     """
     We create buffers for different positions as well as
@@ -90,10 +83,13 @@ def create_buffers(flags, device_iterator):
             x_dim = 319 if position == 'landlord' else 430
             specs = dict(
                 done=dict(size=(T,), dtype=torch.bool),
-                episode_return=dict(size=(T,), dtype=torch.float32),
-                target=dict(size=(T,), dtype=torch.float32),
+                reward=dict(size=(T,), dtype=torch.float32),
+                value = dict(size=(T,), dtype=torch.float32),
+                logpac = dict(size=(T,), dtype=torch.float32),
+                ret = dict(size=(T,), dtype=torch.float32),
+                adv = dict(size=(T,), dtype=torch.float32),
                 obs_x_no_action=dict(size=(T, x_dim), dtype=torch.int8),
-                obs_action=dict(size=(T, 54), dtype=torch.int8),
+                obs_action=dict(size=(T, 1), dtype=torch.int8),
                 obs_z=dict(size=(T, 5, 162), dtype=torch.int8),
             )
             _buffers: Buffers = {key: [] for key in specs}
@@ -107,13 +103,15 @@ def create_buffers(flags, device_iterator):
             buffers[device][position] = _buffers
     return buffers
 
-def act(i, device, free_queue, full_queue, model, buffers, flags):
+def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
     """
     This function will run forever until we stop it. It will generate
     data from the environment and send the data to buffer. It uses
     a free queue and full queue to syncup with the main process.
     """
     positions = ['landlord', 'landlord_up', 'landlord_down']
+    exp_id = masknet.position
+
     try:
         T = flags.unroll_length
         log.info('Device %s Actor %i started.', str(device), i)
@@ -121,60 +119,91 @@ def act(i, device, free_queue, full_queue, model, buffers, flags):
         env = create_env(flags)
         env = Environment(env, device)
 
-        done_buf = {p: [] for p in positions}
-        episode_return_buf = {p: [] for p in positions}
-        target_buf = {p: [] for p in positions}
-        obs_x_no_action_buf = {p: [] for p in positions}
-        obs_action_buf = {p: [] for p in positions}
-        obs_z_buf = {p: [] for p in positions}
-        size = {p: 0 for p in positions}
+        obs_x_no_action_buf = []
+        obs_z_buf = []
+        action_buf = []
+        value_buf = []
+        reward_buf = []
+        done_buf = []
+        logpac_buf = []
+        # ret, adv 
+        ret_buf = []
+        adv_buf = []
+        sz, game_len = 0, 0
 
         position, obs, env_output = env.initial()
-
         while True:
             while True:
-                obs_x_no_action_buf[position].append(env_output['obs_x_no_action'])
-                obs_z_buf[position].append(env_output['obs_z'])
+                obs_x_no_action_buf.append(env_output['obs_x_no_action'])
+                obs_z_buf.append(env_output['obs_z'])
                 with torch.no_grad():
                     agent_output = model.forward(position, obs['z_batch'], obs['x_batch'], flags=flags)
                 _action_idx = int(agent_output['action'].cpu().detach().numpy())
                 action = obs['legal_actions'][_action_idx]
-                obs_action_buf[position].append(_cards2tensor(action))
-                size[position] += 1
+                game_len += 1
+                if position == exp_id and mask_net != None:
+                    dist, value = mask_net.inference(env_output['z'], env_output['x'])
+                    mask_action = dist.sample()
+                    if mask_action == 0:
+                        action = np.random.choice(obs['legal_actions'])
+                    log_prob = dist.log_prob(mask_action)
+                    action_buf.append(mask_action)
+                    value_buf.append(value)
+                    logpac_buf.append(log_prob)
+                    # psuedo fill
+                    ret_buf.append(0)
+                    adv_buf.append(0)
+                    sz += 1
+
                 position, obs, env_output = env.step(action)
                 if env_output['done']:
-                    for p in positions:
-                        diff = size[p] - len(target_buf[p])
-                        if diff > 0:
-                            done_buf[p].extend([False for _ in range(diff-1)])
-                            done_buf[p].append(True)
-
-                            episode_return = env_output['episode_return'] if p == 'landlord' else -env_output['episode_return']
-                            episode_return_buf[p].extend([0.0 for _ in range(diff-1)])
-                            episode_return_buf[p].append(episode_return)
-                            target_buf[p].extend([episode_return for _ in range(diff)])
+                    # exp id
+                    diff = sz - len(reward_buf)
+                    if diff > 0:
+                        done_buf.extend([False for _ in range(diff)])
+                        reward = env_output['episode_return'] if p == 'landlord' else -env_output['episode_return']
+                        reward_buf.extend([0.0 for _ in range(diff-1)])
+                        reward_buf.append(reward)
                     break
-
-            for p in positions:
-                while size[p] > T: 
-                    index = free_queue[p].get()
-                    if index is None:
-                        break
-                    for t in range(T):
-                        buffers[p]['done'][index][t, ...] = done_buf[p][t]
-                        buffers[p]['episode_return'][index][t, ...] = episode_return_buf[p][t]
-                        buffers[p]['target'][index][t, ...] = target_buf[p][t]
-                        buffers[p]['obs_x_no_action'][index][t, ...] = obs_x_no_action_buf[p][t]
-                        buffers[p]['obs_action'][index][t, ...] = obs_action_buf[p][t]
-                        buffers[p]['obs_z'][index][t, ...] = obs_z_buf[p][t]
-                    full_queue[p].put(index)
-                    done_buf[p] = done_buf[p][T:]
-                    episode_return_buf[p] = episode_return_buf[p][T:]
-                    target_buf[p] = target_buf[p][T:]
-                    obs_x_no_action_buf[p] = obs_x_no_action_buf[p][T:]
-                    obs_action_buf[p] = obs_action_buf[p][T:]
-                    obs_z_buf[p] = obs_z_buf[p][T:]
-                    size[p] -= T
+            done = True 
+            last_values = 0
+            # returns, advs
+             for t in reversed(range(sz-game_lenm, sz)):
+                if t == sz - 1:
+                   nextnonterminal = 1.0 - done
+                   nextvalues = last_values
+                else:
+                   nextnonterminal = 1.0 - done_buf[t+1]
+                   nextvalues = value_buf[t+1]
+                delta = reward_buf[t] + GAMMA * nextvalues * nextnonterminal - value_buff[t]
+                adv_buf[t] = lastgaelam = delta + GAMMA * LAM * nextnonterminal * lastgaelam
+                ret_buf[t] = adv_buf[t] + value_buf[t]
+            # reset game length
+            game_len = 0
+            while sz > T: 
+                index = free_queue.get()
+                if index is None:
+                    break
+                for t in range(T):
+                    buffers['done'][index][t, ...] = done_buf[p][t]
+                    buffers['reward'][index][t, ...] = reward_buf[p][t]
+                    buffers['obs_x_no_action'][index][t, ...] = obs_x_no_action_buf[t]
+                    buffers['action'][index][t, ...] = action_buf[t]
+                    buffers['value'][index][t, ...] = value_buf[t]
+                    buffers['logpac'][index][t, ...] = logpac_buf[t]
+                    buffers['obs_z'][index][t, ...] = obs_z_buf[t]
+                    buffers['ret'][index][t, ...] = ret_buff[t]
+                    buffers['adv'][index][t, ...] = adv_buf[t]
+                full_queue.put(index)
+                done_buf = done_buf[T:]
+                episode_return_buf = episode_return_buf[T:]
+                target_buf = target_buf[T:]
+                obs_x_no_action_buf = obs_x_no_action_buf[T:]
+                obs_action_buf = obs_action_buf[T:]
+                obs_z_buf = obs_z_buf[T:]
+                ret_buf = ret_buf[T:]
+                adv_buf = adv_buf[T:]
+                size -= T
 
     except KeyboardInterrupt:
         pass  
