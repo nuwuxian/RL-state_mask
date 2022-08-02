@@ -24,23 +24,12 @@ C_1 = 0.5 # squared loss coefficient
 C_2 = 0.01 # entropy coefficient
 
 
-def compute_loss(logits, targets):
-    loss = ((logits.squeeze(-1) - targets)**2).mean()
-    return loss
-
-def learn(actor_models,
-          model,
-          batch,
-          optimizer,
-          flags,
-          lock):
-
+def learn(model, batch, optimizer, flags, lock):
     """PPO update."""
     if flags.training_device != "cpu":
         device = torch.device('cuda:'+str(flags.training_device))
     else:
         device = torch.device('cpu')
-
     obs_z = batch['obs_z'].to(device)
     obs_x_no_action = batch['obs_x_no_action'].to(device)
     act = batch['act'].to(device)
@@ -48,7 +37,7 @@ def learn(actor_models,
     ret = batch['ret'].to(device)
     adv = batch['adv'].to(device)
 
-    episode_returns = batch['episode_return'][batch['done']]
+    episode_returns = batch['reward'][batch['done']]
     mean_episode_return_buf[position].append(torch.mean(episode_returns).to(device))
         
     with lock:
@@ -174,10 +163,10 @@ def train(flags):
 
     def batch_and_learn(i, device, local_lock, position_lock, lock=threading.Lock()):
         """Thread target for the learning process."""
-        nonlocal frames, position_frames, stats
+        nonlocal frames, stats
         while frames < flags.total_frames:
             batch = get_batch(free_queue[device], full_queue[device], buffers[device], flags, local_lock)
-            _stats = learn(models, learner_model.get_model(), batch, optimizer, flags, position_lock)
+            _stats = learn(learner_model.get_model(), batch, optimizer, flags, position_lock)
 
             with lock:
                 for k in _stats:
@@ -186,36 +175,36 @@ def train(flags):
                 to_log.update({k: stats[k] for k in stat_keys})
                 plogger.log(to_log)
                 frames += T * B
-                position_frames[position] += T * B
 
-    for device in device_iterator:
-        for m in range(flags.num_buffers):
-            free_queue[device]['landlord'].put(m)
-            free_queue[device]['landlord_up'].put(m)
-            free_queue[device]['landlord_down'].put(m)
+    # for device in device_iterator:
+    #     for m in range(flags.num_buffers):
+    #         free_queue[device]['landlord'].put(m)
+    #         free_queue[device]['landlord_up'].put(m)
+    #         free_queue[device]['landlord_down'].put(m)
 
-    threads = []
-    locks = {}
-    for device in device_iterator:
-        locks[device] = {'landlord': threading.Lock(), 'landlord_up': threading.Lock(), 'landlord_down': threading.Lock()}
-    position_locks = {'landlord': threading.Lock(), 'landlord_up': threading.Lock(), 'landlord_down': threading.Lock()}
+    # threads = []
+    # locks = {}
+    # for device in device_iterator:
+    #     locks[device] = {'landlord': threading.Lock(), 'landlord_up': threading.Lock(), 'landlord_down': threading.Lock()}
+    # position_locks = {'landlord': threading.Lock(), 'landlord_up': threading.Lock(), 'landlord_down': threading.Lock()}
 
-    for device in device_iterator:
-        for i in range(flags.num_threads):
-            for position in ['landlord', 'landlord_up', 'landlord_down']:
-                thread = threading.Thread(
-                    target=batch_and_learn, name='batch-and-learn-%d' % i, args=(i,device,position,locks[device][position],position_locks[position]))
-                thread.start()
-                threads.append(thread)
+
+    # for device in device_iterator:
+    #     for i in range(flags.num_threads):
+    #         for position in ['landlord', 'landlord_up', 'landlord_down']:
+    #             thread = threading.Thread(
+    #                 target=batch_and_learn, name='batch-and-learn-%d' % i, args=(i,device,position,locks[device][position],position_locks[position]))
+    #             thread.start()
+    #             threads.append(thread)
     
     def checkpoint(frames):
         if flags.disable_checkpoint:
             return
         log.info('Saving checkpoint to %s', checkpointpath)
-        _models = learner_model.get_models()
+        _model = learner_model.get_model()
         torch.save({
-            'model_state_dict': {k: _models[k].state_dict() for k in _models},
-            'optimizer_state_dict': {k: optimizers[k].state_dict() for k in optimizers},
+            'model_state_dict': _model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
             "stats": stats,
             'flags': vars(flags),
             'frames': frames,
@@ -223,10 +212,9 @@ def train(flags):
         }, checkpointpath)
 
         # Save the weights for evaluation purpose
-        for position in ['landlord', 'landlord_up', 'landlord_down']:
-            model_weights_dir = os.path.expandvars(os.path.expanduser(
-                '%s/%s/%s' % (flags.savedir, flags.xpid, position+'_weights_'+str(frames)+'.ckpt')))
-            torch.save(learner_model.get_model(position).state_dict(), model_weights_dir)
+        model_weights_dir = os.path.expandvars(os.path.expanduser(
+            '%s/%s/%s' % (flags.savedir, flags.xpid, flags.position+'_masknet_weights_'+str(frames)+'.ckpt')))
+        torch.save(learner_model.get_model().state_dict(), model_weights_dir)
 
     fps_log = []
     timer = timeit.default_timer
@@ -234,7 +222,6 @@ def train(flags):
         last_checkpoint_time = timer() - flags.save_interval * 60
         while frames < flags.total_frames:
             start_frames = frames
-            position_start_frames = {k: position_frames[k] for k in position_frames}
             start_time = timer()
             time.sleep(5)
 
@@ -248,18 +235,11 @@ def train(flags):
             if len(fps_log) > 24:
                 fps_log = fps_log[1:]
             fps_avg = np.mean(fps_log)
-
-            position_fps = {k:(position_frames[k]-position_start_frames[k])/(end_time-start_time) for k in position_frames}
-            log.info('After %i (L:%i U:%i D:%i) frames: @ %.1f fps (avg@ %.1f fps) (L:%.1f U:%.1f D:%.1f) Stats:\n%s',
+            
+            log.info('After %i frames: @ %.1f fps (avg@ %.1f fps) Stats:\n%s',
                      frames,
-                     position_frames['landlord'],
-                     position_frames['landlord_up'],
-                     position_frames['landlord_down'],
                      fps,
                      fps_avg,
-                     position_fps['landlord'],
-                     position_fps['landlord_up'],
-                     position_fps['landlord_down'],
                      pprint.pformat(stats))
 
     except KeyboardInterrupt:
