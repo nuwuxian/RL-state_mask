@@ -16,50 +16,59 @@ from .utils import get_batch, log, create_env, create_buffers, create_optimizers
 
 mean_episode_return_buf = {p:deque(maxlen=100) for p in ['landlord', 'landlord_up', 'landlord_down']}
 
+GAMMA = 0.99 
+LAM = 0.95
+clip_param = 0.2
+
+C_1 = 0.5 # squared loss coefficient
+C_2 = 0.01 # entropy coefficient
+
+
 def compute_loss(logits, targets):
     loss = ((logits.squeeze(-1) - targets)**2).mean()
     return loss
 
-def learn(position,
-          actor_models,
+def learn(actor_models,
           model,
           batch,
           optimizer,
           flags,
           lock):
 
-    """ppo update."""
-
-
-    """Performs a learning (optimization) step."""
+    """PPO update."""
     if flags.training_device != "cpu":
         device = torch.device('cuda:'+str(flags.training_device))
     else:
         device = torch.device('cpu')
+
+    obs_z = batch['obs_z'].to(device)
     obs_x_no_action = batch['obs_x_no_action'].to(device)
-    obs_action = batch['obs_action'].to(device)
-    obs_x = torch.cat((obs_x_no_action, obs_action), dim=2).float()
-    obs_x = torch.flatten(obs_x, 0, 1)
-    obs_z = torch.flatten(batch['obs_z'].to(device), 0, 1).float()
-    target = torch.flatten(batch['target'].to(device), 0, 1)
+    act = batch['act'].to(device)
+    log_probs = batch['logpac'].to(device)
+    ret = batch['ret'].to(device)
+    adv = batch['adv'].to(device)
+
     episode_returns = batch['episode_return'][batch['done']]
     mean_episode_return_buf[position].append(torch.mean(episode_returns).to(device))
         
     with lock:
-        learner_outputs = model(obs_z, obs_x, return_value=True)
-        loss = compute_loss(learner_outputs['values'], target)
+        dist, value = model(obs_z, obs_x_no_action)
+        new_log_probs = dist.log_prob(act)
+        ratio = (new_log_probs - log_probs).exp() # new_prob/old_prob
+        surr1 = ratio * advs
+        surr2 = torch.clamp(ratio, 1.0 - clip_param, 1.0 + clip_param) * adv
+        actor_loss = - torch.min(surr1, surr2).mean()
+        critic_loss = (ret - value).pow(2).mean()
+        entropy = dist.entropy().mean()
+        loss = C_1 * critic_loss + actor_loss - C_2 * entropy
         stats = {
             'mean_episode_return_'+position: torch.mean(torch.stack([_r for _r in mean_episode_return_buf[position]])).item(),
             'loss_'+position: loss.item(),
         }
-        
         optimizer.zero_grad()
         loss.backward()
         nn.utils.clip_grad_norm_(model.parameters(), flags.max_grad_norm)
         optimizer.step()
-
-        for actor_model in actor_models.values():
-            actor_model.get_model(position).load_state_dict(model.state_dict())
         return stats
 
 def train(flags):  
@@ -121,9 +130,13 @@ def train(flags):
     # Learner model for training
     learner_model = Masknet(device=flags.training_device, position=position)
 
-    # Create optimizers
-    optimizers = create_optimizers(flags, learner_model)
-
+    # Create optimizer
+    optimizer = torch.optim.RMSprop(
+            learner_model.parameters(),
+            lr=flags.learning_rate,
+            momentum=flags.momentum,
+            eps=flags.epsilon,
+            alpha=flags.alpha)
     # Stat Keys
     stat_keys = [
         'mean_episode_return_landlord',
@@ -142,10 +155,8 @@ def train(flags):
             checkpointpath, map_location=("cuda:"+str(flags.training_device) if flags.training_device != "cpu" else "cpu")
         )
         for k in ['landlord', 'landlord_up', 'landlord_down']:
-            learner_model.get_model(k).load_state_dict(checkpoint_states["model_state_dict"][k])
-            optimizers[k].load_state_dict(checkpoint_states["optimizer_state_dict"][k])
             for device in device_iterator:
-                models[device].get_model(k).load_state_dict(learner_model.get_model(k).state_dict())
+                models[device].get_model(k).load_state_dict(checkpoint_states["model_state_dict"][k])
         stats = checkpoint_states["stats"]
         frames = checkpoint_states["frames"]
         position_frames = checkpoint_states["position_frames"]
@@ -157,17 +168,16 @@ def train(flags):
         for i in range(flags.num_actors):
             actor = ctx.Process(
                 target=act,
-                args=(i, device, free_queue[device], full_queue[device], models[device], buffers[device], flags))
+                args=(i, device, free_queue[device], full_queue[device], models[device], mask_models[device], buffers[device], flags))
             actor.start()
             actor_processes.append(actor)
 
-    def batch_and_learn(i, device, position, local_lock, position_lock, lock=threading.Lock()):
+    def batch_and_learn(i, device, local_lock, position_lock, lock=threading.Lock()):
         """Thread target for the learning process."""
         nonlocal frames, position_frames, stats
         while frames < flags.total_frames:
-            batch = get_batch(free_queue[device][position], full_queue[device][position], buffers[device][position], flags, local_lock)
-            _stats = learn(position, models, learner_model.get_model(position), batch, 
-                optimizers[position], flags, position_lock)
+            batch = get_batch(free_queue[device], full_queue[device], buffers[device], flags, local_lock)
+            _stats = learn(models, learner_model.get_model(), batch, optimizer, flags, position_lock)
 
             with lock:
                 for k in _stats:
