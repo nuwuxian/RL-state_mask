@@ -24,7 +24,7 @@ C_1 = 0.5 # squared loss coefficient
 C_2 = 0.01 # entropy coefficient
 
 
-def learn(model, batch, optimizer, flags, lock):
+def learn(model, batch, optimizer, flags):
     """PPO update."""
     if flags.training_device != "cpu":
         device = torch.device('cuda:'+str(flags.training_device))
@@ -39,26 +39,25 @@ def learn(model, batch, optimizer, flags, lock):
 
     episode_returns = batch['reward'][batch['done']]
     mean_episode_return_buf[position].append(torch.mean(episode_returns).to(device))
-        
-    with lock:
-        dist, value = model(obs_z, obs_x_no_action)
-        new_log_probs = dist.log_prob(act)
-        ratio = (new_log_probs - log_probs).exp() # new_prob/old_prob
-        surr1 = ratio * advs
-        surr2 = torch.clamp(ratio, 1.0 - clip_param, 1.0 + clip_param) * adv
-        actor_loss = - torch.min(surr1, surr2).mean()
-        critic_loss = (ret - value).pow(2).mean()
-        entropy = dist.entropy().mean()
-        loss = C_1 * critic_loss + actor_loss - C_2 * entropy
-        stats = {
-            'mean_episode_return_'+position: torch.mean(torch.stack([_r for _r in mean_episode_return_buf[position]])).item(),
-            'loss_'+position: loss.item(),
-        }
-        optimizer.zero_grad()
-        loss.backward()
-        nn.utils.clip_grad_norm_(model.parameters(), flags.max_grad_norm)
-        optimizer.step()
-        return stats
+    
+    dist, value = model(obs_z, obs_x_no_action)
+    new_log_probs = dist.log_prob(act)
+    ratio = (new_log_probs - log_probs).exp() # new_prob/old_prob
+    surr1 = ratio * advs
+    surr2 = torch.clamp(ratio, 1.0 - clip_param, 1.0 + clip_param) * adv
+    actor_loss = - torch.min(surr1, surr2).mean()
+    critic_loss = (ret - value).pow(2).mean()
+    entropy = dist.entropy().mean()
+    loss = C_1 * critic_loss + actor_loss - C_2 * entropy
+    stats = {
+        'mean_episode_return_'+position: torch.mean(torch.stack([_r for _r in mean_episode_return_buf[position]])).item(),
+        'loss_'+position: loss.item(),
+    }
+    optimizer.zero_grad()
+    loss.backward()
+    nn.utils.clip_grad_norm_(model.parameters(), flags.max_grad_norm)
+    optimizer.step()
+    return stats
 
 def train(flags):  
     """
@@ -161,26 +160,26 @@ def train(flags):
             actor.start()
             actor_processes.append(actor)
 
-    def batch_and_learn(i, device, local_lock, position_lock, lock=threading.Lock()):
+    def batch_and_learn(i, device, local_lock, position_lock):
         """Thread target for the learning process."""
         nonlocal frames, stats
         while frames < flags.total_frames:
             batch = get_batch(free_queue[device], full_queue[device], buffers[device], flags, local_lock)
             _stats = learn(learner_model.get_model(), batch, optimizer, flags, position_lock)
 
-            with lock:
-                for k in _stats:
-                    stats[k] = _stats[k]
-                to_log = dict(frames=frames)
-                to_log.update({k: stats[k] for k in stat_keys})
-                plogger.log(to_log)
-                frames += T * B
+            
+            for k in _stats:
+                stats[k] = _stats[k]
+                
+            to_log = dict(frames=frames)
+            to_log.update({k: stats[k] for k in stat_keys})
+            plogger.log(to_log)    
+            frames += T * B
 
-    # for device in device_iterator:
-    #     for m in range(flags.num_buffers):
-    #         free_queue[device]['landlord'].put(m)
-    #         free_queue[device]['landlord_up'].put(m)
-    #         free_queue[device]['landlord_down'].put(m)
+
+    for device in device_iterator:
+        for m in range(flags.num_buffers):
+            free_queue[device].put(m)
 
     # threads = []
     # locks = {}
