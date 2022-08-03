@@ -39,18 +39,16 @@ Buffers = typing.Dict[str, typing.List[torch.Tensor]]
 def create_env(flags):
     return Env(flags.objective)
 
-def get_batch(free_queue,
-              full_queue,
-              buffers,
-              flags,
-              lock):
+def get_buffer(free_queue,
+               full_queue,
+               buffers,
+               flags):
     """
     This function will sample a batch from the buffers based
     on the indices received from the full queue. It will also
     free the indices by sending it to full_queue.
     """
-    with lock:
-        indices = [full_queue.get() for _ in range(flags.batch_size)]
+    indices = [full_queue.get() for _ in range(flags.batch_size)]
     batch = {
         key: torch.stack([buffers[key][m] for m in indices], dim=1)
         for key in buffers
