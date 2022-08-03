@@ -23,13 +23,13 @@ clip_param = 0.2
 C_1 = 0.5 # squared loss coefficient
 C_2 = 0.01 # entropy coefficient
 
+
 def merge(buffer_list):
     ret_buffer = {
         key: torch.stack([buffer_list[i][key] for m in indices], dim=1)
         for key in buffer_list[0]
     }
     return ret_buffer
-
 
 def sample(buffer, sample_sz, max_sz):
     ret_sample = {}
@@ -38,12 +38,33 @@ def sample(buffer, sample_sz, max_sz):
         ret_sample[k] = buffer[k][sample_id, ...]
     return ret_sample
 
+ def checkpoint(frames):
+    if flags.disable_checkpoint:
+        return
+    log.info('Saving checkpoint to %s', checkpointpath)
+    _model = learner_model.get_model()
+    torch.save({
+        'model_state_dict': _model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        "stats": stats,
+        'flags': vars(flags),
+        'frames': frames,
+        'position_frames': position_frames
+    }, checkpointpath)
+
+    # Save the weights for evaluation purpose
+    model_weights_dir = os.path.expandvars(os.path.expanduser(
+        '%s/%s/%s' % (flags.savedir, flags.xpid, flags.position+'_masknet_weights_'+str(frames)+'.ckpt')))
+    torch.save(learner_model.get_model().state_dict(), model_weights_dir)
+
+
 def learn(model, batch, optimizer, flags):
     """PPO update."""
     if flags.training_device != "cpu":
         device = torch.device('cuda:'+str(flags.training_device))
     else:
         device = torch.device('cpu')
+    position = flags.position
     obs_z = batch['obs_z'].to(device)
     obs_x_no_action = batch['obs_x_no_action'].to(device)
     act = batch['act'].to(device)
@@ -205,7 +226,6 @@ def train(flags):
             for mask_model in mask_models.values():
                 mask_model.get_model().load_state_dict(model.state_dict())
 
-
             if timer() - last_checkpoint_time > flags.save_interval * 60:  
                 checkpoint(frames)
                 last_checkpoint_time = timer()
@@ -226,22 +246,5 @@ def train(flags):
     for device in device_iterator:
         for m in range(flags.num_buffers):
             free_queue[device].put(m)
-    
-    def checkpoint(frames):
-        if flags.disable_checkpoint:
-            return
-        log.info('Saving checkpoint to %s', checkpointpath)
-        _model = learner_model.get_model()
-        torch.save({
-            'model_state_dict': _model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            "stats": stats,
-            'flags': vars(flags),
-            'frames': frames,
-            'position_frames': position_frames
-        }, checkpointpath)
-
-        # Save the weights for evaluation purpose
-        model_weights_dir = os.path.expandvars(os.path.expanduser(
-            '%s/%s/%s' % (flags.savedir, flags.xpid, flags.position+'_masknet_weights_'+str(frames)+'.ckpt')))
-        torch.save(learner_model.get_model().state_dict(), model_weights_dir)
+    # Train masknet
+    batch_and_learn()
