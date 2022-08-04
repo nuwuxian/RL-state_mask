@@ -101,7 +101,6 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
     data from the environment and send the data to buffer. It uses
     a free queue and full queue to syncup with the main process.
     """
-    positions = ['landlord', 'landlord_up', 'landlord_down']
     exp_id = mask_net.position
     try:
         T = flags.unroll_length

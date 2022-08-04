@@ -109,7 +109,7 @@ def train(flags):
         model.eval()
         models[device] = model
         # create masknet model
-        masknet = MaskNet(device=device, postion=position)
+        masknet = MaskNet(device=device, position=position)
         masknet.share_memory()
         masknet.eval()
         mask_models[device] = model

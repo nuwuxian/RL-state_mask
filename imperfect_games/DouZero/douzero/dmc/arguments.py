@@ -43,7 +43,7 @@ parser.add_argument('--num_threads', default=4, type=int,
                     help='Number learner threads')
 parser.add_argument('--max_grad_norm', default=40., type=float,
                     help='Max norm of gradients')
-parser.add_argument('--position', defalut='landlord', type=str,
+parser.add_argument('--position', default='landlord', type=str,
                     help='explain position')
 
 # Optimizer settings
