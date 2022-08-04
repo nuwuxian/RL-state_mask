@@ -13,6 +13,9 @@ from .env_utils import Environment
 from douzero.env import Env
 from douzero.env.env import _cards2array
 
+GAMMA = 0.99 
+LAM = 0.95
+
 Card2Column = {3: 0, 4: 1, 5: 2, 6: 3, 7: 4, 8: 5, 9: 6, 10: 7,
                11: 8, 12: 9, 13: 10, 14: 11, 17: 12}
 
@@ -99,8 +102,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
     a free queue and full queue to syncup with the main process.
     """
     positions = ['landlord', 'landlord_up', 'landlord_down']
-    exp_id = masknet.position
-
+    exp_id = mask_net.position
     try:
         T = flags.unroll_length
         log.info('Device %s Actor %i started.', str(device), i)
@@ -110,7 +112,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
 
         obs_x_no_action_buf = []
         obs_z_buf = []
-        action_buf = []
+        act_buf = []
         value_buf = []
         reward_buf = []
         done_buf = []
@@ -129,7 +131,6 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                     agent_output = model.forward(position, obs['z_batch'], obs['x_batch'], flags=flags)
                 _action_idx = int(agent_output['action'].cpu().detach().numpy())
                 action = obs['legal_actions'][_action_idx]
-                game_len += 1
                 if position == exp_id and mask_net != None:
                     dist, value = mask_net.inference(env_output['z'], env_output['x'])
                     mask_action = dist.sample()
@@ -143,28 +144,28 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                     ret_buf.append(0)
                     adv_buf.append(0)
                     sz += 1
-
+                    game_len += 1
                 position, obs, env_output = env.step(action)
                 if env_output['done']:
                     # exp id
                     diff = sz - len(reward_buf)
                     if diff > 0:
                         done_buf.extend([False for _ in range(diff)])
-                        reward = env_output['episode_return'] if p == 'landlord' else -env_output['episode_return']
+                        reward = env_output['episode_return'] if exp_id == 'landlord' else -env_output['episode_return']
                         reward_buf.extend([0.0 for _ in range(diff-1)])
                         reward_buf.append(reward)
                     break
             done = True 
             last_values = 0
             # returns, advs
-             for t in reversed(range(sz-game_lenm, sz)):
+            for t in reversed(range(sz-game_len, sz)):
                 if t == sz - 1:
                    nextnonterminal = 1.0 - done
                    nextvalues = last_values
                 else:
                    nextnonterminal = 1.0 - done_buf[t+1]
                    nextvalues = value_buf[t+1]
-                delta = reward_buf[t] + GAMMA * nextvalues * nextnonterminal - value_buff[t]
+                delta = reward_buf[t] + GAMMA * nextvalues * nextnonterminal - value_buf[t]
                 adv_buf[t] = lastgaelam = delta + GAMMA * LAM * nextnonterminal * lastgaelam
                 ret_buf[t] = adv_buf[t] + value_buf[t]
             # reset game length
@@ -174,14 +175,14 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                 if index is None:
                     break
                 for t in range(T):
-                    buffers['done'][index][t, ...] = done_buf[p][t]
-                    buffers['reward'][index][t, ...] = reward_buf[p][t]
+                    buffers['done'][index][t, ...] = done_buf[t]
+                    buffers['reward'][index][t, ...] = reward_buf[t]
                     buffers['obs_x_no_action'][index][t, ...] = obs_x_no_action_buf[t]
                     buffers['act'][index][t, ...] = act_buf[t]
                     buffers['value'][index][t, ...] = value_buf[t]
                     buffers['logpac'][index][t, ...] = logpac_buf[t]
                     buffers['obs_z'][index][t, ...] = obs_z_buf[t]
-                    buffers['ret'][index][t, ...] = ret_buff[t]
+                    buffers['ret'][index][t, ...] = ret_buf[t]
                     buffers['adv'][index][t, ...] = adv_buf[t]
                 full_queue.put(index)
                 done_buf = done_buf[T:]
@@ -192,7 +193,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                 obs_z_buf = obs_z_buf[T:]
                 ret_buf = ret_buf[T:]
                 adv_buf = adv_buf[T:]
-                size -= T
+                sz -= T
     except KeyboardInterrupt:
         pass  
     except Exception as e:
