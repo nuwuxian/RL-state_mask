@@ -6,14 +6,14 @@ models into one class for convenience.
 import numpy as np
 from torch.distributions import Categorical
 import torch
+import torch.nn.functional as F
 from torch import nn
-
 
 class LandlordLstmModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.lstm = nn.LSTM(162, 128, batch_first=True)
-        self.dense1 = nn.Linear(373 + 128, 512)
+        self.dense1 = nn.Linear(319 + 128, 512)
         self.dense2 = nn.Linear(512, 512)
         self.dense3 = nn.Linear(512, 512)
         self.dense4 = nn.Linear(512, 512)
@@ -38,7 +38,7 @@ class LandlordLstmModel(nn.Module):
         x = torch.relu(x)
 
         values = self.value(x)
-        probs = nn.Softmax(self.policy(x), dim=1)
+        probs = F.Softmax(self.policy(x), dim=1)
         dist = Categorical(probs)
         return dist, values
 
@@ -59,7 +59,7 @@ class LandlordLstmModel(nn.Module):
         x = torch.relu(x)
 
         values = self.value(x)
-        probs = nn.Softmax(self.policy(x), dim=1)
+        probs = F.softmax(self.policy(x), dim=1)
         dist = Categorical(probs)
         return dist, values
 
@@ -93,7 +93,7 @@ class FarmerLstmModel(nn.Module):
         x = torch.relu(x)
 
         values = self.value(x)
-        probs = nn.Softmax(self.policy(x), dim=1)
+        probs = F.softmax(self.policy(x), dim=1)
         dist = Categorical(probs)
         return dist, values
 
@@ -114,7 +114,7 @@ class FarmerLstmModel(nn.Module):
         x = torch.relu(x)
 
         values = self.value(x)
-        probs = nn.Softmax(self.policy(x), dim=1)
+        probs = F.softmax(self.policy(x), dim=1)
         dist = Categorical(probs)
         return dist, values
 
@@ -128,6 +128,7 @@ class MaskNet:
         self.position = position
         if not device == "cpu":
             device = 'cuda:' + str(device)
+        self.device = torch.device(device)
         if position == 'landlord':
             self.model = LandlordLstmModel().to(torch.device(device))
         else:
@@ -137,6 +138,7 @@ class MaskNet:
         return self.model.forward(z, x)
 
     def inference(self, z, x):
+        z, x = z.to(self.device).float(), x.to(self.device).float()
         return self.model.inference(z, x)
 
     def share_memory(self):
