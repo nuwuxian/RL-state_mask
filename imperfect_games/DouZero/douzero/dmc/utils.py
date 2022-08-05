@@ -5,7 +5,7 @@ import traceback
 import numpy as np
 from collections import Counter
 import time
-
+import random
 import torch 
 from torch import multiprocessing as mp
 
@@ -134,7 +134,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                     dist, value = mask_net.inference(env_output['obs_z'], env_output['obs_x_no_action'])
                     mask_action = dist.sample()
                     if mask_action == 0:
-                        action = np.random.choice(obs['legal_actions'])
+                        action = random.choice(obs['legal_actions'])
                     log_prob = dist.log_prob(mask_action)
                     act_buf.append(mask_action.cpu())
                     value_buf.append(value.cpu())
@@ -155,7 +155,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                         reward_buf.append(reward)
                     break
             done = True 
-            last_values = 0
+            last_values, lastgaelam = 0, 0
             # returns, advs
             for t in reversed(range(sz-game_len, sz)):
                 if t == sz - 1:
