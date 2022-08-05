@@ -136,9 +136,9 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                     if mask_action == 0:
                         action = np.random.choice(obs['legal_actions'])
                     log_prob = dist.log_prob(mask_action)
-                    act_buf.append(mask_action)
-                    value_buf.append(value)
-                    logpac_buf.append(log_prob)
+                    act_buf.append(mask_action.cpu())
+                    value_buf.append(value.cpu())
+                    logpac_buf.append(log_prob.cpu())
                     # psuedo fill
                     ret_buf.append(0)
                     adv_buf.append(0)
