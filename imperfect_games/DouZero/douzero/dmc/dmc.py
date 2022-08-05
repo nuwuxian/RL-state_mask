@@ -50,6 +50,9 @@ def learn(model, batch, optimizer, flags):
     ret = batch['ret'].to(device)
     adv = batch['adv'].to(device)
 
+    # normalize the adv
+    adv = (adv - torch.mean(adv,dim=0))/(1e-7 + torch.std(adv,dim=0))
+
     episode_returns = batch['reward'][batch['done']]
     mean_episode_return_buf[position].append(torch.mean(episode_returns).to(device))
     
