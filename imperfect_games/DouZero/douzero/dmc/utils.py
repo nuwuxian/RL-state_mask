@@ -81,7 +81,7 @@ def create_buffers(flags, device_iterator):
                 ret = dict(size=(T,), dtype=torch.float32),
                 adv = dict(size=(T,), dtype=torch.float32),
                 obs_x_no_action=dict(size=(T, x_dim), dtype=torch.int8),
-                act=dict(size=(T, 1), dtype=torch.int8),
+                act=dict(size=(T,), dtype=torch.int8),
                 obs_z=dict(size=(T, 5, 162), dtype=torch.int8),
             )
             _buffers: Buffers = {key: [] for key in specs}
@@ -169,6 +169,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                 ret_buf[t] = adv_buf[t] + value_buf[t]
             # reset game length
             game_len = 0
+            done_buf[-1] = True
             while sz > T: 
                 index = free_queue.get()
                 if index is None:
