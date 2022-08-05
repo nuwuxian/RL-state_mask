@@ -17,7 +17,7 @@ parser.add_argument('--gpu_devices', default='0', type=str,
                     help='Which GPUs to be used for training')
 parser.add_argument('--num_actor_devices', default=1, type=int,
                     help='The number of devices used for simulation')
-parser.add_argument('--num_actors', default=5, type=int,
+parser.add_argument('--num_actors', default=1, type=int,
                     help='The number of actors for each simulation device')
 parser.add_argument('--training_device', default='0', type=str,
                     help='The index of the GPU used for training models. `cpu` means using cpu')

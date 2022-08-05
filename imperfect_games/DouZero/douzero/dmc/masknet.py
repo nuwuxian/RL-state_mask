@@ -43,7 +43,7 @@ class LandlordLstmModel(nn.Module):
         return dist, values
 
     def inference(self, z, x):
-        z, x = torch.unsqueeze(z), torch.unsqueeze(x)
+        z, x = torch.unsqueeze(z, dim=0), torch.unsqueeze(x, dim=0)
         lstm_out, (h_n, _) = self.lstm(z)
         lstm_out = lstm_out[:,-1,:]
         x = torch.cat([lstm_out,x], dim=-1)
@@ -98,7 +98,7 @@ class FarmerLstmModel(nn.Module):
         return dist, values
 
     def inference(self, z, x):
-        z, x = torch.unsqueeze(z), torch.unsqueeze(x)
+        z, x = torch.unsqueeze(z, dim=0), torch.unsqueeze(x, dim=0)
         lstm_out, (h_n, _) = self.lstm(z)
         lstm_out = lstm_out[:,-1,:]
         x = torch.cat([lstm_out,x], dim=-1)
@@ -126,7 +126,6 @@ class MaskNet:
     def __init__(self, device=0, position='landlord'):
         self.model = None
         self.position = position
-
         if not device == "cpu":
             device = 'cuda:' + str(device)
         if position == 'landlord':

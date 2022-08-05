@@ -112,7 +112,7 @@ def train(flags):
         masknet = MaskNet(device=device, position=position)
         masknet.share_memory()
         masknet.eval()
-        mask_models[device] = model
+        mask_models[device] = masknet
 
     # Initialize buffers
     buffers = create_buffers(flags, device_iterator)
