@@ -49,6 +49,10 @@ parser.add_argument('--position', default='landlord', type=str,
 # Optimizer settings
 parser.add_argument('--learning_rate', default=0.0001, type=float,
                     help='Learning rate')
+parser.add_argument('--num_epochs', default=10, type=int,
+                    help='PPO inner training epochs')
+parser.add_argument('--nminibatches', default=4, type=int,
+                    help='PPO inner number of mini-batches')
 parser.add_argument('--alpha', default=0.99, type=float,
                     help='RMSProp smoothing constant')
 parser.add_argument('--momentum', default=0, type=float,

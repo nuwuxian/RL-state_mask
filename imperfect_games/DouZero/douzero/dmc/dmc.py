@@ -21,17 +21,18 @@ clip_param = 0.2
 C_1 = 0.5 # squared loss coefficient
 C_2 = 0.01 # entropy coefficient
 
-
 def merge(buffer_list):
+    sz = len(buffer_list)
     ret_buffer = {
-        key: torch.stack([buffer_list[i][key] for i in len(buffer_list)], dim=1)
+        key: torch.vstack([buffer_list[i][key] for i in range(sz)])
         for key in buffer_list[0]
     }
     return ret_buffer
 
 def sample(buffer, sample_sz, max_sz):
     ret_sample = {}
-    sample_id = random.sample(np.arange(max_sz), sample_sz)
+    sample_id = random.sample(range(max_sz), sample_sz)
+    print(buffer['done'].size())
     for k in buffer:
         ret_sample[k] = buffer[k][sample_id, ...]
     return ret_sample
@@ -43,12 +44,12 @@ def learn(model, batch, optimizer, flags):
     else:
         device = torch.device('cpu')
     position = flags.position
-    obs_z = batch['obs_z'].to(device)
-    obs_x_no_action = batch['obs_x_no_action'].to(device)
-    act = batch['act'].to(device)
-    log_probs = batch['logpac'].to(device)
-    ret = batch['ret'].to(device)
-    adv = batch['adv'].to(device)
+    obs_z = torch.flatten(batch['obs_z'].to(device), 0, 1)
+    obs_x_no_action = torch.flatten(batch['obs_x_no_action'].to(device), 0, 1)
+    act = torch.flatten(batch['act'].to(device), 0, 1)
+    log_probs = torch.flatten(batch['logpac'].to(device), 0, 1)
+    ret = torch.flatten(batch['ret'].to(device), 0, 1)
+    adv = torch.flatten(batch['adv'].to(device), 0, 1)
 
     # normalize the adv
     adv = (adv - torch.mean(adv,dim=0))/(1e-7 + torch.std(adv,dim=0))
@@ -217,7 +218,6 @@ def train(flags):
                     _stats = learn(learner_model.get_model(), batch, optimizer, flags)
                     for k in _stats:
                         stats[k] = _stats[k]
-                
             to_log = dict(frames=frames)
             to_log.update({k: stats[k] for k in stat_keys})
             plogger.log(to_log)    
