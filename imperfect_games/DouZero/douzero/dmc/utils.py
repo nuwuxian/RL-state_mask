@@ -67,7 +67,7 @@ def create_buffers(flags, device_iterator):
     will have three buffers for the three positions.
     """
     T = flags.unroll_length
-    positions = flags.position
+    position = flags.position
     buffers = {}
     for device in device_iterator:
         buffers[device] = {}
@@ -123,8 +123,9 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
         position, obs, env_output = env.initial()
         while True:
             while True:
-                obs_x_no_action_buf.append(env_output['obs_x_no_action'])
-                obs_z_buf.append(env_output['obs_z'])
+                if position == exp_id:
+                    obs_x_no_action_buf.append(env_output['obs_x_no_action'])
+                    obs_z_buf.append(env_output['obs_z'])
                 with torch.no_grad():
                     agent_output = model.forward(position, obs['z_batch'], obs['x_batch'], flags=flags)
                 _action_idx = int(agent_output['action'].cpu().detach().numpy())
@@ -155,6 +156,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                     break
             done = True 
             last_values, lastgaelam = 0, 0
+            print('size is %d game_len is %d' %(sz, game_len))
             # returns, advs
             for t in reversed(range(sz-game_len, sz)):
                 if t == sz - 1:
@@ -185,8 +187,6 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                     buffers['adv'][index][t, ...] = adv_buf[t]
                 full_queue.put(index)
                 done_buf = done_buf[T:]
-                episode_return_buf = episode_return_buf[T:]
-                target_buf = target_buf[T:]
                 obs_x_no_action_buf = obs_x_no_action_buf[T:]
                 act_buf = act_buf[T:]
                 obs_z_buf = obs_z_buf[T:]
