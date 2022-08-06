@@ -156,7 +156,6 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                     break
             done = True 
             last_values, lastgaelam = 0, 0
-            print('size is %d game_len is %d' %(sz, game_len))
             # returns, advs
             for t in reversed(range(sz-game_len, sz)):
                 if t == sz - 1:
@@ -187,8 +186,11 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                     buffers['adv'][index][t, ...] = adv_buf[t]
                 full_queue.put(index)
                 done_buf = done_buf[T:]
+                reward_buf = reward_buf[T:]
                 obs_x_no_action_buf = obs_x_no_action_buf[T:]
                 act_buf = act_buf[T:]
+                value_buf = value_buf[T:]
+                logpac_buf = logpac_buf[T:]
                 obs_z_buf = obs_z_buf[T:]
                 ret_buf = ret_buf[T:]
                 adv_buf = adv_buf[T:]
