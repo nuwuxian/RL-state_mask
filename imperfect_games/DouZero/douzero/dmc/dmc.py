@@ -32,7 +32,6 @@ def merge(buffer_list):
 def sample(buffer, sample_sz, max_sz):
     ret_sample = {}
     sample_id = random.sample(range(max_sz), sample_sz)
-    print(buffer['done'].size())
     for k in buffer:
         ret_sample[k] = buffer[k][sample_id, ...]
     return ret_sample
