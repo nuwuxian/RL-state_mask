@@ -24,7 +24,7 @@ C_2 = 0.01 # entropy coefficient
 def merge(buffer_list):
     sz = len(buffer_list)
     ret_buffer = {
-        key: torch.vstack([buffer_list[i][key] for i in range(sz)])
+        key: torch.cat([buffer_list[i][key] for i in range(sz)])
         for key in buffer_list[0]
     }
     return ret_buffer
@@ -43,12 +43,12 @@ def learn(model, batch, optimizer, flags):
     else:
         device = torch.device('cpu')
     position = flags.position
-    obs_z = torch.flatten(batch['obs_z'].to(device), 0, 1)
-    obs_x_no_action = torch.flatten(batch['obs_x_no_action'].to(device), 0, 1)
-    act = torch.flatten(batch['act'].to(device), 0, 1)
-    log_probs = torch.flatten(batch['logpac'].to(device), 0, 1)
-    ret = torch.flatten(batch['ret'].to(device), 0, 1)
-    adv = torch.flatten(batch['adv'].to(device), 0, 1)
+    obs_z = batch['obs_z'].to(device)
+    obs_x_no_action = batch['obs_x_no_action'].to(device)
+    act = batch['act'].to(device)
+    log_probs = batch['logpac'].to(device)
+    ret = batch['ret'].to(device)
+    adv = batch['adv'].to(device)
 
     # normalize the adv
     adv = (adv - torch.mean(adv,dim=0))/(1e-7 + torch.std(adv,dim=0))
@@ -56,7 +56,7 @@ def learn(model, batch, optimizer, flags):
     episode_returns = batch['reward'][batch['done']]
     mean_episode_return_buf[position].append(torch.mean(episode_returns).to(device))
     
-    dist, value = model(obs_z, obs_x_no_action)
+    dist, value = model.forward(obs_z, obs_x_no_action)
     new_log_probs = dist.log_prob(act)
     ratio = (new_log_probs - log_probs).exp() # new_prob/old_prob
     surr1 = ratio * adv
@@ -214,7 +214,7 @@ def train(flags):
                 for _ in range(flags.nminibatches):
                     sample_sz = int(T * B * flags.num_actor_devices / flags.nminibatches)
                     batch = sample(x_buffer, sample_sz, T * B * flags.num_actor_devices)
-                    _stats = learn(learner_model.get_model(), batch, optimizer, flags)
+                    _stats = learn(learner_model, batch, optimizer, flags)
                     for k in _stats:
                         stats[k] = _stats[k]
             to_log = dict(frames=frames)
@@ -223,7 +223,7 @@ def train(flags):
             frames += T * B * flags.num_actor_devices
             # Broadcast the newly update masknet
             for mask_model in mask_models.values():
-                mask_model.get_model().load_state_dict(model.state_dict())
+                mask_model.get_model().load_state_dict(learner_model.get_model().state_dict())
 
             if timer() - last_checkpoint_time > flags.save_interval * 60:  
                 checkpoint(frames)

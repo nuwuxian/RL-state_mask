@@ -53,7 +53,7 @@ def get_buffer(free_queue,
     """
     indices = [full_queue.get() for _ in range(flags.batch_size)]
     batch = {
-        key: torch.vstack([buffers[key][m] for m in indices], dim=1)
+        key: torch.cat([buffers[key][m] for m in indices], dim=0)
         for key in buffers
     }
     for m in indices:

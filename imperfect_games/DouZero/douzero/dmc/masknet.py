@@ -38,7 +38,7 @@ class LandlordLstmModel(nn.Module):
         x = torch.relu(x)
 
         values = self.value(x)
-        probs = F.Softmax(self.policy(x), dim=1)
+        probs = F.softmax(self.policy(x), dim=1)
         dist = Categorical(probs)
         return dist, values
 
@@ -135,6 +135,7 @@ class MaskNet:
             self.model = FarmerLstmModel().to(torch.device(device))
 
     def forward(self, z, x):
+        z, x = z.to(self.device).float(), x.to(self.device).float()
         return self.model.forward(z, x)
 
     def inference(self, z, x):
