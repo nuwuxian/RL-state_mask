@@ -21,12 +21,13 @@ parser.add_argument('--num_actors', default=1, type=int,
                     help='The number of actors for each simulation device')
 parser.add_argument('--training_device', default='0', type=str,
                     help='The index of the GPU used for training models. `cpu` means using cpu')
-parser.add_argument('--load_model', action='store_true',
+parser.add_argument('--load_model', default=True, type=bool,
                     help='Load an existing model')
 parser.add_argument('--disable_checkpoint', action='store_true',
                     help='Disable saving checkpoint')
 parser.add_argument('--savedir', default='douzero_checkpoints',
                     help='Root dir where experiment data will be saved')
+parser.add_argument('--pretrain_path', default='./baselines/douzero_ADP')
 
 # Hyperparameters
 parser.add_argument('--total_frames', default=100000000000, type=int,

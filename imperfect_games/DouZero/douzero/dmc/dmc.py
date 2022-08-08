@@ -94,6 +94,7 @@ def train(flags):
         os.path.expanduser('%s/%s/%s' % (flags.savedir, flags.xpid, 'model.tar')))
 
     position = flags.position
+    pretrain_path = flags.pretrain_path
     T = flags.unroll_length
     B = flags.batch_size
 
@@ -154,17 +155,16 @@ def train(flags):
     position_frames = {'landlord':0, 'landlord_up':0, 'landlord_down':0}
 
     # Load models if any
-    if flags.load_model and os.path.exists(checkpointpath):
-        checkpoint_states = torch.load(
-            checkpointpath, map_location=("cuda:"+str(flags.training_device) if flags.training_device != "cpu" else "cpu")
-        )
+    if flags.load_model and os.path.exists(pretrain_path):
+        checkpoint_states = {}
+        for k in ['landlord', 'landlord_up', 'landlord_down']:
+            checkpoint_states[k] = torch.load(
+                pretrain_path + '/' + k + '.ckpt', map_location=("cuda:"+str(flags.training_device) if flags.training_device != "cpu" else "cpu")
+            )
         for k in ['landlord', 'landlord_up', 'landlord_down']:
             for device in device_iterator:
-                models[device].get_model(k).load_state_dict(checkpoint_states["model_state_dict"][k])
-        stats = checkpoint_states["stats"]
-        frames = checkpoint_states["frames"]
-        position_frames = checkpoint_states["position_frames"]
-        log.info(f"Resuming preempted job, current stats:\n{stats}")
+                models[device].get_model(k).load_state_dict(checkpoint_states[k])
+        log.info(f"Load baseline pretrained models")
 
     def checkpoint(frames):
         if flags.disable_checkpoint:
