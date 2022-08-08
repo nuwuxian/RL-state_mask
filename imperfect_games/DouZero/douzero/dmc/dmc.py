@@ -68,6 +68,7 @@ def learn(model, batch, optimizer, flags):
     stats = {
         'mean_episode_return_'+position: torch.mean(torch.stack([_r for _r in mean_episode_return_buf[position]])).item(),
         'loss_'+position: loss.item(),
+        'mask_'+position: act.float().mean().item(),
     }
     optimizer.zero_grad()
     loss.backward()
