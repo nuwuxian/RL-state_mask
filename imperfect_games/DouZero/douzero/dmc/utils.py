@@ -79,9 +79,9 @@ def create_buffers(flags, device_iterator):
             logpac = dict(size=(T,), dtype=torch.float32),
             ret = dict(size=(T,), dtype=torch.float32),
             adv = dict(size=(T,), dtype=torch.float32),
-            obs_x_no_action=dict(size=(T, x_dim), dtype=torch.int8),
+            obs_x_no_action=dict(size=(T, x_dim), dtype=torch.float32),
             act=dict(size=(T,), dtype=torch.int8),
-            obs_z=dict(size=(T, 5, 162), dtype=torch.int8),
+            obs_z=dict(size=(T, 5, 162), dtype=torch.float32),
         )
         _buffers: Buffers = {key: [] for key in specs}
         for _ in range(flags.num_buffers):

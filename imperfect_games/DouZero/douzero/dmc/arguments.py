@@ -34,21 +34,19 @@ parser.add_argument('--total_frames', default=100000000000, type=int,
                     help='Total environment frames to train for')
 parser.add_argument('--exp_epsilon', default=0.01, type=float,
                     help='The probability for exploration')
-parser.add_argument('--batch_size', default=32, type=int,
+parser.add_argument('--batch_size', default=42, type=int,
                     help='Learner batch size')
 parser.add_argument('--unroll_length', default=100, type=int,
                     help='The unroll length (time dimension)')
 parser.add_argument('--num_buffers', default=50, type=int,
                     help='Number of shared-memory buffers')
-parser.add_argument('--num_threads', default=4, type=int,
-                    help='Number learner threads')
 parser.add_argument('--max_grad_norm', default=40., type=float,
                     help='Max norm of gradients')
 parser.add_argument('--position', default='landlord', type=str,
                     help='explain position')
 
 # Optimizer settings
-parser.add_argument('--learning_rate', default=0.0001, type=float,
+parser.add_argument('--learning_rate', default=0.001, type=float,
                     help='Learning rate')
 parser.add_argument('--num_epochs', default=10, type=int,
                     help='PPO inner training epochs')
