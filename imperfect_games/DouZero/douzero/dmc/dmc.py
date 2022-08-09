@@ -43,8 +43,8 @@ def learn(model, batch, optimizer, flags):
     else:
         device = torch.device('cpu')
     position = flags.position
-    obs_z = batch['obs_z'].to(device)
-    obs_x_no_action = batch['obs_x_no_action'].to(device)
+    obs_z = batch['obs_z'].to(device).float()
+    obs_x_no_action = batch['obs_x_no_action'].to(device).float()
     act = batch['act'].to(device)
     log_probs = batch['logpac'].to(device)
     ret = batch['ret'].to(device)

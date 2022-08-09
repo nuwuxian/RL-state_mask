@@ -43,25 +43,26 @@ class LandlordLstmModel(nn.Module):
         return dist, values
 
     def inference(self, z, x):
-        z, x = torch.unsqueeze(z, dim=0), torch.unsqueeze(x, dim=0)
-        lstm_out, (h_n, _) = self.lstm(z)
-        lstm_out = lstm_out[:,-1,:]
-        x = torch.cat([lstm_out,x], dim=-1)
-        x = self.dense1(x)
-        x = torch.relu(x)
-        x = self.dense2(x)
-        x = torch.relu(x)
-        x = self.dense3(x)
-        x = torch.relu(x)
-        x = self.dense4(x)
-        x = torch.relu(x)
-        x = self.dense5(x)
-        x = torch.relu(x)
+        with torch.no_grad():
+            z, x = torch.unsqueeze(z, dim=0), torch.unsqueeze(x, dim=0)
+            lstm_out, (h_n, _) = self.lstm(z)
+            lstm_out = lstm_out[:,-1,:]
+            x = torch.cat([lstm_out,x], dim=-1)
+            x = self.dense1(x)
+            x = torch.relu(x)
+            x = self.dense2(x)
+            x = torch.relu(x)
+            x = self.dense3(x)
+            x = torch.relu(x)
+            x = self.dense4(x)
+            x = torch.relu(x)
+            x = self.dense5(x)
+            x = torch.relu(x)
 
-        values = self.value(x)
-        probs = F.softmax(self.policy(x), dim=1)
-        dist = Categorical(probs)
-        return dist, values
+            values = self.value(x)
+            probs = F.softmax(self.policy(x), dim=1)
+            dist = Categorical(probs)
+            return dist, values
 
 
 class FarmerLstmModel(nn.Module):
@@ -98,25 +99,26 @@ class FarmerLstmModel(nn.Module):
         return dist, values
 
     def inference(self, z, x):
-        z, x = torch.unsqueeze(z, dim=0), torch.unsqueeze(x, dim=0)
-        lstm_out, (h_n, _) = self.lstm(z)
-        lstm_out = lstm_out[:,-1,:]
-        x = torch.cat([lstm_out,x], dim=-1)
-        x = self.dense1(x)
-        x = torch.relu(x)
-        x = self.dense2(x)
-        x = torch.relu(x)
-        x = self.dense3(x)
-        x = torch.relu(x)
-        x = self.dense4(x)
-        x = torch.relu(x)
-        x = self.dense5(x)
-        x = torch.relu(x)
+        with torch.no_grad():
+            z, x = torch.unsqueeze(z, dim=0), torch.unsqueeze(x, dim=0)
+            lstm_out, (h_n, _) = self.lstm(z)
+            lstm_out = lstm_out[:,-1,:]
+            x = torch.cat([lstm_out,x], dim=-1)
+            x = self.dense1(x)
+            x = torch.relu(x)
+            x = self.dense2(x)
+            x = torch.relu(x)
+            x = self.dense3(x)
+            x = torch.relu(x)
+            x = self.dense4(x)
+            x = torch.relu(x)
+            x = self.dense5(x)
+            x = torch.relu(x)
 
-        values = self.value(x)
-        probs = F.softmax(self.policy(x), dim=1)
-        dist = Categorical(probs)
-        return dist, values
+            values = self.value(x)
+            probs = F.softmax(self.policy(x), dim=1)
+            dist = Categorical(probs)
+            return dist, values
 
 class MaskNet:
     """
@@ -135,11 +137,9 @@ class MaskNet:
             self.model = FarmerLstmModel().to(torch.device(device))
 
     def forward(self, z, x):
-        z, x = z.to(self.device).float(), x.to(self.device).float()
         return self.model.forward(z, x)
 
     def inference(self, z, x):
-        z, x = z.to(self.device).float(), x.to(self.device).float()
         return self.model.inference(z, x)
 
     def share_memory(self):

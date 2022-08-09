@@ -124,8 +124,8 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
         while True:
             while True:
                 if position == exp_id:
-                    obs_x_no_action_buf.append(env_output['obs_x_no_action'])
-                    obs_z_buf.append(env_output['obs_z'])
+                    obs_x_no_action_buf.append(env_output['obs_x_no_action'].cpu().detach())
+                    obs_z_buf.append(env_output['obs_z'].cpu().detach())
                 with torch.no_grad():
                     agent_output = model.forward(position, obs['z_batch'], obs['x_batch'], flags=flags)
                 _action_idx = int(agent_output['action'].cpu().detach().numpy())

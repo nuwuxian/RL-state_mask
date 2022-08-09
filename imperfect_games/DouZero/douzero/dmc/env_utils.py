@@ -17,8 +17,8 @@ def _format_observation(obs, device):
     device = torch.device(device)
     x_batch = torch.from_numpy(obs['x_batch']).to(device)
     z_batch = torch.from_numpy(obs['z_batch']).to(device)
-    x_no_action = torch.from_numpy(obs['x_no_action'])
-    z = torch.from_numpy(obs['z'])
+    x_no_action = torch.from_numpy(obs['x_no_action']).to(device)
+    z = torch.from_numpy(obs['z']).to(device)
     obs = {'x_batch': x_batch,
            'z_batch': z_batch,
            'legal_actions': obs['legal_actions'],

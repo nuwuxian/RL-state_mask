@@ -366,8 +366,8 @@ def _get_obs_landlord(infoset):
             'x_batch': x_batch.astype(np.float32),
             'z_batch': z_batch.astype(np.float32),
             'legal_actions': infoset.legal_actions,
-            'x_no_action': x_no_action.astype(np.int8),
-            'z': z.astype(np.int8),
+            'x_no_action': x_no_action.astype(np.float32),
+            'z': z.astype(np.float32),
           }
     return obs
 
@@ -464,8 +464,8 @@ def _get_obs_landlord_up(infoset):
             'x_batch': x_batch.astype(np.float32),
             'z_batch': z_batch.astype(np.float32),
             'legal_actions': infoset.legal_actions,
-            'x_no_action': x_no_action.astype(np.int8),
-            'z': z.astype(np.int8),
+            'x_no_action': x_no_action.astype(np.int32),
+            'z': z.astype(np.int32),
           }
     return obs
 
@@ -568,7 +568,7 @@ def _get_obs_landlord_down(infoset):
             'x_batch': x_batch.astype(np.float32),
             'z_batch': z_batch.astype(np.float32),
             'legal_actions': infoset.legal_actions,
-            'x_no_action': x_no_action.astype(np.int8),
-            'z': z.astype(np.int8),
+            'x_no_action': x_no_action.astype(np.int32),
+            'z': z.astype(np.int32),
           }
     return obs
