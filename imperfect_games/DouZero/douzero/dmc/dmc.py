@@ -137,12 +137,9 @@ def train(flags):
     learner_model = MaskNet(device=flags.training_device, position=position)
 
     # Create optimizer
-    optimizer = torch.optim.RMSprop(
+    optimizer = torch.optim.Adam(
             learner_model.parameters(),
-            lr=flags.learning_rate,
-            momentum=flags.momentum,
-            eps=flags.epsilon,
-            alpha=flags.alpha)
+            lr=flags.learning_rate)
     # Stat Keys
     stat_keys = [
         'mean_episode_return_landlord',
@@ -152,8 +149,14 @@ def train(flags):
         'mean_episode_return_landlord_down',
         'loss_landlord_down',
     ]
+    if position == 'landlord':
+        stat_keys = stat_keys[:2]
+    elif position == 'landlord_up':
+        stat_keys = stat_keys[2:4]
+    else:
+        stat_keys = stat_keys[4:6]
+
     frames, stats = 0, {k: 0 for k in stat_keys}
-    position_frames = {'landlord':0, 'landlord_up':0, 'landlord_down':0}
 
     # Load models if any
     if flags.load_model and os.path.exists(pretrain_path):
@@ -178,7 +181,6 @@ def train(flags):
             "stats": stats,
             'flags': vars(flags),
             'frames': frames,
-            'position_frames': position_frames
         }, checkpointpath)
 
         # Save the weights for evaluation purpose
