@@ -37,7 +37,7 @@ class LandlordLstmModel(nn.Module):
         x = self.dense5(x)
         x = torch.relu(x)
 
-        values = self.value(x)
+        values = torch.tanh(self.value(x))
         probs = F.softmax(self.policy(x), dim=1)
         dist = Categorical(probs)
         return dist, values
@@ -59,7 +59,7 @@ class LandlordLstmModel(nn.Module):
             x = self.dense5(x)
             x = torch.relu(x)
 
-            values = self.value(x)
+            values = torch.tanh(self.value(x))
             probs = F.softmax(self.policy(x), dim=1)
             dist = Categorical(probs)
             return dist, values
@@ -93,7 +93,7 @@ class FarmerLstmModel(nn.Module):
         x = self.dense5(x)
         x = torch.relu(x)
 
-        values = self.value(x)
+        values = torch.tanh(self.value(x))
         probs = F.softmax(self.policy(x), dim=1)
         dist = Categorical(probs)
         return dist, values
@@ -115,7 +115,7 @@ class FarmerLstmModel(nn.Module):
             x = self.dense5(x)
             x = torch.relu(x)
 
-            values = self.value(x)
+            values = torch.tanh(self.value(x))
             probs = F.softmax(self.policy(x), dim=1)
             dist = Categorical(probs)
             return dist, values
