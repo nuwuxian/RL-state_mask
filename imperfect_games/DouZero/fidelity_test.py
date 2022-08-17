@@ -95,11 +95,8 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, car
     while True:
         if game_len < 3*step_start:
             action = recorded_actions[game_len]
-
         elif game_len <= 3*step_end:
-            print(obs['legal_actions'])
             action = random.choice(obs['legal_actions'])
-        
         else:
             with torch.no_grad():
                 agent_output = model.forward(position, obs['z_batch'], obs['x_batch'])
