@@ -34,7 +34,7 @@ def select_steps(path, critical, import_thrd):
     non_critical_steps_starts = []
     non_critical_steps_ends = []
 
-  for i_episode in range(100):
+  for i_episode in range(10):
     mask_probs_path = path + "mask_probs_" + str(i_episode) + ".out"
     mask_probs = np.loadtxt(mask_probs_path)
 
@@ -96,7 +96,7 @@ def select_steps(path, critical, import_thrd):
     np.savetxt(path + "non_critical_steps_ends.out", non_critical_steps_ends)
 
 
-def replay(path, game_num, env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, card_play_data, random_replace=False):
+def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, card_play_data, random_replace=False):
 
     recorded_actions = act_buf
     game_len = 0
@@ -223,7 +223,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
             critical_step_start = critical_steps_starts[game_num]
             critical_step_end = critical_steps_ends[game_num]
             critical_ratios.append(3*(critical_step_end - critical_step_start + 1)/orig_traj_len)
-            replay_result = replay(path, game_num, env, model, critical_step_start, critical_step_end, orig_traj_len, exp_id, act_buf,
+            replay_result = replay(env, model, critical_step_start, critical_step_end, orig_traj_len, exp_id, act_buf,
                                    card_play_data[game_num], random_replace=False)
             replay_results.append(replay_result)
 
@@ -357,7 +357,7 @@ if __name__ == '__main__':
     parser.add_argument('--landlord_down', type=str,
             default='baselines/douzero_WP/landlord_down.ckpt')
     parser.add_argument('--masknet', type=str, 
-            default='douzero_model/douzero/landlord_masknet_weights_21533400.ckpt')
+            default='douzero_wp_checkpoints/douzero/landlord_masknet_weights_21533400.ckpt')
     parser.add_argument('--num_workers', type=int, default=1)
     parser.add_argument('--gpu_device', type=str, default='0')
     parser.add_argument('--position', default='landlord', type=str,
