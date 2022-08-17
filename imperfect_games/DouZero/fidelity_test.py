@@ -100,26 +100,8 @@ def replay(path, game_num, env, model, step_start, step_end, orig_traj_len, exp_
 
     recorded_actions = act_buf
     game_len = 0
-
-    env.env._env.reset()
-    env.env._env.card_play_init(card_play_data)
-    env.env.infoset = env.env._env.game_infoset
-        
-
-    initial_position, initial_obs, x_no_action, z = _format_observation(get_obs(env.env.infoset), env.device)
-    initial_reward = torch.zeros(1, 1)
-    env.episode_return = torch.zeros(1, 1)
-    initial_done = torch.ones(1, 1, dtype=torch.bool)
-
-    position = initial_position
-    obs = initial_obs
-    env_output = dict(
-            done=initial_done,
-            episode_return=env.episode_return,
-            obs_x_no_action=x_no_action,
-            obs_z=z,
-            )
-
+    position, obs, env_output = env.initial(card_play_data)
+    
     if random_replace:
         random_replacement_steps = step_end - step_start
         start_range = int(orig_traj_len/3 - random_replacement_steps)
@@ -189,27 +171,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
         logpac_buf = []
 
         game_len = 0
-
-        env.env._env.reset()
-        env.env._env.card_play_init(card_play_data[game_num])
-        env.env.infoset = env.env._env.game_infoset
-        
-
-        initial_position, initial_obs, x_no_action, z = _format_observation(get_obs(env.env.infoset), env.device)
-        initial_reward = torch.zeros(1, 1)
-        env.episode_return = torch.zeros(1, 1)
-        initial_done = torch.ones(1, 1, dtype=torch.bool)
-
-        position = initial_position
-        obs = initial_obs
-        env_output = dict(
-            done=initial_done,
-            episode_return=env.episode_return,
-            obs_x_no_action=x_no_action,
-            obs_z=z,
-            )
-
-
+        position, obs, env_output = env.initial(card_play_data[game_num])
         while True:
             with torch.no_grad():
                 agent_output = model.forward(position, obs['z_batch'], obs['x_batch'])
@@ -385,11 +347,6 @@ def evaluate(landlord, landlord_up, landlord_down, masknet, num_workers):
     print("Replay (nonimportant): ", noncritical_perform)
     print("Replay (rand nonimportant): ", rand_noncritical_perform)
 
-
-
-
-    
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
                     'Dou Dizhu Evaluation')
@@ -416,4 +373,3 @@ if __name__ == '__main__':
              args.landlord_down,
              args.masknet,
              args.num_workers)
-    

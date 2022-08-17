@@ -33,8 +33,8 @@ class Environment:
         self.device = device
         self.episode_return = None
 
-    def initial(self):
-        initial_position, initial_obs, x_no_action, z = _format_observation(self.env.reset(), self.device)
+    def initial(self, cards=None):
+        initial_position, initial_obs, x_no_action, z = _format_observation(self.env.reset(cards), self.device)
         initial_reward = torch.zeros(1, 1)
         self.episode_return = torch.zeros(1, 1)
         initial_done = torch.ones(1, 1, dtype=torch.bool)
