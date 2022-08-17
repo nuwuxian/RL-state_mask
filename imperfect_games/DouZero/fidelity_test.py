@@ -42,29 +42,16 @@ def select_steps(path, critical, import_thrd):
 
     iteration_ends_path =  path + "eps_len_" + str(i_episode) + ".out"
     iteration_ends = np.loadtxt(iteration_ends_path)
-    
+
     sorted_idx = np.argsort(confs)
 
     k = max(int(iteration_ends * import_thrd),1)
-
-    if critical:
-    #find the top k:
-      idx = sorted_idx[-k:]
- 
-    else:
-    #find the bottom k:
-      idx = sorted_idx[:k]
-
+    idx = sorted_idx[-k:] if critical else sorted_idx[:k]
     idx.sort()
 
-    steps_start = idx[0]
-    steps_end = idx[0]
-
-    ans = 0
-    count = 0
-
-    tmp_end = idx[0]
-    tmp_start = idx[0]
+    steps_start, steps_end = idx[0], idx[0]
+    ans, count = 0, 0
+    tmp_end, tmp_start = idx[0], idx[0]
 
     for i in range(1, len(idx)):
       if idx[i] == idx[i - 1] + 1:
@@ -74,7 +61,6 @@ def select_steps(path, critical, import_thrd):
         count = 1
         tmp_start = idx[i]
         tmp_end = idx[i]
-             
       if count > ans:
         ans = count
         steps_start = tmp_start
@@ -95,7 +81,6 @@ def select_steps(path, critical, import_thrd):
     np.savetxt(path + "non_critical_steps_starts.out", non_critical_steps_starts)
     np.savetxt(path + "non_critical_steps_ends.out", non_critical_steps_ends)
 
-
 def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, card_play_data, random_replace=False):
 
     recorded_actions = act_buf
@@ -107,7 +92,6 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, car
         start_range = int(orig_traj_len/3 - random_replacement_steps)
         step_start = np.random.choice(start_range)
         step_end = step_start + random_replacement_steps
-
     while True:
         if game_len < 3*step_start:
             action = recorded_actions[game_len]
@@ -129,7 +113,7 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, car
             utility = env_output['episode_return'] if exp_id == 'landlord' else -env_output['episode_return']
             reward = 1 if utility.cpu().numpy() > 0 else 0
             break
-    
+    env.env.reset()
     return reward
 
 def cal_fidelity_score(critical_ratios, results, replay_results):
@@ -190,12 +174,9 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
                 reward_buf.append(reward)
                 game_len_buf.append(game_len)
                 break
-        
+        env.env.reset()
         eps_len_filename = path + "eps_len_" + str(game_num) + ".out" 
         np.savetxt(eps_len_filename, [game_len])
-
-        #act_seq_filename = path + "act_seq_" + str(game_num) + ".out" 
-        #np.savetxt(act_seq_filename, act_buf, fmt='%s')
 
         mask_probs_filename = path + "mask_probs_" + str(game_num) + ".out" 
         np.savetxt(mask_probs_filename, logpac_buf)
