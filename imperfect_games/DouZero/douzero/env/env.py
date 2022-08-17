@@ -68,8 +68,15 @@ class Env:
             for key in card_play_data:
                 card_play_data[key].sort()
         else:
-            card_play_data = cards.copy()
-
+            _landlord = cards['landlord'].copy()
+            _landlord_up = cards['landlord_up'].copy()
+            _landlord_down = cards['landlord_down'].copy()
+            _three_landlord_cards = cards['three_landlord_cards'].copy()
+            card_play_data = {'landlord': _landlord,
+                              'landlord_up': _landlord_up,
+                              'landlord_down': _landlord_down,
+                              'three_landlord_cards': _three_landlord_cards,
+            }
         # Initialize the cards
         self._env.card_play_init(card_play_data)
         self.infoset = self._game_infoset

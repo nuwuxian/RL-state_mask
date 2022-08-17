@@ -86,7 +86,7 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, car
     recorded_actions = act_buf
     game_len = 0
     position, obs, env_output = env.initial(card_play_data)
-    
+    print(len(obs['legal_actions']))
     if random_replace:
         random_replacement_steps = step_end - step_start
         start_range = int(orig_traj_len/3 - random_replacement_steps)
@@ -110,7 +110,6 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, car
             utility = env_output['episode_return'] if exp_id == 'landlord' else -env_output['episode_return']
             reward = 1 if utility.cpu().numpy() > 0 else 0
             break
-    env.env.reset()
     return reward
 
 def cal_fidelity_score(critical_ratios, results, replay_results):
@@ -150,7 +149,6 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
     for game_num in range(10):
         act_buf = []
         logpac_buf = []
-
         game_len = 0
         position, obs, env_output = env.initial(card_play_data[game_num])
         while True:
@@ -171,7 +169,6 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
                 reward_buf.append(reward)
                 game_len_buf.append(game_len)
                 break
-        env.env.reset()
         eps_len_filename = path + "eps_len_" + str(game_num) + ".out" 
         np.savetxt(eps_len_filename, [game_len])
 
@@ -215,7 +212,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
             orig_traj_len = np.loadtxt(path + "eps_len_"+ str(game_num) + ".out")
             critical_step_start = critical_steps_starts[game_num]
             critical_step_end = critical_steps_ends[game_num]
-            replay_result = replay(path, game_num, env, model, critical_step_start, critical_step_end, orig_traj_len, exp_id, act_buf,
+            replay_result = replay(env, model, critical_step_start, critical_step_end, orig_traj_len, exp_id, act_buf,
                                    card_play_data[game_num], random_replace=True)
             replay_results.append(replay_result)
 
