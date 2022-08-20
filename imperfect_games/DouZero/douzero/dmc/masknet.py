@@ -69,7 +69,7 @@ class FarmerLstmModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.lstm = nn.LSTM(162, 128, batch_first=True)
-        self.dense1 = nn.Linear(484 + 128, 512)
+        self.dense1 = nn.Linear(430 + 128, 512)
         self.dense2 = nn.Linear(512, 512)
         self.dense3 = nn.Linear(512, 512)
         self.dense4 = nn.Linear(512, 512)
@@ -82,6 +82,7 @@ class FarmerLstmModel(nn.Module):
         lstm_out, (h_n, _) = self.lstm(z)
         lstm_out = lstm_out[:,-1,:]
         x = torch.cat([lstm_out,x], dim=-1)
+        print(x.shape)
         x = self.dense1(x)
         x = torch.relu(x)
         x = self.dense2(x)
@@ -125,7 +126,7 @@ class MaskNet:
     The wrapper for the three models. We also wrap several
     interfaces such as share_memory, eval, etc.
     """
-    def __init__(self, device=0, position='landlord'):
+    def __init__(self, device=0, position='landlord_down'):
         self.model = None
         self.position = position
         if not device == "cpu":
