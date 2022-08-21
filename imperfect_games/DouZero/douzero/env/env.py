@@ -77,6 +77,7 @@ class Env:
                               'landlord_down': _landlord_down,
                               'three_landlord_cards': _three_landlord_cards,
             }
+
         # Initialize the cards
         self._env.card_play_init(card_play_data)
         self.infoset = self._game_infoset
@@ -475,8 +476,8 @@ def _get_obs_landlord_up(infoset):
             'x_batch': x_batch.astype(np.float32),
             'z_batch': z_batch.astype(np.float32),
             'legal_actions': infoset.legal_actions,
-            'x_no_action': x_no_action.astype(np.int32),
-            'z': z.astype(np.int32),
+            'x_no_action': x_no_action.astype(np.float32),
+            'z': z.astype(np.float32),
           }
     return obs
 
@@ -579,7 +580,7 @@ def _get_obs_landlord_down(infoset):
             'x_batch': x_batch.astype(np.float32),
             'z_batch': z_batch.astype(np.float32),
             'legal_actions': infoset.legal_actions,
-            'x_no_action': x_no_action.astype(np.int32),
-            'z': z.astype(np.int32),
+            'x_no_action': x_no_action.astype(np.float32),
+            'z': z.astype(np.float32),
           }
     return obs
