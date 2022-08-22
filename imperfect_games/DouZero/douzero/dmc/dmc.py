@@ -9,7 +9,7 @@ import random
 import torch
 from torch import multiprocessing as mp
 from torch import nn
-
+from torch.utils.tensorboard import SummaryWriter
 from .file_writer import FileWriter
 from .models import Model
 from .masknet import MaskNet
@@ -65,16 +65,16 @@ def learn(model, batch, optimizer, flags):
     critic_loss = (ret - value).pow(2).mean()
     entropy = dist.entropy().mean()
     loss = C_1 * critic_loss + actor_loss - C_2 * entropy
-    stats = {
-        'mean_episode_return_'+position: torch.mean(torch.stack([_r for _r in mean_episode_return_buf[position]])).item(),
-        'loss_'+position: loss.item(),
-        'mask_'+position: act.float().mean().item(),
-    }
+
+    avg_return = torch.mean(torch.stack([_r for _r in mean_episode_return_buf[position]])).item()
+    avg_mask_ratio = act.float().mean().item()
+    # update optimizer 
     optimizer.zero_grad()
     loss.backward()
     nn.utils.clip_grad_norm_(model.parameters(), flags.max_grad_norm)
     optimizer.step()
-    return stats
+
+    return loss.item(), critic_loss.item(), actor_loss.item(), entropy_loss.item(), avg_mask_ratio, avg_return
 
 def train(flags):  
     """
@@ -93,6 +93,7 @@ def train(flags):
     )
     checkpointpath = os.path.expandvars(
         os.path.expanduser('%s/%s/%s' % (flags.savedir, flags.xpid, 'model.tar')))
+    writer = SummaryWriter(log_dir=flags.savedir)
 
     position = flags.position
     pretrain_path = flags.pretrain_path
@@ -140,24 +141,7 @@ def train(flags):
     optimizer = torch.optim.Adam(
             learner_model.parameters(),
             lr=flags.learning_rate)
-    # Stat Keys
-    stat_keys = [
-        'mean_episode_return_landlord',
-        'loss_landlord',
-        'mean_episode_return_landlord_up',
-        'loss_landlord_up',
-        'mean_episode_return_landlord_down',
-        'loss_landlord_down',
-    ]
-    if position == 'landlord':
-        stat_keys = stat_keys[:2]
-    elif position == 'landlord_up':
-        stat_keys = stat_keys[2:4]
-    else:
-        stat_keys = stat_keys[4:6]
-
-    frames, stats = 0, {k: 0 for k in stat_keys}
-
+    frames = 0
     # Load models if any
     if flags.load_model and os.path.exists(pretrain_path):
         checkpoint_states = {}
@@ -178,7 +162,6 @@ def train(flags):
         torch.save({
             'model_state_dict': _model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
-            "stats": stats,
             'flags': vars(flags),
             'frames': frames,
         }, checkpointpath)
@@ -202,7 +185,7 @@ def train(flags):
         fps_log = []
         timer = timeit.default_timer
         last_checkpoint_time = timer() - flags.save_interval * 60
-        nonlocal frames, stats
+        nonlocal frames
         while frames < flags.total_frames:
             start_frames = frames
             start_time = timer()
@@ -213,16 +196,21 @@ def train(flags):
                 device_buffer.append(buffer)
             x_buffer = merge(device_buffer)
             # ppo update
+            avg_loss, avg_actor_loss, avg_critic_loss, avg_entropy_loss = [], [], [], []
+            avg_mask_ratio, avg_return = [], []
+
             for i in range(flags.num_epochs):
                 for _ in range(flags.nminibatches):
                     sample_sz = int(T * B * flags.num_actor_devices / flags.nminibatches)
                     batch = sample(x_buffer, sample_sz, T * B * flags.num_actor_devices)
-                    _stats = learn(learner_model, batch, optimizer, flags)
-                    for k in _stats:
-                        stats[k] = _stats[k]
-            to_log = dict(frames=frames)
-            to_log.update({k: stats[k] for k in stat_keys})
-            plogger.log(to_log)    
+                    _loss, _critic_loss, _actor_loss, _entropy_loss, _avg_mask_ratio, _avg_return = learn(learner_model, batch, optimizer, flags)
+                    avg_loss.append(_loss)
+                    avg_critic_loss.append(_critic_loss)
+                    avg_actor_loss.append(_actor_loss)
+                    avg_entropy_loss.append(_entropy_loss)
+                    avg_mask_ratio.append(_avg_mask_ratio)
+                    avg_return.append(_avg_return)
+
             frames += T * B * flags.num_actor_devices
             # Broadcast the newly update masknet
             for mask_model in mask_models.values():
@@ -238,12 +226,19 @@ def train(flags):
             if len(fps_log) > 24:
                 fps_log = fps_log[1:]
             fps_avg = np.mean(fps_log)
-            
-            log.info('After %i frames: @ %.1f fps (avg@ %.1f fps) Stats:\n%s',
-                     frames,
-                     fps,
-                     fps_avg,
-                     pprint.pformat(stats))
+
+             # writer into logger
+            writer.add_scalar('Loss', np.mean(avg_loss), global_step=frames)
+            writer.add_scalar('Loss_critic', np.mean(avg_critic_loss), global_step=frames)
+            writer.add_scalar('Loss_actor', np.mean(avg_actor_loss), global_step=frames)
+            writer.add_scalar('Loss_entropy', np.mean(avg_entropy_loss), global_step=frames)
+            writer.add_scalar('Mask_ratio', np.mean(avg_mask_ratio), global_step=frames)
+            writer.add_scalar('Return', np.mean(avg_return), global_step=frames)
+            writer.add_scalar('FPS_avg', fps_avg, global_step=frames)
+            # logger into the monitor
+            log.info('Training %i frames: FPS_avg: %.3f Loss: %.3f Loss_critic: %.3f Loss_actor: %.3f Loss_entropy: %.3f \
+                Mask_ratio: %.3f Return: %.3f', frames, fps_avg, np.mean(avg_loss), np.mean(avg_critic_loss), np.mean(avg_actor_loss), \
+                np.mean(avg_entropy_loss), np.mean(avg_mask_ratio), np.mean(avg_return))
 
     for device in device_iterator:
         for m in range(flags.num_buffers):
