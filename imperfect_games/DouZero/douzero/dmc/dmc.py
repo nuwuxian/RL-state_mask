@@ -74,7 +74,7 @@ def learn(model, batch, optimizer, flags):
     nn.utils.clip_grad_norm_(model.parameters(), flags.max_grad_norm)
     optimizer.step()
 
-    return loss.item(), critic_loss.item(), actor_loss.item(), entropy_loss.item(), avg_mask_ratio, avg_return
+    return loss.item(), critic_loss.item(), actor_loss.item(), entropy.item(), avg_mask_ratio, avg_return
 
 def train(flags):  
     """

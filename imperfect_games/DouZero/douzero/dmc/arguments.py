@@ -7,7 +7,7 @@ parser.add_argument('--xpid', default='douzero',
                     help='Experiment id (default: douzero)')
 parser.add_argument('--save_interval', default=30, type=int,
                     help='Time interval (in minutes) at which to save the model')    
-parser.add_argument('--objective', default='adp', type=str, choices=['adp', 'wp', 'logadp'],
+parser.add_argument('--objective', default='wp', type=str, choices=['adp', 'wp', 'logadp'],
                     help='Use ADP or WP as reward (default: ADP)')    
 
 # Training settings
@@ -27,7 +27,7 @@ parser.add_argument('--disable_checkpoint', action='store_true',
                     help='Disable saving checkpoint')
 parser.add_argument('--savedir', default='douzero_checkpoints',
                     help='Root dir where experiment data will be saved')
-parser.add_argument('--pretrain_path', default='./baselines/douzero_ADP')
+parser.add_argument('--pretrain_path', default='./baselines/douzero_WP')
 
 # Hyperparameters
 parser.add_argument('--total_frames', default=100000000000, type=int,
