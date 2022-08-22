@@ -232,13 +232,13 @@ def train(flags):
             writer.add_scalar('Loss_critic', np.mean(avg_critic_loss), global_step=frames)
             writer.add_scalar('Loss_actor', np.mean(avg_actor_loss), global_step=frames)
             writer.add_scalar('Loss_entropy', np.mean(avg_entropy_loss), global_step=frames)
-            writer.add_scalar('Mask_ratio', np.mean(avg_mask_ratio), global_step=frames)
+            writer.add_scalar('Mask_ratio', 1 - np.mean(avg_mask_ratio), global_step=frames)
             writer.add_scalar('Return', np.mean(avg_return), global_step=frames)
             writer.add_scalar('FPS_avg', fps_avg, global_step=frames)
             # logger into the monitor
             log.info('Training %i frames: FPS_avg: %.3f Loss: %.3f Loss_critic: %.3f Loss_actor: %.3f Loss_entropy: %.3f \
                 Mask_ratio: %.3f Return: %.3f', frames, fps_avg, np.mean(avg_loss), np.mean(avg_critic_loss), np.mean(avg_actor_loss), \
-                np.mean(avg_entropy_loss), np.mean(avg_mask_ratio), np.mean(avg_return))
+                np.mean(avg_entropy_loss), 1 - np.mean(avg_mask_ratio), np.mean(avg_return))
 
     for device in device_iterator:
         for m in range(flags.num_buffers):
