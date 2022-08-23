@@ -46,7 +46,7 @@ parser.add_argument('--position', default='landlord', type=str,
                     help='explain position')
 
 # Optimizer settings
-parser.add_argument('--learning_rate', default=0.001, type=float,
+parser.add_argument('--learning_rate', default=0.0003, type=float,
                     help='Learning rate')
 parser.add_argument('--num_epochs', default=10, type=int,
                     help='PPO inner training epochs')

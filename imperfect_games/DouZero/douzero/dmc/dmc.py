@@ -19,7 +19,7 @@ mean_episode_return_buf = {p:deque(maxlen=100) for p in ['landlord', 'landlord_u
 clip_param = 0.2
 
 C_1 = 0.5 # squared loss coefficient
-C_2 = 0.01 # entropy coefficient
+C_2 = 0.0 # entropy coefficient
 
 def merge(buffer_list):
     sz = len(buffer_list)
@@ -212,6 +212,14 @@ def train(flags):
                     avg_return.append(_avg_return)
 
             frames += T * B * flags.num_actor_devices
+            for device in device_iterator:
+                while not full_queue[device].empty():
+                    full_queue[device].get()
+                while not free_queue[device].empty():
+                    free_queue[device].get()
+                for m in range(flags.num_buffers):
+                    free_queue[device].put(m)
+            
             # Broadcast the newly update masknet
             for mask_model in mask_models.values():
                 mask_model.get_model().load_state_dict(learner_model.get_model().state_dict())
