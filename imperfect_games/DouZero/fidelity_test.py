@@ -102,8 +102,7 @@ def select_steps(path, critical, import_thrd):
 def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, obs_buf, card_play_data, random_replace=False):
 
     recorded_actions = act_buf
-    game_len = 0
-    count = 0
+    replay_cnt = 1
     position, obs, env_output = env.initial(card_play_data)
     
     if obs['legal_actions'] != obs_buf[0]['legal_actions']:
@@ -114,40 +113,45 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, obs
         start_range = int(np.floor((orig_traj_len+2)/3) - random_replacement_steps)
         step_start = np.random.choice(start_range)
         step_end = step_start + random_replacement_steps
-    
-    
-    while True:
-        if count < step_start:
-            action = recorded_actions[game_len]
-            if obs['legal_actions'] != obs_buf[game_len]['legal_actions']:
-                print("state different!")
-            if position == exp_id:
-                count += 1
-        else:
-            if position == exp_id and count <= step_end:
-                with torch.no_grad():
-                    agent_output = model.forward(position, obs['z_batch'], obs['x_batch'])
-                _action_idx = int(agent_output['action'].cpu().detach().numpy())
-                gold_action = obs['legal_actions'][_action_idx]
-                if len(obs['legal_actions']) == 1:
-                    action = random.choice(obs['legal_actions'])
-                else:
-                    obs['legal_actions'].remove(gold_action)
-                    action = random.choice(obs['legal_actions'])
-                count += 1
-            else:
-                with torch.no_grad():
-                    agent_output = model.forward(position, obs['z_batch'], obs['x_batch'])
-                _action_idx = int(agent_output['action'].cpu().detach().numpy())
-                action = obs['legal_actions'][_action_idx] 
-        position, obs, env_output = env.step(action)
-        game_len += 1
+        replay_cnt = 5
+    rewards = []
 
-        if env_output['done']:
-            utility = env_output['episode_return'] if exp_id == 'landlord' else -env_output['episode_return']
-            reward = 1 if utility.cpu().numpy() > 0 else 0
-            break
-    return reward
+    step_start, step_end = int(step_start), int(step_end)
+    for i in range(replay_cnt):
+        game_len, count = 0, 0
+        while True:
+            if count < step_start:
+                action = recorded_actions[game_len]
+                if obs['legal_actions'] != obs_buf[game_len]['legal_actions']:
+                    print("state different!")
+                if position == exp_id:
+                    count += 1
+            else:
+                if position == exp_id and count <= step_end:
+                    with torch.no_grad():
+                        agent_output = model.forward(position, obs['z_batch'], obs['x_batch'])
+                    _action_idx = int(agent_output['action'].cpu().detach().numpy())
+                    gold_action = obs['legal_actions'][_action_idx]
+                    if len(obs['legal_actions']) == 1:
+                        action = random.choice(obs['legal_actions'])
+                    else:
+                        obs['legal_actions'].remove(gold_action)
+                        action = random.choice(obs['legal_actions'])
+                    count += 1
+                else:
+                    with torch.no_grad():
+                        agent_output = model.forward(position, obs['z_batch'], obs['x_batch'])
+                    _action_idx = int(agent_output['action'].cpu().detach().numpy())
+                    action = obs['legal_actions'][_action_idx] 
+            position, obs, env_output = env.step(action)
+            game_len += 1
+
+            if env_output['done']:
+                utility = env_output['episode_return'] if exp_id == 'landlord' else -env_output['episode_return']
+                reward = 1 if utility.cpu().numpy() > 0 else 0
+                rewards.append(reward)
+                break
+    return np.mean(rewards)
 
 def cal_fidelity_score(critical_ratios, results, replay_results):
     p_ls = critical_ratios
@@ -406,7 +410,7 @@ if __name__ == '__main__':
     parser.add_argument('--landlord_down', type=str,
             default='baselines/douzero_WP/landlord_down.ckpt')
     parser.add_argument('--masknet', type=str, 
-            default='douzero_checkpoints/douzero/landlord_masknet_weights_10596600.ckpt')
+            default='douzero_checkpoints_inner_iter_5/douzero/landlord_masknet_weights_10596600.ckpt')
     parser.add_argument('--num_workers', type=int, default=10)
     parser.add_argument('--gpu_device', type=str, default='0')
     parser.add_argument('--position', default='landlord', type=str,
