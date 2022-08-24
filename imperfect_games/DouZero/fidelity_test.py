@@ -177,20 +177,17 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
     env = Env(objective)
     env = Environment(env, 0)
     reward_buf = []
-    game_len_buf = []
 
-    card_play_data = []
-    for _ in range(100):
-        card_play_data.append(generate())
-
+    card_play_data_buff, card_play_data = [], []
+    for _ in range(500):
+        card_play_data_buff.append(generate())
     game_num = 0
-
-    for i in range(100):
+    for i in range(500):
         obs_buf = []
         act_buf = []
         logpac_buf = []
         game_len = 0
-        position, obs, env_output = env.initial(card_play_data[game_num])
+        position, obs, env_output = env.initial(card_play_data_buff[i])
         while True:
             with torch.no_grad():
                 agent_output = model.forward(position, obs['z_batch'], obs['x_batch'])
@@ -207,11 +204,11 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
             if env_output['done']:
                 utility = env_output['episode_return'] if exp_id == 'landlord' else -env_output['episode_return']
                 reward = 1 if utility.cpu().numpy() > 0 else 0
-                reward_buf.append(reward)
-                game_len_buf.append(game_len)
                 break
         if game_len >= 10:
-            eps_len_filename = path + "eps_len_" + str(game_num) + ".out" 
+            reward_buf.append(reward)
+            card_play_data.append(card_play_data_buff[i])
+            eps_len_filename = path + "eps_len_" + str(game_num) + ".out"
             np.savetxt(eps_len_filename, [game_len])
 
             mask_probs_filename = path + "mask_probs_" + str(game_num) + ".out" 
@@ -226,7 +223,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
             game_num += 1
             if game_num >= 50:
                 break
-
+    assert game_num == 50
     np.savetxt(path + "reward_record.out", reward_buf)
     results = np.loadtxt(path + "reward_record.out")
 
@@ -241,7 +238,6 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
 
         critical_steps_starts = np.loadtxt(path + "critical_steps_starts.out")
         critical_steps_ends = np.loadtxt(path + "critical_steps_ends.out")
-
 
         critical_ratios = []
         replay_results= []
@@ -419,7 +415,6 @@ if __name__ == '__main__':
 
     os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
     os.environ["CUDA_VISIBLE_DEVICES"] = args.gpu_device
-
 
     evaluate(args.landlord,
              args.landlord_up,
