@@ -34,7 +34,7 @@ def select_steps(path, critical, import_thrd):
     non_critical_steps_starts = []
     non_critical_steps_ends = []
 
-  for i_episode in range(100):
+  for i_episode in range(50):
     mask_probs_path = path + "mask_probs_" + str(i_episode) + ".out"
     mask_probs = np.loadtxt(mask_probs_path)
 
@@ -107,15 +107,21 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, obs
                 count += 1
         else:
             if position == exp_id and count <= step_end:
-                action = random.choice(obs['legal_actions'])
+                with torch.no_grad():
+                    agent_output = model.forward(position, obs['z_batch'], obs['x_batch'])
+                _action_idx = int(agent_output['action'].cpu().detach().numpy())
+                gold_action = obs['legal_actions'][_action_idx]
+                if len(obs['legal_actions']) == 1:
+                    action = random.choice(obs['legal_actions'])
+                else:
+                    obs['legal_actions'].remove(gold_action)
+                    action = random.choice(obs['legal_actions'])
                 count += 1
             else:
                 with torch.no_grad():
                     agent_output = model.forward(position, obs['z_batch'], obs['x_batch'])
                 _action_idx = int(agent_output['action'].cpu().detach().numpy())
                 action = obs['legal_actions'][_action_idx] 
-      
-        
         position, obs, env_output = env.step(action)
         game_len += 1
 
@@ -143,7 +149,7 @@ def cal_fidelity_score(critical_ratios, results, replay_results):
 def mp_simulate(card_play_model_path_dict, q, test_idx):
     path = str(test_idx) + "/"
     if not os.path.isdir(path):
-        os.system("mkdir " + path)
+        os.makedirs(path)
 
     objective = 'wp'
     model, masknet = load_card_play_models(card_play_model_path_dict)
@@ -156,10 +162,10 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
     game_len_buf = []
 
     card_play_data = []
-    for _ in range(100):
+    for _ in range(50):
         card_play_data.append(generate())
 
-    for game_num in range(100):
+    for game_num in range(50):
         obs_buf = []
         act_buf = []
         logpac_buf = []
@@ -214,7 +220,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
 
         critical_ratios = []
         replay_results= []
-        for game_num in range(100):
+        for game_num in range(50):
             orig_traj_len = np.loadtxt(path + "eps_len_"+ str(game_num) + ".out")
             act_buf = np.load(path + "act_seq_" + str(game_num) + ".npy", allow_pickle=True)
             obs_buf = np.load(path + "obs_" + str(game_num) + ".npy", allow_pickle=True)
@@ -232,7 +238,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
         np.savetxt(path + str(i) + "_fid_score.out", [fid_score])
 
         replay_results= []
-        for game_num in range(100):
+        for game_num in range(50):
             orig_traj_len = np.loadtxt(path + "eps_len_"+ str(game_num) + ".out")
             act_buf = np.load(path + "act_seq_" + str(game_num) + ".npy", allow_pickle=True)
             obs_buf = np.load(path + "obs_" + str(game_num) + ".npy", allow_pickle=True)
@@ -253,7 +259,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
         noncritical_ratios = []
   
         replay_results= []
-        for game_num in range(100):
+        for game_num in range(50):
             orig_traj_len = np.loadtxt(path + "eps_len_"+ str(game_num) + ".out")
             act_buf = np.load(path + "act_seq_" + str(game_num) + ".npy", allow_pickle=True)
             obs_buf = np.load(path + "obs_" + str(game_num) + ".npy", allow_pickle=True)
@@ -269,7 +275,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
 
 
         replay_results= []
-        for game_num in range(100):
+        for game_num in range(50):
             orig_traj_len = np.loadtxt(path + "eps_len_"+ str(game_num) + ".out")
             act_buf = np.load(path + "act_seq_" + str(game_num) + ".npy", allow_pickle=True)
             obs_buf = np.load(path + "obs_" + str(game_num) + ".npy", allow_pickle=True)
@@ -298,11 +304,12 @@ def evaluate(landlord, landlord_up, landlord_down, masknet, num_workers):
     ctx = mp.get_context('spawn')
     q = ctx.SimpleQueue()
     processes = []
+    pre_folder = './results'
  
     for i in range(num_workers):
         p = ctx.Process(
                 target=mp_simulate,
-                args=(card_play_model_path_dict, q, i))
+                args=(card_play_model_path_dict, q, pre_folder + '/' + str(i)))
         p.start()
         processes.append(p)
 
@@ -322,7 +329,7 @@ def evaluate(landlord, landlord_up, landlord_down, masknet, num_workers):
         result = q.get()
         rewards.append(result) 
 
-        path = str(i) + "/"
+        path = pre_folder + '/' + str(i) + '/'
 
         for j in range(4):
             critical_perform = np.loadtxt(path + str(j) + "_replay_reward_record.out")
@@ -378,7 +385,7 @@ if __name__ == '__main__':
     parser.add_argument('--landlord_down', type=str,
             default='baselines/douzero_WP/landlord_down.ckpt')
     parser.add_argument('--masknet', type=str, 
-            default='douzero_wp_checkpoints/douzero/landlord_masknet_weights_21533400.ckpt')
+            default='douzero_checkpoints/douzero/landlord_masknet_weights_10596600.ckpt')
     parser.add_argument('--num_workers', type=int, default=10)
     parser.add_argument('--gpu_device', type=str, default='0')
     parser.add_argument('--position', default='landlord', type=str,
