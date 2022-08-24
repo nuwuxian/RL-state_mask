@@ -103,10 +103,6 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, obs
 
     recorded_actions = act_buf
     replay_cnt = 1
-    position, obs, env_output = env.initial(card_play_data)
-    
-    if obs['legal_actions'] != obs_buf[0]['legal_actions']:
-        print("state different!")
 
     if random_replace:
         random_replacement_steps = step_end - step_start
@@ -119,6 +115,9 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, obs
     step_start, step_end = int(step_start), int(step_end)
     for i in range(replay_cnt):
         game_len, count = 0, 0
+        position, obs, env_output = env.initial(card_play_data)
+        if obs['legal_actions'] != obs_buf[0]['legal_actions']:
+            print("state different!")
         while True:
             if count < step_start:
                 action = recorded_actions[game_len]
@@ -412,7 +411,7 @@ if __name__ == '__main__':
     parser.add_argument('--masknet', type=str, 
             default='douzero_checkpoints_inner_iter_5/douzero/landlord_masknet_weights_10596600.ckpt')
     parser.add_argument('--num_workers', type=int, default=10)
-    parser.add_argument('--gpu_device', type=str, default='0')
+    parser.add_argument('--gpu_device', type=str, default='1')
     parser.add_argument('--position', default='landlord', type=str,
                     help='explain position')
     args = parser.parse_args()
