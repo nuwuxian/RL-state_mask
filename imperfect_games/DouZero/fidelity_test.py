@@ -50,11 +50,11 @@ def select_steps(path, critical, import_thrd):
     idx.sort()
 
     steps_start, steps_end = idx[0], idx[0]
-    ans, count = 0, 0
+    ans, sum_prob, count = 0, 0.0, 0
     tmp_end, tmp_start = idx[0], idx[0]
-
+    # find the longest continous sequence
     for i in range(1, len(idx)):
-      if idx[i] == idx[i - 1] + 1:
+      if idx[i] == idx[i-1] + 1:
         count += 1
         tmp_end = idx[i]
       else:
@@ -65,6 +65,24 @@ def select_steps(path, critical, import_thrd):
         ans = count
         steps_start = tmp_start
         steps_end = tmp_end
+        for j in range(steps_start, steps_end+1):
+            sum_prob += confs[idx[j]]
+    # If multiple exists, return the maximum scores
+    count, tmp_end, tmp_start = 0, idx[0], idx[0]
+    for i in range(1, len(idx)):
+        if idx[i] == idx[i-1] + 1:
+        count += 1
+        tmp_end = idx[i]
+      else:
+        count = 0
+        tmp_start, tmp_end = idx[i], idx[i]
+      if count == ans:
+        ans = count
+        tmp_prob = 0.0
+        for j in range(steps_start, steps_end+1):
+            tmp_prob += confs[idx[j]]
+        if tmp_prob >= sum_prob:
+            step_start, steps_end = tmp_start, tmp_end
 
     if critical:
       critical_steps_starts.append(steps_start)
@@ -89,7 +107,7 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, obs
     position, obs, env_output = env.initial(card_play_data)
     
     if obs['legal_actions'] != obs_buf[0]['legal_actions']:
-        print("first state different!")
+        print("state different!")
 
     if random_replace:
         random_replacement_steps = step_end - step_start
@@ -102,7 +120,7 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, obs
         if count < step_start:
             action = recorded_actions[game_len]
             if obs['legal_actions'] != obs_buf[game_len]['legal_actions']:
-                print(count)
+                print("state different!")
             if position == exp_id:
                 count += 1
         else:
@@ -162,10 +180,12 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
     game_len_buf = []
 
     card_play_data = []
-    for _ in range(50):
+    for _ in range(100):
         card_play_data.append(generate())
 
-    for game_num in range(50):
+    game_num = 0
+
+    for i in range(100):
         obs_buf = []
         act_buf = []
         logpac_buf = []
@@ -190,17 +210,22 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
                 reward_buf.append(reward)
                 game_len_buf.append(game_len)
                 break
-        eps_len_filename = path + "eps_len_" + str(game_num) + ".out" 
-        np.savetxt(eps_len_filename, [game_len])
+        if game_len >= 10:
+            eps_len_filename = path + "eps_len_" + str(game_num) + ".out" 
+            np.savetxt(eps_len_filename, [game_len])
 
-        mask_probs_filename = path + "mask_probs_" + str(game_num) + ".out" 
-        np.savetxt(mask_probs_filename, logpac_buf)
-        
-        act_seq_filename = path + "act_seq_" + str(game_num) + ".npy"
-        np.save(act_seq_filename, act_buf, allow_pickle=True)
-        
-        obs_filename = path + "obs_" + str(game_num) + ".npy"
-        np.save(obs_filename, obs_buf, allow_pickle=True)
+            mask_probs_filename = path + "mask_probs_" + str(game_num) + ".out" 
+            np.savetxt(mask_probs_filename, logpac_buf)
+            
+            act_seq_filename = path + "act_seq_" + str(game_num) + ".npy"
+            np.save(act_seq_filename, act_buf, allow_pickle=True)
+            
+            obs_filename = path + "obs_" + str(game_num) + ".npy"
+            np.save(obs_filename, obs_buf, allow_pickle=True)
+
+            game_num += 1
+            if game_num >= 50:
+                break
 
     np.savetxt(path + "reward_record.out", reward_buf)
     results = np.loadtxt(path + "reward_record.out")
@@ -387,6 +412,7 @@ if __name__ == '__main__':
     parser.add_argument('--masknet', type=str, 
             default='douzero_checkpoints/douzero/landlord_masknet_weights_10596600.ckpt')
     parser.add_argument('--num_workers', type=int, default=10)
+    parser.add_argument('--test_num', type=int, defalut=500)
     parser.add_argument('--gpu_device', type=str, default='0')
     parser.add_argument('--position', default='landlord', type=str,
                     help='explain position')
