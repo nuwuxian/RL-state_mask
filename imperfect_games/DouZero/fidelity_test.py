@@ -100,7 +100,7 @@ def select_steps(path, critical, import_thrd, game_per_worker):
 def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, obs_buf, card_play_data, random_replace=False):
 
     recorded_actions = act_buf
-    replay_cnt = 1 if random_replace else 5
+    replay_cnt = 5 if random_replace else 1
     step_start, step_end = int(step_start), int(step_end)
     if random_replace:
         random_replacement_steps = step_end - step_start
@@ -404,8 +404,8 @@ if __name__ == '__main__':
     parser.add_argument('--landlord_down', type=str,
             default='baselines/douzero_WP/landlord_down.ckpt')
     parser.add_argument('--masknet', type=str, 
-            default='douzero_checkpoints_inner_iter_5/douzero/landlord_masknet_weights_10596600.ckpt')
-    parser.add_argument('--num_workers', type=int, default=20)
+            default='douzero_checkpoints_inner_iter_5/douzero/landlord_masknet_weights_11256000.ckpt')
+    parser.add_argument('--num_workers', type=int, default=25)
     parser.add_argument('--total_games', type=int, default=500)
     parser.add_argument('--gpu_device', type=str, default='1')
     parser.add_argument('--position', default='landlord', type=str,
