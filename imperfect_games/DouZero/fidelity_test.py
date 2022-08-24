@@ -14,10 +14,8 @@ from douzero.dmc.env_utils import Environment, _format_observation
 from generate_eval_data import generate
 
 def load_card_play_models(card_play_model_path_dict):
-
     model = Model()
     model.eval()
-
     for position in ['landlord', 'landlord_up', 'landlord_down']:
         model.get_model(position).load_state_dict(torch.load(card_play_model_path_dict[position], map_location='cuda:0'))
 
@@ -26,7 +24,7 @@ def load_card_play_models(card_play_model_path_dict):
     masknet.eval()
     return model, masknet
 
-def select_steps(path, critical, import_thrd):
+def select_steps(path, critical, import_thrd, game_per_worker):
   if critical:
     critical_steps_starts = []
     critical_steps_ends = []
@@ -34,7 +32,7 @@ def select_steps(path, critical, import_thrd):
     non_critical_steps_starts = []
     non_critical_steps_ends = []
 
-  for i_episode in range(50):
+  for i_episode in range(game_per_worker):
     mask_probs_path = path + "mask_probs_" + str(i_episode) + ".out"
     mask_probs = np.loadtxt(mask_probs_path)
 
@@ -102,18 +100,16 @@ def select_steps(path, critical, import_thrd):
 def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, obs_buf, card_play_data, random_replace=False):
 
     recorded_actions = act_buf
-    replay_cnt = 1
-
+    replay_cnt = 1 if random_replace else 5
+    step_start, step_end = int(step_start), int(step_end)
     if random_replace:
         random_replacement_steps = step_end - step_start
         start_range = int(np.floor((orig_traj_len+2)/3) - random_replacement_steps)
-        step_start = np.random.choice(start_range)
-        step_end = step_start + random_replacement_steps
-        replay_cnt = 5
     rewards = []
-
-    step_start, step_end = int(step_start), int(step_end)
     for i in range(replay_cnt):
+        if random_replace:
+            step_start = np.random.choice(start_range)
+            step_end = step_start + random_replacement_steps
         game_len, count = 0, 0
         position, obs, env_output = env.initial(card_play_data)
         if obs['legal_actions'] != obs_buf[0]['legal_actions']:
@@ -167,7 +163,7 @@ def cal_fidelity_score(critical_ratios, results, replay_results):
   
     return np.mean(fids)
 
-def mp_simulate(card_play_model_path_dict, q, test_idx):
+def mp_simulate(card_play_model_path_dict, q, test_idx, game_per_worker):
     path = str(test_idx) + "/"
     if not os.path.isdir(path):
         os.makedirs(path)
@@ -224,9 +220,9 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
             np.save(obs_filename, obs_buf, allow_pickle=True)
 
             game_num += 1
-            if game_num >= 50:
+            if game_num >= game_per_worker:
                 break
-    assert game_num == 50
+    assert game_num == game_per_worker
     np.savetxt(path + "reward_record.out", reward_buf)
     results = np.loadtxt(path + "reward_record.out")
 
@@ -237,14 +233,14 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
 
     for i in range(len(important_thresholds)):
 
-        select_steps(path, critical=True, import_thrd=important_thresholds[i])
+        select_steps(path, critical=True, import_thrd=important_thresholds[i], game_per_worker=game_per_worker)
 
         critical_steps_starts = np.loadtxt(path + "critical_steps_starts.out")
         critical_steps_ends = np.loadtxt(path + "critical_steps_ends.out")
 
         critical_ratios = []
         replay_results= []
-        for game_num in range(50):
+        for game_num in range(game_per_worker):
             orig_traj_len = np.loadtxt(path + "eps_len_"+ str(game_num) + ".out")
             act_buf = np.load(path + "act_seq_" + str(game_num) + ".npy", allow_pickle=True)
             obs_buf = np.load(path + "obs_" + str(game_num) + ".npy", allow_pickle=True)
@@ -262,7 +258,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
         np.savetxt(path + str(i) + "_fid_score.out", [fid_score])
 
         replay_results= []
-        for game_num in range(50):
+        for game_num in range(game_per_worker):
             orig_traj_len = np.loadtxt(path + "eps_len_"+ str(game_num) + ".out")
             act_buf = np.load(path + "act_seq_" + str(game_num) + ".npy", allow_pickle=True)
             obs_buf = np.load(path + "obs_" + str(game_num) + ".npy", allow_pickle=True)
@@ -275,7 +271,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
 
         np.savetxt(path + str(i) + "_replay_rand_reward_record.out", [np.mean(replay_results)])
 
-        select_steps(path, critical=False, import_thrd=important_thresholds[i])
+        select_steps(path, critical=False, import_thrd=important_thresholds[i], game_per_worker=game_per_worker)
 
         noncritical_steps_starts = np.loadtxt(path + "non_critical_steps_starts.out")
         noncritical_steps_ends = np.loadtxt(path + "non_critical_steps_ends.out")
@@ -283,7 +279,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
         noncritical_ratios = []
   
         replay_results= []
-        for game_num in range(50):
+        for game_num in range(game_per_worker):
             orig_traj_len = np.loadtxt(path + "eps_len_"+ str(game_num) + ".out")
             act_buf = np.load(path + "act_seq_" + str(game_num) + ".npy", allow_pickle=True)
             obs_buf = np.load(path + "obs_" + str(game_num) + ".npy", allow_pickle=True)
@@ -299,7 +295,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
 
 
         replay_results= []
-        for game_num in range(50):
+        for game_num in range(game_per_worker):
             orig_traj_len = np.loadtxt(path + "eps_len_"+ str(game_num) + ".out")
             act_buf = np.load(path + "act_seq_" + str(game_num) + ".npy", allow_pickle=True)
             obs_buf = np.load(path + "obs_" + str(game_num) + ".npy", allow_pickle=True)
@@ -313,9 +309,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx):
 
 
 
-def evaluate(landlord, landlord_up, landlord_down, masknet, num_workers):
-
-
+def evaluate(landlord, landlord_up, landlord_down, masknet, total_games, num_workers):
     card_play_model_path_dict = {
         'landlord': landlord,
         'landlord_up': landlord_up,
@@ -329,11 +323,12 @@ def evaluate(landlord, landlord_up, landlord_down, masknet, num_workers):
     q = ctx.SimpleQueue()
     processes = []
     pre_folder = './results'
+    game_per_worker = int(total_games / num_workers)
  
     for i in range(num_workers):
         p = ctx.Process(
                 target=mp_simulate,
-                args=(card_play_model_path_dict, q, pre_folder + '/' + str(i)))
+                args=(card_play_model_path_dict, q, pre_folder + '/' + str(i), game_per_worker))
         p.start()
         processes.append(p)
 
@@ -410,7 +405,8 @@ if __name__ == '__main__':
             default='baselines/douzero_WP/landlord_down.ckpt')
     parser.add_argument('--masknet', type=str, 
             default='douzero_checkpoints_inner_iter_5/douzero/landlord_masknet_weights_10596600.ckpt')
-    parser.add_argument('--num_workers', type=int, default=10)
+    parser.add_argument('--num_workers', type=int, default=20)
+    parser.add_argument('--total_games', type=int, default=500)
     parser.add_argument('--gpu_device', type=str, default='1')
     parser.add_argument('--position', default='landlord', type=str,
                     help='explain position')
@@ -423,4 +419,5 @@ if __name__ == '__main__':
              args.landlord_up,
              args.landlord_down,
              args.masknet,
+             args.total_games,
              args.num_workers)
