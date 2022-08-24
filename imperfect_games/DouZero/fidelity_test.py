@@ -80,7 +80,7 @@ def select_steps(path, critical, import_thrd):
         ans = count
         tmp_prob = 0.0
         for j in range(steps_start, steps_end+1):
-            tmp_prob += confs[idx[j]]
+            tmp_prob += confs[j]
         if critical and tmp_prob >= sum_prob:
             steps_start, steps_end = tmp_start, tmp_end
         elif not critical and tmp_prob < sum_prob:
