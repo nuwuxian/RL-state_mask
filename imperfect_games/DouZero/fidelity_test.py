@@ -66,11 +66,11 @@ def select_steps(path, critical, import_thrd):
         steps_start = tmp_start
         steps_end = tmp_end
         for j in range(steps_start, steps_end+1):
-            sum_prob += confs[idx[j]]
+            sum_prob += confs[j]
     # If multiple exists, return the maximum scores
     count, tmp_end, tmp_start = 0, idx[0], idx[0]
     for i in range(1, len(idx)):
-        if idx[i] == idx[i-1] + 1:
+      if idx[i] == idx[i-1] + 1:
         count += 1
         tmp_end = idx[i]
       else:
@@ -81,13 +81,13 @@ def select_steps(path, critical, import_thrd):
         tmp_prob = 0.0
         for j in range(steps_start, steps_end+1):
             tmp_prob += confs[idx[j]]
-        if tmp_prob >= sum_prob:
-            step_start, steps_end = tmp_start, tmp_end
-
+        if critical and tmp_prob >= sum_prob:
+            steps_start, steps_end = tmp_start, tmp_end
+        elif not critical and tmp_prob < sum_prob:
+            steps_start, steps_end = tmp_start, tmp_end
     if critical:
       critical_steps_starts.append(steps_start)
       critical_steps_ends.append(steps_end)
-
     else:
       non_critical_steps_starts.append(steps_start)
       non_critical_steps_ends.append(steps_end)
@@ -412,7 +412,6 @@ if __name__ == '__main__':
     parser.add_argument('--masknet', type=str, 
             default='douzero_checkpoints/douzero/landlord_masknet_weights_10596600.ckpt')
     parser.add_argument('--num_workers', type=int, default=10)
-    parser.add_argument('--test_num', type=int, defalut=500)
     parser.add_argument('--gpu_device', type=str, default='0')
     parser.add_argument('--position', default='landlord', type=str,
                     help='explain position')
