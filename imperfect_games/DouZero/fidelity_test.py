@@ -404,7 +404,7 @@ if __name__ == '__main__':
     parser.add_argument('--landlord_down', type=str,
             default='baselines/douzero_WP/landlord_down.ckpt')
     parser.add_argument('--masknet', type=str, 
-            default='douzero_checkpoints_inner_iter_5/douzero/landlord_masknet_weights_11256000.ckpt')
+            default='douzero_checkpoints_inner_iter_5/douzero/landlord_masknet_weights_9882600.ckpt')
     parser.add_argument('--num_workers', type=int, default=25)
     parser.add_argument('--total_games', type=int, default=500)
     parser.add_argument('--gpu_device', type=str, default='1')
