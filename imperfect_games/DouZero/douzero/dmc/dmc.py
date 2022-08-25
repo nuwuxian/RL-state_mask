@@ -86,14 +86,17 @@ def train(flags):
     if not flags.actor_device_cpu or flags.training_device != 'cpu':
         if not torch.cuda.is_available():
             raise AssertionError("CUDA not available. If you have GPUs, please specify the ID after `--gpu_devices`. Otherwise, please train with CPU with `python3 train.py --actor_device_cpu --training_device cpu`")
+    
+    savedir = flags.savedir + '/' + 'LR_' + str(flags.learning_rate) + '_NUM_EPOCH_' + str(flags.num_epochs) + '_NMINIBATCHES_' + str(flags.nminibatches)
+
     plogger = FileWriter(
         xpid=flags.xpid,
         xp_args=flags.__dict__,
-        rootdir=flags.savedir,
+        rootdir=savedir,
     )
     checkpointpath = os.path.expandvars(
-        os.path.expanduser('%s/%s/%s' % (flags.savedir, flags.xpid, 'model.tar')))
-    writer = SummaryWriter(log_dir=flags.savedir)
+        os.path.expanduser('%s/%s/%s' % (savedir, flags.xpid, 'model.tar')))
+    writer = SummaryWriter(log_dir=savedir)
 
     position = flags.position
     pretrain_path = flags.pretrain_path
@@ -168,7 +171,7 @@ def train(flags):
 
         # Save the weights for evaluation purpose
         model_weights_dir = os.path.expandvars(os.path.expanduser(
-            '%s/%s/%s' % (flags.savedir, flags.xpid, flags.position+'_masknet_weights_'+str(frames)+'.ckpt')))
+            '%s/%s/%s' % (savedir, flags.xpid, flags.position+'_masknet_weights_'+str(frames)+'.ckpt')))
         torch.save(learner_model.get_model().state_dict(), model_weights_dir)
     
     # Starting actor processes
