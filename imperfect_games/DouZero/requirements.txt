@@ -1,3 +1,0 @@
-GitPython
-gitdb2
-rlcard
