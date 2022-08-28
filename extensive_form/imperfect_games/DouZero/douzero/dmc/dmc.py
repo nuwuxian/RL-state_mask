@@ -18,6 +18,7 @@ from .utils import get_buffer, log, create_env, create_buffers, act
 mean_episode_return_buf = {p:deque(maxlen=100) for p in ['landlord', 'landlord_up', 'landlord_down']}
 clip_param = 0.2
 
+lambda_1 = 1e-3
 C_1 = 0.5 # squared loss coefficient
 C_2 = 0.0 # entropy coefficient
 
@@ -29,10 +30,10 @@ def merge(buffer_list):
     }
     return ret_buffer
 
-def sample(buffer, start, end):
+def sample(buffer, mbinds):
     ret_sample = {}
     for k in buffer:
-        ret_sample[k] = buffer[k][start:end, ...]
+        ret_sample[k] = buffer[k][mbinds, ...]
     return ret_sample
 
 def learn(model, batch, optimizer, flags):
@@ -49,13 +50,17 @@ def learn(model, batch, optimizer, flags):
     ret = batch['ret'].to(device)
     adv = batch['adv'].to(device)
 
+    batch_sz = adv.size(0)
+
     # normalize the adv
     adv = (adv - torch.mean(adv,dim=0))/(1e-7 + torch.std(adv,dim=0))
 
     episode_returns = batch['reward'][batch['done']]
     mean_episode_return_buf[position].append(torch.mean(episode_returns).to(device))
     
-    dist, value = model.forward(obs_z, obs_x_no_action)
+    dist, value, log_prob = model.forward(obs_z, obs_x_no_action)
+    onehot_action = F.gumbel_softmax(log_prob, tau=1.0, hard=True)
+
     new_log_probs = dist.log_prob(act)
     ratio = (new_log_probs - log_probs).exp() # new_prob/old_prob
     surr1 = ratio * adv
@@ -63,7 +68,10 @@ def learn(model, batch, optimizer, flags):
     actor_loss = - torch.min(surr1, surr2).mean()
     critic_loss = (ret - value).pow(2).mean()
     entropy = dist.entropy().mean()
-    loss = C_1 * critic_loss + actor_loss - C_2 * entropy
+
+    num_nomasks = torch.sum(onehot_action[:, 1]) / batch_sz
+
+    loss = C_1 * critic_loss + actor_loss - C_2 * entropy + lambda_1 * num_nomasks
 
     avg_return = torch.mean(torch.stack([_r for _r in mean_episode_return_buf[position]])).item()
     avg_mask_ratio = act.float().mean().item()
@@ -214,7 +222,8 @@ def train(flags):
                 np.random.shuffle(inds)
                 for start in range(0, n_batch, nbatch_train):
                     end = start + nbatch_train
-                    batch = sample(x_buffer, start, end)
+                    mbinds = inds[start:end]
+                    batch = sample(x_buffer, mbinds)
                     _loss, _critic_loss, _actor_loss, _entropy_loss, _avg_mask_ratio, _avg_return = learn(learner_model, batch, optimizer, flags)
                     avg_loss.append(_loss)
                     avg_critic_loss.append(_critic_loss)
