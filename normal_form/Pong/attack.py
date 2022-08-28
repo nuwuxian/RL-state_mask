@@ -150,6 +150,13 @@ else:
     checkpoint = torch.load(baseline, map_location=torch.device('cpu'))
 baseline_model.load_state_dict(checkpoint['state_dict'])
 
+PATH = "./ppo_test/masknet/Pong-v0_+0.910_20170.dat"
+mask_network = CNN(num_inputs, 2, H_SIZE).to(device)
+if use_cuda:
+    checkpoint = torch.load(PATH)
+else:
+    checkpoint = torch.load(PATH, map_location=torch.device('cpu'))
+mask_network.load_state_dict(checkpoint['state_dict'])
 
 tmp_rewards = []
 tmp_counts = []
@@ -170,7 +177,7 @@ tmp_counts2 = []
 
 print("=====Test model after attack=====")
 for i in range(N_TESTS):
-    total_reward, count = attack(i+10000, env, baseline_model, device)
+    total_reward, count = attack(i+10000, env, baseline_model, mask_network, device)
     print("Test " + str(i) + " :")
     print("reward: " + str(total_reward))
     print("episode length: " + str(count))
