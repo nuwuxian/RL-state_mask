@@ -62,7 +62,7 @@ class LandlordLstmModel(nn.Module):
         logits = self.policy_network(x)
 
         probs = F.softmax(logits, dim=1)
-        log_prb = F.log_softmax(logits, dim=1)
+        log_prob = F.log_softmax(logits, dim=1)
 
         dist = Categorical(probs)
         return dist, values, log_prob
@@ -128,7 +128,7 @@ class FarmerLstmModel(nn.Module):
         logits = self.policy_network(x)
 
         probs = F.softmax(logits, dim=1)
-        log_prb = F.log_softmax(logits, dim=1)
+        log_prob = F.log_softmax(logits, dim=1)
 
         dist = Categorical(probs)
         return dist, values, log_prob
