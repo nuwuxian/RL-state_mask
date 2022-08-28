@@ -37,9 +37,7 @@ critical_steps_starts = np.loadtxt("./recording/critical_steps_starts.out")
 
 
 for func in [
-             lambda: os.mkdir(os.path.join('.', 'ppo_test/checkpoints')),
-             lambda: os.mkdir(os.path.join('.', 'ppo_test/records')),
-             lambda: os.mkdir(os.path.join('.', 'ppo_test/plots'))
+             lambda: os.mkdir(os.path.join('.', 'ppo_test/checkpoints'))
              ]: # create directories
    try:
        func()
@@ -341,8 +339,6 @@ if __name__ == "__main__":
     test_epochs = []
     train_epoch = 0
     best_reward = None
-
-
 
 
 

@@ -18,7 +18,7 @@ from torch.distributions import Categorical
 from model import CNN
 from gym.wrappers.monitoring import video_recorder
 
-
+threshold = 0.99
 
 def make_env():    # this function creates a single environment
     """
@@ -82,10 +82,52 @@ def test_baseline(i_episode, env, baseline_model, device):
     
     return total_reward, count
 
+def attack(i_episode, env, baseline_model, mask_network, device):
+
+    env.seed(i_episode)
+    state = env.reset()
+    state = grey_crop_resize(state)
+    
+    count = 0
+    total_reward = 0
+
+
+    while True:
+        state = torch.FloatTensor(np.copy(state)).unsqueeze(0).to(device)
+        baseline_dist, _ = baseline_model(state)
+        mask_dist, _ = mask_network(state)
+        #baseline_action = baseline_dist.sample().cpu().numpy()[0]
+        baseline_action = np.argmax(baseline_dist.probs.detach().cpu().numpy()[0])
+
+        #mask_action = mask_dist.sample().cpu().numpy()[0]
+        mask_action = np.argmax(mask_dist.probs.detach().cpu().numpy()[0])
+        mask_prob = mask_dist.probs.detach().cpu().numpy()[0]
+        
+        if mask_prob[1] > threshold:
+            action = baseline_action
+        else:
+            action = np.random.choice(6)
+
+        count += 1
+        next_state, reward, done, _ = env.step(action)
+        total_reward += reward
+
+        if total_reward != 0:
+            break
+        next_state = grey_crop_resize(next_state)
+        state = next_state
+        
+    
+    if total_reward == 1:
+        total_reward = 1
+    else:
+        total_reward = 0
+    
+
+    return total_reward, count
 
 H_SIZE = 256
 N_TESTS = 500
-
 
 
 env = gym.make("Pong-v0").env
@@ -98,25 +140,15 @@ use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 #device = torch.device("cpu")
 
-before_retrain = "./ppo_test/baseline/Pong-v0_+0.896_12150.dat"
-BASELINE_PATH = "/home/jvy5516/project/ray-rl/ppo_Pongv0_fidelity_test/models/baseline/baseline.dat"
+baseline = "./ppo_test/baseline/Pong-v0_+0.896_12150.dat"
 
-
-before_model = CNN(num_inputs, num_outputs, H_SIZE).to(device)
-if use_cuda:
-    checkpoint = torch.load(before_retrain)
-else:
-    checkpoint = torch.load(before_retrain, map_location=torch.device('cpu'))
-before_model.load_state_dict(checkpoint['state_dict'])
 
 baseline_model = CNN(num_inputs, num_outputs, H_SIZE).to(device)
 if use_cuda:
-    checkpoint = torch.load(BASELINE_PATH)
+    checkpoint = torch.load(baseline)
 else:
-    checkpoint = torch.load(BASELINE_PATH, map_location=torch.device('cpu'))
+    checkpoint = torch.load(baseline, map_location=torch.device('cpu'))
 baseline_model.load_state_dict(checkpoint['state_dict'])
-
-
 
 
 tmp_rewards = []
@@ -124,7 +156,7 @@ tmp_counts = []
 
 print("=====Test original model=====")
 for i in range(N_TESTS):
-    total_reward, count = test_baseline(i+10000, env, before_model, device)
+    total_reward, count = test_baseline(i+10000, env, baseline_model, device)
     print("Test " + str(i) + " :")
     print("reward: " + str(total_reward))
     print("episode length: " + str(count))
@@ -136,9 +168,9 @@ for i in range(N_TESTS):
 tmp_rewards2 = []
 tmp_counts2 = []
 
-print("=====Test model after retrain=====")
+print("=====Test model after attack=====")
 for i in range(N_TESTS):
-    total_reward, count = test_baseline(i+10000, env, baseline_model, device)
+    total_reward, count = attack(i+10000, env, baseline_model, device)
     print("Test " + str(i) + " :")
     print("reward: " + str(total_reward))
     print("episode length: " + str(count))
