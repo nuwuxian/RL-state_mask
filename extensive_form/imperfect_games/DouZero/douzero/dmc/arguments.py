@@ -50,7 +50,7 @@ parser.add_argument('--learning_rate', default=0.0003, type=float,
                     help='Learning rate')
 
 parser.add_argument('--anneal_rl', default=True, type=bool)
-parser.add_argument('--num_epochs', default=10, type=int,
+parser.add_argument('--num_epochs', default=4, type=int,
                     help='PPO inner training epochs')
 parser.add_argument('--nminibatches', default=4, type=int,
                     help='PPO inner number of mini-batches')
