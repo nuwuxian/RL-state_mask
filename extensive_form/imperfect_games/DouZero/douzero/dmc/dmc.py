@@ -19,7 +19,7 @@ mean_episode_return_buf = {p:deque(maxlen=100) for p in ['landlord', 'landlord_u
 clip_param = 0.2
 
 C_1 = 0.5 # squared loss coefficient
-C_2 = 0.0 # entropy coefficient
+C_2 = 0.01 # entropy coefficient
 
 def merge(buffer_list):
     sz = len(buffer_list)
@@ -29,11 +29,10 @@ def merge(buffer_list):
     }
     return ret_buffer
 
-def sample(buffer, sample_sz, max_sz):
+def sample(buffer, start, end):
     ret_sample = {}
-    sample_id = random.sample(range(max_sz), sample_sz)
     for k in buffer:
-        ret_sample[k] = buffer[k][sample_id, ...]
+        ret_sample[k] = buffer[k][start:end, ...]
     return ret_sample
 
 def learn(model, batch, optimizer, flags):
@@ -143,7 +142,7 @@ def train(flags):
     # Create optimizer
     optimizer = torch.optim.Adam(
             learner_model.parameters(),
-            lr=flags.learning_rate)
+            lr=flags.learning_rate, eps=1e-5)
     frames = 0
     # Load models if any
     if flags.load_model and os.path.exists(pretrain_path):
@@ -190,6 +189,11 @@ def train(flags):
         last_checkpoint_time = timer() - flags.save_interval * 60
         nonlocal frames
         while frames < flags.total_frames:
+            if flags.anneal_rl:
+                frac = 1.0 - frames / flags.total_frames
+                lrnow = frac * flags.learning_rate
+                optimizer.param_groups[0]['lr'] = lrnow
+
             start_frames = frames
             start_time = timer()
             # Merge all the buffers
@@ -202,10 +206,15 @@ def train(flags):
             avg_loss, avg_actor_loss, avg_critic_loss, avg_entropy_loss = [], [], [], []
             avg_mask_ratio, avg_return = [], []
 
+            n_batch = int(T * B * flags.num_actor_devices)
+            nbatch_train = int(n_batch // flags.nminibatches)
+            inds = np.arange(n_batch)
             for i in range(flags.num_epochs):
-                for _ in range(flags.nminibatches):
-                    sample_sz = int(T * B * flags.num_actor_devices / flags.nminibatches)
-                    batch = sample(x_buffer, sample_sz, T * B * flags.num_actor_devices)
+                # ppo baselines
+                np.random.shuffle(inds)
+                for start in range(0, n_batch, nbatch_train):
+                    end = start + nbatch_train
+                    batch = sample(x_buffer, start, end)
                     _loss, _critic_loss, _actor_loss, _entropy_loss, _avg_mask_ratio, _avg_return = learn(learner_model, batch, optimizer, flags)
                     avg_loss.append(_loss)
                     avg_critic_loss.append(_critic_loss)
@@ -214,7 +223,7 @@ def train(flags):
                     avg_mask_ratio.append(_avg_mask_ratio)
                     avg_return.append(_avg_return)
 
-            frames += T * B * flags.num_actor_devices
+            frames += n_batch
             # Broadcast the newly update masknet
             for mask_model in mask_models.values():
                 mask_model.get_model().load_state_dict(learner_model.get_model().state_dict())
@@ -243,6 +252,7 @@ def train(flags):
             writer.add_scalar('Loss_entropy', np.mean(avg_entropy_loss), global_step=frames)
             writer.add_scalar('Mask_ratio', 1 - np.mean(avg_mask_ratio), global_step=frames)
             writer.add_scalar('Return', np.mean(avg_return), global_step=frames)
+            writer.add_scalar("Learning_rate", lrnow, global_step=frames)
             writer.add_scalar('FPS_avg', fps_avg, global_step=frames)
             # logger into the monitor
             log.info('Training %i frames: FPS_avg: %.3f Loss: %.3f Loss_critic: %.3f Loss_actor: %.3f Loss_entropy: %.3f \
