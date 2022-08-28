@@ -60,13 +60,12 @@ def test_mask(i_episode, env, baseline_model, mask_network, device):
     count = 0
     num_mask = 0
 
-    done = False
     total_reward = 0
 
     action_seq = []
     mask_probs = []
 
-    while not done:
+    while True:
         #vid.capture_frame()
         state = torch.FloatTensor(np.copy(state)).unsqueeze(0).to(device)
         baseline_dist, _ = baseline_model(state)       
@@ -81,19 +80,19 @@ def test_mask(i_episode, env, baseline_model, mask_network, device):
 
         count += 1
         next_state, reward, done, _ = env.step(action)
-
-        done = reward
+        total_reward += reward
+        if total_reward != 0:
+            break
 
         next_state = grey_crop_resize(next_state)
         state = next_state
-        total_reward += reward
+        
     
     if total_reward == 1:
         total_reward = 1
     else:
         total_reward = 0
     
-    #vid.close()
     return total_reward, count, num_mask, action_seq, mask_probs
 
 H_SIZE = 256
