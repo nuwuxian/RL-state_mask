@@ -9,6 +9,7 @@ import random
 import torch
 from torch import multiprocessing as mp
 from torch import nn
+import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 from .file_writer import FileWriter
 from .models import Model
