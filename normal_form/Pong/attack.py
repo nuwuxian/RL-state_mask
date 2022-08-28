@@ -90,7 +90,7 @@ def attack(i_episode, env, baseline_model, mask_network, device):
     
     count = 0
     total_reward = 0
-
+    attack_num = 0
 
     while True:
         state = torch.FloatTensor(np.copy(state)).unsqueeze(0).to(device)
@@ -104,9 +104,10 @@ def attack(i_episode, env, baseline_model, mask_network, device):
         mask_prob = mask_dist.probs.detach().cpu().numpy()[0]
         
         if mask_prob[1] > threshold:
-            action = baseline_action
-        else:
             action = np.random.choice(6)
+            attack_num += 1
+        else:
+            action = baseline_action
 
         count += 1
         next_state, reward, done, _ = env.step(action)
@@ -124,7 +125,7 @@ def attack(i_episode, env, baseline_model, mask_network, device):
         total_reward = 0
     
 
-    return total_reward, count
+    return total_reward, count, attack_num
 
 H_SIZE = 256
 N_TESTS = 500
@@ -174,17 +175,21 @@ for i in range(N_TESTS):
 
 tmp_rewards2 = []
 tmp_counts2 = []
+attack_nums = []
 
 print("=====Test model after attack=====")
 for i in range(N_TESTS):
-    total_reward, count = attack(i+10000, env, baseline_model, mask_network, device)
+    total_reward, count, attack_num = attack(i+10000, env, baseline_model, mask_network, device)
     print("Test " + str(i) + " :")
     print("reward: " + str(total_reward))
     print("episode length: " + str(count))
     tmp_rewards2.append(total_reward)
     print("current reward mean ", np.mean(tmp_rewards2))
     tmp_counts2.append(count)
+    print("attack steps: ", attack_num)
+    attack_nums.append(attack_num)
 
 print("Average winning rate before: ", np.mean(tmp_rewards))
 print("Average winning rate after: ", np.mean(tmp_rewards2))
+print("Average attack steps: ", np.mean(attack_nums))
 
