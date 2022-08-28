@@ -164,7 +164,7 @@ tmp_counts = []
 
 print("=====Test original model=====")
 for i in range(N_TESTS):
-    total_reward, count = test_baseline(i+10000, env, baseline_model, device)
+    total_reward, count = test_baseline(i, env, baseline_model, device)
     print("Test " + str(i) + " :")
     print("reward: " + str(total_reward))
     print("episode length: " + str(count))
@@ -179,7 +179,7 @@ attack_nums = []
 
 print("=====Test model after attack=====")
 for i in range(N_TESTS):
-    total_reward, count, attack_num = attack(i+10000, env, baseline_model, mask_network, device)
+    total_reward, count, attack_num = attack(i, env, baseline_model, mask_network, device)
     print("Test " + str(i) + " :")
     print("reward: " + str(total_reward))
     print("episode length: " + str(count))
