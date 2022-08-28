@@ -19,7 +19,7 @@ mean_episode_return_buf = {p:deque(maxlen=100) for p in ['landlord', 'landlord_u
 clip_param = 0.2
 
 C_1 = 0.5 # squared loss coefficient
-C_2 = 0.01 # entropy coefficient
+C_2 = 0.0 # entropy coefficient
 
 def merge(buffer_list):
     sz = len(buffer_list)
@@ -255,8 +255,8 @@ def train(flags):
             writer.add_scalar("Learning_rate", lrnow, global_step=frames)
             writer.add_scalar('FPS_avg', fps_avg, global_step=frames)
             # logger into the monitor
-            log.info('Training %i frames: FPS_avg: %.3f Loss: %.3f Loss_critic: %.3f Loss_actor: %.3f Loss_entropy: %.3f \
-                Mask_ratio: %.3f Return: %.3f', frames, fps_avg, np.mean(avg_loss), np.mean(avg_critic_loss), np.mean(avg_actor_loss), \
+            log.info('Training %i frames: FPS_avg: %.5f Loss: %.5f Loss_critic: %.5f Loss_actor: %.5f Loss_entropy: %.5f \
+                Mask_ratio: %.5f Return: %.5f', frames, fps_avg, np.mean(avg_loss), np.mean(avg_critic_loss), np.mean(avg_actor_loss), \
                 np.mean(avg_entropy_loss), 1 - np.mean(avg_mask_ratio), np.mean(avg_return))
 
     for device in device_iterator:
