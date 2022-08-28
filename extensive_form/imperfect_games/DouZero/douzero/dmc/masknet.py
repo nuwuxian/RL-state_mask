@@ -59,10 +59,13 @@ class LandlordLstmModel(nn.Module):
         x = torch.cat([lstm_out,x], dim=-1)
         
         values = self.value_network(x)
-        probs = F.softmax(self.policy_network(x), dim=1)
+        logits = self.policy_network(x)
+
+        probs = F.softmax(logits, dim=1)
+        log_prb = F.log_softmax(logits, dim=1)
 
         dist = Categorical(probs)
-        return dist, values
+        return dist, values, log_prob
 
     def inference(self, z, x):
         with torch.no_grad():
@@ -119,14 +122,17 @@ class FarmerLstmModel(nn.Module):
         lstm_out = lstm_out[:,-1,:]
         x = torch.cat([lstm_out,x], dim=-1)
 
+
+
         values = self.value_network(x)
-        probs = F.softmax(self.policy_network(x), dim=1)
+        logits = self.policy_network(x)
+
+        probs = F.softmax(logits, dim=1)
+        log_prb = F.log_softmax(logits, dim=1)
 
         dist = Categorical(probs)
-
+        return dist, values, log_prob
         
-        return dist, values
-
     def inference(self, z, x):
         with torch.no_grad():
             z, x = torch.unsqueeze(z, dim=0), torch.unsqueeze(x, dim=0)
