@@ -4,15 +4,15 @@ import torch
 import pyspiel
 import numpy as np
 from absl import flags
-from open_spiel.python.algorithms.ppo_gmax import Trajectory, watcher, load_pretrain, _init_bot, _play_game, Config
-from open_spiel.python.algorithms.mask_net import MLP
+from ppo_gmax import Trajectory, watcher, load_pretrain, _init_bot, _play_game, Config
+from mask_net import MLP
 from open_spiel.python.algorithms import mcts
 from open_spiel.python.algorithms.alpha_zero import evaluator as evaluator_lib
 import multiprocessing
 
 EXP_ID = 0
 
-flags.DEFINE_string("masknet_path", "/home/zxc5262/models_againstmcts/checkpoints/model_7400.pth", "Where to save masknet checkpoints.")
+flags.DEFINE_string("masknet_path", "/home/zxc5262/test_logsoftmax/models/checkpoints/model_-1.pth", "Where to save masknet checkpoints.")
 flags.DEFINE_integer("num_tests", 500, "total test rounds")
 FLAGS = flags.FLAGS
 
@@ -50,9 +50,9 @@ def fid_play(logger, game_num, game, bots, mask_net, temperature, temperature_dr
         # return dis is a tensor, value is a scalar
         obs = np.array(state.observation_tensor())
         dist, value = mask_net.inference(obs)
-        mask_action = dist.sample()
-        log_prob = dist.log_prob(mask_action).detach().numpy()
-        mask_action = mask_action.detach().numpy()
+        mask_action = dist.sample().detach().numpy()
+        log_prob = dist.log_prob(torch.Tensor([1])).detach().numpy()
+
         if mask_action[0] == 0:
           trajectory.mask_pos.append(trajectory.eps_len)
         trajectory.mask_probs.append(log_prob[0])
@@ -85,16 +85,26 @@ def select_steps(path, critical, import_thrd):
 
     iteration_ends_path =  path + "eps_len_" + str(i_episode) + ".out"
     iteration_ends = np.loadtxt(iteration_ends_path)
+    
+    sorted_idx = np.argsort(confs)
+    
+    critical_range = sorted_idx[int(iteration_ends/4):]
+    noncritical_range = sorted_idx[:int(iteration_ends/4)]
 
+
+    
     k = max(int(iteration_ends * import_thrd),1)
 
     if critical:
     #find the top k:
-      idx = np.argpartition(confs, -k)[-k:]  # Indices not sorted
-
+      #idx = np.random.choice(critical_range, k)
+      idx = sorted_idx[-k:]
+ 
     else:
     #find the bottom k:
-      idx = np.argpartition(confs, k)[:k]  # Indices not sorted
+      #idx = np.random.choice(noncritical_range, k)
+      idx = sorted_idx[:k]
+
 
     idx.sort()
 
@@ -201,11 +211,11 @@ def replay(logger, game_num, game, bots, path, step_start, step_end, random_repl
 
 def cal_fidelity_score(critical_ratios, results, replay_results):
   p_ls = critical_ratios
+
   p_ds = []
 
   for j in range(len(p_ls)):
     p_ds.append(np.abs(results[j]-replay_results[j])/2)
-    
   reward_diff = np.mean(p_ds) if np.mean(p_ds)>0 else 0.001
   fid_score = np.log(np.mean(p_ls)) - np.log(reward_diff)
   
@@ -258,7 +268,7 @@ def test(*, game, config, test_idx, logger):
       verbose=False,
       dont_return_chance_node=True)
   ]
-  for game_num in range(50):
+  for game_num in range(10):
 
     trajectory = _play_game(logger, game_num, game, bots, model, temperature=1,
                             temperature_drop=0)
@@ -357,10 +367,11 @@ def test(*, game, config, test_idx, logger):
         orig_traj_len = np.loadtxt(path_2 + "eps_len_"+ str(game_num) + ".out")
         critical_step_start = critical_steps_starts[game_num]
         critical_step_end = critical_steps_ends[game_num]
-        trajectory = replay(logger, game_num, game, bots, path_2, critical_step_start, critical_step_end, \
-                            random_replace=True, orig_traj_len=orig_traj_len, temperature=1,
+        for _ in range(5):
+          trajectory = replay(logger, game_num, game, bots, path_2, critical_step_start, critical_step_end, \
+                              random_replace=True, orig_traj_len=orig_traj_len, temperature=1,
                               temperature_drop=0)
-        replay_results.append(trajectory.returns[az_player])
+          replay_results.append(trajectory.returns[az_player])
  
       logger.print("Current average winning rate: ", np.mean(replay_results))
       np.savetxt(path_2 + str(i) + "_replay_rand_reward_record.out", replay_results)
@@ -377,10 +388,11 @@ def test(*, game, config, test_idx, logger):
         orig_traj_len = np.loadtxt(path_2 + "eps_len_"+ str(game_num) + ".out")
         non_critical_step_start = non_critical_steps_starts[game_num]
         non_critical_step_end = non_critical_steps_ends[game_num]
-        trajectory = replay(logger, game_num, game, bots, path_2, non_critical_step_start, non_critical_step_end, \
-                            random_replace=False, orig_traj_len=orig_traj_len, temperature=1,
+        for _ in range(5):
+          trajectory = replay(logger, game_num, game, bots, path_2, non_critical_step_start, non_critical_step_end, \
+                              random_replace=False, orig_traj_len=orig_traj_len, temperature=1,
                               temperature_drop=0)
-        replay_results.append(trajectory.returns[az_player])
+          replay_results.append(trajectory.returns[az_player])
 
       logger.print("Average winning rate: ", np.mean(replay_results))
       np.savetxt(path_2 + str(i) + "_replay_non_reward_record.out", replay_results)
@@ -428,6 +440,7 @@ def alpha_zero_test(config: Config):
   for p in test_processes:
     p.join()
 
+  baseline_rewards = []
   avg_rewards = []
   critical_performs = [[],[],[],[]]
   fidelity_scores = [[],[],[],[]]
@@ -438,6 +451,8 @@ def alpha_zero_test(config: Config):
     path = config.path + str(test_idx) + "/" + "recording/"
     avg_reward = np.loadtxt(path + "avg_reward.out" )
     avg_rewards.append(np.mean(avg_reward))
+    baseline_reward = np.loadtxt(path + "reward_record.out")
+    baseline_rewards.append(np.mean(baseline_reward))
     for i in range(4):
       critical_perform = np.loadtxt(path + str(i) + "_replay_reward_record.out")
       critical_performs[i].append(np.mean(critical_perform))
@@ -450,6 +465,7 @@ def alpha_zero_test(config: Config):
       rand_noncritical_perform = np.loadtxt(path + str(i) + "_replay_non_rand_reward_record.out")
       rand_noncritical_performs[i].append(np.mean(rand_noncritical_perform))
     
+  baseline_reward = np.mean(baseline_rewards)  
   avg_reward = np.mean(avg_rewards)
   critical_perform = []
   fidelity_score = []
@@ -464,8 +480,8 @@ def alpha_zero_test(config: Config):
     rand_noncritical_perform.append(np.mean(rand_noncritical_performs[i]))
 
 
-
-  print("Performance test: ", avg_reward)
+  print("Baseline performance:", baseline_reward)
+  print("Masknet performance: ", avg_reward)
   print("Replay (important): ", critical_perform)
   print("Fidelity score: ", fidelity_score)
   print("Replay (rand important): ", rand_critical_perform)
