@@ -118,7 +118,7 @@ def select_steps(path, critical, import_thrd):
              
       # Reset the count
       else:
-        count = 1
+        count = 0
         tmp_start = idx[i]
         tmp_end = idx[i]
              
@@ -201,18 +201,15 @@ def replay(logger, game_num, game, bots, path, step_start, step_end, random_repl
 
 def cal_fidelity_score(critical_ratios, results, replay_results):
   p_ls = critical_ratios
-
-  fids = []
+  p_ds = []
 
   for j in range(len(p_ls)):
-    p_l = p_ls[j]
-    p_d = np.abs(results[j]-replay_results[j])/2
-    if p_l == 0 or p_d ==0:
-        p_l = 0.001
-        p_d = 0.001
-    fids.append(np.log(p_l) - np.log(p_d))
+    p_ds.append(np.abs(results[j]-replay_results[j])/2)
+    
+  reward_diff = np.mean(p_ds) if np.mean(p_ds)>0 else 0.001
+  fid_score = np.log(np.mean(p_ls)) - np.log(reward_diff)
   
-  return np.mean(fids)
+  return fid_score
 
 
 
