@@ -101,10 +101,8 @@ def env_reset(i_episode, envs):
 
         actions = np.repeat(int(recorded_actions[count]), N)
         next_state, reward, done, _ = envs.step(actions)
-        
         count += 1
         
-
         next_state = grey_crop_resize_batch(next_state)
         state = next_state
     
@@ -245,27 +243,8 @@ def ppo_train(model, masknet, envs, device, use_cuda, test_rewards, test_epochs,
             dist, value = model(state)
             action = dist.sample().cuda() if use_cuda else dist.sample()
 
-
-            mask_dist, mask_value = masknet(state)
-            mask_action = mask_dist.sample().cuda() if use_cuda else mask_dist.sample()
- 
-
-            baseline_action_copy = action.cpu().numpy()
-            mask_action_copy = mask_action.cpu().numpy()
-
-            real_actions = []
-
-            for i in range(len(mask_action_copy)):
-                if mask_action_copy[i] == 1:
-                    real_actions.append(baseline_action_copy[i])
-                    
-                else:
-                    real_actions.append(np.random.choice(6))
-
-
-            next_state, reward, done, _ = envs.step(real_actions)
+            next_state, reward, done, _ = envs.step(action)
             next_state = grey_crop_resize_batch(next_state) # simplify perceptions (grayscale-> crop-> resize) to train CNN
-            
             
             log_prob = dist.log_prob(action) # needed to compute probability ratio r(theta) that prevent policy to vary too much probability related to each action (make the computations more robust)
             log_prob_vect = log_prob.reshape(len(log_prob), 1) # transpose from row to column
