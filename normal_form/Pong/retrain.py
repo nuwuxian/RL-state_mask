@@ -218,7 +218,6 @@ def ppo_update(states, actions, log_probs, returns, advantages, clip_param=E_CLI
 
 
 def ppo_train(model, masknet, envs, device, use_cuda, test_rewards, test_epochs, train_epoch, best_reward, losing_games_file, winning_games_file, ratio):
-    env = gym.make(ENV_ID).env
 
     train_pool = training_pool(losing_games_file, winning_games_file, ratio)
     idxs_list = train_pool.candidates
@@ -275,7 +274,7 @@ def ppo_train(model, masknet, envs, device, use_cuda, test_rewards, test_epochs,
 
 
         if train_epoch % T_EPOCHS == 0: # do a test every T_EPOCHS times
-
+            env = gym.make(ENV_ID).env
             test_reward = np.mean([test_env(i, env, model, masknet, device) for i in range(N_TESTS)]) # do N_TESTS tests and takes the mean reward
             test_rewards.append(test_reward) # collect the mean rewards for saving performance metric
             test_epochs.append(train_epoch)
