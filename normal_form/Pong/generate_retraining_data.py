@@ -50,8 +50,6 @@ def grey_crop_resize(state): # deal with single observation
 
 
 def test_mask(i_episode, env, baseline_model, mask_network, device):
-    #vid_path = "./recording/vid_mask_" + str (i_episode) + ".mp4"
-    #vid = video_recorder.VideoRecorder(env,path=vid_path)
 
     env.seed(i_episode)
     state = env.reset()
@@ -99,12 +97,6 @@ H_SIZE = 256
 
 N_TESTS = 10000
 
-if os.path.isdir("recording"):
-    os.system("rm -rf recording")
-
-
-os.system("mkdir recording")
-
 env = gym.make("Pong-v0").env
 
 num_inputs = 1
@@ -117,7 +109,7 @@ device = torch.device("cuda" if use_cuda else "cpu")
 
 before_retrain = "./ppo_test/baseline/Pong-v0_+0.896_12150.dat"
 
-PATH = "./ppo_test/masknet/Pong-v0_+0.898_19660.dat"
+PATH = "./ppo_test/masknet/Pong-v0_+0.910_20170.dat"
 
 before_model = CNN(num_inputs, num_outputs, H_SIZE).to(device)
 if use_cuda:
@@ -163,13 +155,13 @@ for i in range(N_TESTS):
 
 
 
-    eps_len_filename = "./recording/eps_len_" + str(i) + ".out" 
+    eps_len_filename = "./retrain_data/eps_len_" + str(i) + ".out" 
     np.savetxt(eps_len_filename, [count])
 
-    act_seq_filename = "./recording/act_seq_" + str(i) + ".out" 
+    act_seq_filename = "./retrain_data/act_seq_" + str(i) + ".out" 
     np.savetxt(act_seq_filename, action_seq)
 
-    mask_probs_filename = "./recording/mask_probs_" + str(i) + ".out" 
+    mask_probs_filename = "./retrain_data/mask_probs_" + str(i) + ".out" 
     np.savetxt(mask_probs_filename, mask_probs)
 
 np.savetxt("reward_record.out", tmp_rewards)
