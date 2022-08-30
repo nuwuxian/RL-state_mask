@@ -32,8 +32,8 @@ N_TESTS = 500 # do N_TESTS tests
 TARGET_REWARD = 0.95
 TRANSFER_LEARNING = True
 BASELINE_PATH = "./ppo_test/baseline/Pong-v0_+0.896_12150.dat"
-MASK_PATH = "./ppo_test/masknet/Pong-v0_+0.898_19660.dat"
-critical_steps_starts = np.loadtxt("./recording/critical_steps_starts.out")
+MASK_PATH = "./ppo_test/masknet/Pong-v0_+0.910_20170.dat"
+critical_steps_starts = np.loadtxt("./retrain_data/critical_steps_starts.out")
 
 
 for func in [
@@ -55,15 +55,15 @@ class training_pool():
         self.ratio = ratio
         self.losing_games_idxs = self.extract_idxs(losing_games_file)
         self.winning_games_idxs = self.extract_idxs(winning_games_file)
-        self.candidates = self.create_pool(self.total_num, self.losing_games_idxs, self.winning_games_idxs, self.ratio)
+        self.candidates = self.create_pool()
     
     def extract_idxs(self, filename):
         idxs = np.loadtxt(filename)
         return idxs
     
-    def create_pool(self, losing_idxs, winning_idxs, ratio):
-        losing_idxs_selected = np.random.choice(losing_idxs, self.total_num * ratio)
-        winning_idxs_selected = np.random.choice(winning_idxs, self.total_num * (1-ratio))
+    def create_pool(self):
+        losing_idxs_selected = np.random.choice(self.losing_games_idxs, int(self.total_num * self.ratio))
+        winning_idxs_selected = np.random.choice(self.winning_games_idxs, int(self.total_num * (1-self.ratio)))
         pool = np.concatenate((losing_idxs_selected, winning_idxs_selected), axis=None)
         return pool
     
@@ -86,7 +86,7 @@ def make_env():    # this function creates a single environment
 
 def env_reset(i_episode, envs):
     i_episode = int(i_episode)
-    action_sequence_path = "./recording/act_seq_" + str(i_episode) + ".out"
+    action_sequence_path = "./retrain_data/act_seq_" + str(i_episode) + ".out"
     recorded_actions = np.loadtxt(action_sequence_path)
 
     envs.seed(i_episode)
@@ -101,8 +101,10 @@ def env_reset(i_episode, envs):
 
         actions = np.repeat(int(recorded_actions[count]), N)
         next_state, reward, done, _ = envs.step(actions)
+        
         count += 1
         
+
         next_state = grey_crop_resize_batch(next_state)
         state = next_state
     
@@ -114,8 +116,8 @@ def normalize(x):
     x /= (x.std() + 1e-8) # prevent 0 fraction
     return x
 
-def test_env(i_episode, env, model, masknet, device):
-    #env.seed(i_episode)
+def test_env(i_episode, env, model, device):
+    env.seed(i_episode+100000)
     state = env.reset()
     state = grey_crop_resize(state)
 
@@ -217,7 +219,8 @@ def ppo_update(states, actions, log_probs, returns, advantages, clip_param=E_CLI
 
 
 
-def ppo_train(model, masknet, envs, device, use_cuda, test_rewards, test_epochs, train_epoch, best_reward, losing_games_file, winning_games_file, ratio):
+def ppo_train(model, envs, device, use_cuda, test_rewards, test_epochs, train_epoch, best_reward, losing_games_file, winning_games_file, ratio):
+    env = gym.make(ENV_ID).env
 
     train_pool = training_pool(losing_games_file, winning_games_file, ratio)
     idxs_list = train_pool.candidates
@@ -244,6 +247,7 @@ def ppo_train(model, masknet, envs, device, use_cuda, test_rewards, test_epochs,
 
             next_state, reward, done, _ = envs.step(action)
             next_state = grey_crop_resize_batch(next_state) # simplify perceptions (grayscale-> crop-> resize) to train CNN
+            
             
             log_prob = dist.log_prob(action) # needed to compute probability ratio r(theta) that prevent policy to vary too much probability related to each action (make the computations more robust)
             log_prob_vect = log_prob.reshape(len(log_prob), 1) # transpose from row to column
@@ -274,8 +278,8 @@ def ppo_train(model, masknet, envs, device, use_cuda, test_rewards, test_epochs,
 
 
         if train_epoch % T_EPOCHS == 0: # do a test every T_EPOCHS times
-            env = gym.make(ENV_ID).env
-            test_reward = np.mean([test_env(i, env, model, masknet, device) for i in range(N_TESTS)]) # do N_TESTS tests and takes the mean reward
+
+            test_reward = np.mean([test_env(i, env, model, device) for i in range(N_TESTS)]) # do N_TESTS tests and takes the mean reward
             test_rewards.append(test_reward) # collect the mean rewards for saving performance metric
             test_epochs.append(train_epoch)
             print('Epoch: %s -> Reward: %.3f' % (train_epoch, test_reward))
