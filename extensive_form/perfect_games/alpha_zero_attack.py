@@ -185,9 +185,3 @@ def alpha_zero_attack(config):
   print("Average winning rate before: ", base_win * 1.0 / num_threads)
   print("Average winning rate after: ", attack_win * 1.0 / num_threads)
   print("Average attack steps: ", attack_ratio * 1.0 / num_threads)
-
-
-
-
-
-
