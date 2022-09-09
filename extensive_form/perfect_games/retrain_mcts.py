@@ -84,7 +84,7 @@ class Training_pool():
 losing_games_file = 'losing_game.out'
 winning_games_file = 'wining_game.out'
 ratio = 0.5
-train_pool = training_pool(losing_games_file, winning_games_file, ratio)
+train_pool = Training_pool(losing_games_file, winning_games_file, ratio)
 
 
 def replay(state, idx):
