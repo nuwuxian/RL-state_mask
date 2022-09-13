@@ -353,7 +353,7 @@ def evaluator(*, game, config, logger, queue):
     if not update_checkpoint(logger, queue, model, az_evaluator):
       return
 
-    az_player = game_num % 2
+    az_player = EXP_ID
     difficulty = (game_num // 2) % config.eval_levels
     max_simulations = int(config.max_simulations * (10 ** (difficulty / 2)))
     bots = [
@@ -367,9 +367,6 @@ def evaluator(*, game, config, logger, queue):
             verbose=False,
             dont_return_chance_node=True)
     ]
-    if az_player == 1:
-      bots = list(reversed(bots))
-
     trajectory = _play_game(logger, game_num, game, bots, temperature=1,
                             temperature_drop=0)
     results.append(trajectory.returns[az_player])
@@ -387,8 +384,8 @@ def learner(*, game, config, actors, evaluators, broadcast_fn, logger):
   logger.also_to_stdout = True
   replay_buffer = Buffer(config.replay_buffer_size)
   learn_rate = config.replay_buffer_size // config.replay_buffer_reuse
-  logger.print("Initializing model")
-  model = _init_model_from_config(config)
+  logger.print("Load pretraining model")
+  model = load_pretrain(config)
   logger.print("Model type: %s(%s, %s)" % (config.nn_model, config.nn_width,
                                            config.nn_depth))
   logger.print("Model size:", model.num_trainable_variables, "variables")
