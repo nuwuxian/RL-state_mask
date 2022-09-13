@@ -47,6 +47,7 @@ import numpy as np
 
 from open_spiel.python.algorithms import mcts
 from open_spiel.python.algorithms.alpha_zero import evaluator as evaluator_lib
+from open_spiel.python.algorithms.alpha_zero import model as az_model
 from open_spiel.python.algorithms.alpha_zero import model as model_lib
 import pyspiel
 from open_spiel.python.utils import data_logger
@@ -59,7 +60,7 @@ JOIN_WAIT_DELAY = 0.001
 
 # Explain agent idx
 EXP_ID = 0
-critical_steps_starts = np.loadtxt('./retrain/critical_steps_starts.out')
+critical_steps_starts = np.loadtxt('./retrain_data/critical_steps_starts.out')
 
 # Training pool for replay
 class Training_pool():
@@ -81,8 +82,8 @@ class Training_pool():
         return pool
 
 # Initilize the training pool
-losing_games_file = 'losing_game.out'
-winning_games_file = 'winning_game.out'
+losing_games_file = './retrain_data/losing_game.out'
+winning_games_file = './retrain_data/winning_game.out'
 ratio = 0.5
 train_pool = Training_pool(losing_games_file, winning_games_file, ratio)
 
@@ -108,8 +109,7 @@ def replay(state, idx):
         else:
             action = recorded_actions[cnt]
         cnt += 1
-        state.apply_action(action)
-  logger.opt_print("Finish Replay")
+        state.apply_action(int(action))
 
 def load_pretrain(az_path):
     return az_model.Model.from_checkpoint(az_path)
@@ -253,9 +253,10 @@ def _play_game(logger, game_num, game, bots, temperature, temperature_drop):
   logger.opt_print(" Starting game {} ".format(game_num).center(60, "-"))
   logger.opt_print("Initial state:\n{}".format(state))
   idxs_list = train_pool.candidates
-  idx = int(random.choice(idx_list))
+  idx = int(random.choice(idxs_list))
   # Replay the game
   replay(state, idx)
+  logger.opt_print("Finish Replay")
 
   while not state.is_terminal():
     if state.is_chance_node():
@@ -318,6 +319,8 @@ def actor(*, config, game, logger, queue):
   """An actor process runner that generates games and returns trajectories."""
   logger.print("Load pretraining model")
   model = load_pretrain(config.az_path)
+   # modify the path
+  model._path = config.path
   logger.print("Initializing bots")
   az_evaluator = evaluator_lib.AlphaZeroEvaluator(game, model)
   # random evaluator
@@ -345,6 +348,8 @@ def evaluator(*, game, config, logger, queue):
   results = Buffer(config.evaluation_window)
   logger.print("Initializing model")
   model = load_pretrain(config.az_path)
+   # modify the path
+  model._path = config.path
   logger.print("Initializing bots")
   az_evaluator = evaluator_lib.AlphaZeroEvaluator(game, model)
   random_evaluator = mcts.RandomRolloutEvaluator()
@@ -385,7 +390,9 @@ def learner(*, game, config, actors, evaluators, broadcast_fn, logger):
   replay_buffer = Buffer(config.replay_buffer_size)
   learn_rate = config.replay_buffer_size // config.replay_buffer_reuse
   logger.print("Load pretraining model")
-  model = load_pretrain(config)
+  model = load_pretrain(config.az_path)
+  # modify the path
+  model._path = config.path
   logger.print("Model type: %s(%s, %s)" % (config.nn_model, config.nn_width,
                                            config.nn_depth))
   logger.print("Model size:", model.num_trainable_variables, "variables")
