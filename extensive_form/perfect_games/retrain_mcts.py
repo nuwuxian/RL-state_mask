@@ -82,21 +82,18 @@ class Training_pool():
 
 # Initilize the training pool
 losing_games_file = 'losing_game.out'
-winning_games_file = 'wining_game.out'
+winning_games_file = 'winning_game.out'
 ratio = 0.5
 train_pool = Training_pool(losing_games_file, winning_games_file, ratio)
 
 
 def replay(state, idx):
     # given is a empty board
-    exp_action_seq_path = './retrain_data/adv_act_seq_' + str(idx) + '.out'
-    opp_action_seq_path = './retrain_data/vic_act_seq_' + str(idx) + '.out'
-    exp_recorded_actions = np.loadtxt(exp_action_seq_path)
-    opp_recorded_actions = np.loadtxt(opp_action_seq_path)
+    action_seq_path = './retrain_data/act_seq_' + str(idx) + '.out'
+    recorded_actions = np.loadtxt(action_seq_path)
+    cnt, exp_cnt = 0, 0
 
-    cnt = 0
-
-    while not state.is_terminal() and cnt < critical_steps_starts[idx]:
+    while not state.is_terminal() and exp_cnt < critical_steps_starts[idx]:
       if state.is_chance_node():
         # For chance nodes, rollout according to chance node's probability
         # distribution
@@ -106,9 +103,10 @@ def replay(state, idx):
         state.apply_action(action)
       else:
         if state.current_player() == EXP_ID:
-            action = exp_recorded_actions[cnt]
+            action = recorded_actions[cnt]
+            exp_cnt += 1
         else:
-            action = opp_recorded_actions[cnt]
+            action = recorded_actions[cnt]
         cnt += 1
         state.apply_action(action)
   logger.opt_print("Finish Replay")
@@ -555,7 +553,7 @@ def learner(*, game, config, actors, evaluators, broadcast_fn, logger):
     broadcast_fn(save_path)
 
 
-def alpha_zero(config: Config):
+def alpha_zero_retrain(config: Config):
   """Start all the worker processes for a full alphazero setup."""
   game = pyspiel.load_game(config.game)
   config = config._replace(

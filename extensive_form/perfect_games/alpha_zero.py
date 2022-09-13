@@ -17,7 +17,7 @@
 from absl import app
 from absl import flags
 
-from open_spiel.python.algorithms import ppo_lagrange
+from open_spiel.python.algorithms import ppo_lagrange, retrain_mcts
 from open_spiel.python.algorithms.alpha_zero import model as model_lib
 from open_spiel.python.utils import spawn
 
@@ -49,6 +49,7 @@ flags.DEFINE_integer("evaluation_window", 100,
                      "How many games to average results over.")
 flags.DEFINE_bool("test_masknet", False, "test masknet or baseline")
 flags.DEFINE_bool("is_training", False, "training or testing")
+flags.DEFINE_integer("is_retraining", False, "training or retraining")
 flags.DEFINE_integer(
     "eval_levels", 7,
     ("Play evaluation games vs MCTS+Solver, with max_simulations*10^(n/2)"
@@ -97,6 +98,8 @@ def main(unused_argv):
   )
   if FLAGS.is_training:
     ppo_lagrange.alpha_zero(config)
+  elif FLAGS.is_retraining:
+    retrain_mcts.alpha_zero_retrain(config)
   else:
     ppo_lagrange.alpha_zero_test(config)
 
