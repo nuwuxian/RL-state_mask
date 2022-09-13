@@ -276,10 +276,12 @@ def _play_game(logger, game_num, game, bots, temperature, temperature_drop):
         action = root.best_child().action
       else:
         action = np.random.choice(len(policy), p=policy)
-      trajectory.states.append(
-          TrajectoryState(state.observation_tensor(), state.current_player(),
-                          state.legal_actions_mask(), action, policy,
-                          root.total_reward / root.explore_count))
+      # only exp_id policy is needed to retrain, opp_id policy is pure mcts
+      if state.current_player() == EXP_ID:
+        trajectory.states.append(
+            TrajectoryState(state.observation_tensor(), state.current_player(),
+                            state.legal_actions_mask(), action, policy,
+                            root.total_reward / root.explore_count))
       action_str = state.action_to_string(state.current_player(), action)
       actions.append(action_str)
       logger.opt_print("Player {} sampled action: {}".format(
