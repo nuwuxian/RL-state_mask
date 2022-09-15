@@ -163,19 +163,19 @@ def train(flags):
         for k in ['landlord', 'landlord_up', 'landlord_down']:
             # load backbone for mask-learner
             if k == position:
-               learner_state = learner_model.state_dict()
-               pretrained_state = {_k: _v for _k, _v in checkpoint_states[k].iteritems() if _k in mask_net and _v.size() == masknet_state[_k].size()}
+               learner_state = learner_model.get_model().state_dict()
+               pretrained_state = {_k: _v for _k, _v in checkpoint_states[k].items() if _k in learner_state and _v.size() == learner_state[_k].size()}
                learner_state.update(pretrained_state)
-               learner_model.load_state_dict(learner_state)
+               learner_model.get_model().load_state_dict(learner_state)
 
             for device in device_iterator:
                 models[device].get_model(k).load_state_dict(checkpoint_states[k])
                 # load backbone for mask-actor
                 if k == position:
-                    actor_state = mask_models[device].state_dict()
-                    pretrained_state = {_k: _v for _k, _v in checkpoint_states[k].iteritems() if _k in mask_net and _v.size() == masknet_state[_k].size()}
+                    actor_state = mask_models[device].get_model().state_dict()
+                    pretrained_state = {_k: _v for _k, _v in checkpoint_states[k].items() if _k in actor_state and _v.size() == actor_state[_k].size()}
                     actor_state.update(pretrained_state)
-                    mask_models[device].load_state_dict(actor_state)
+                    mask_models[device].get_model().load_state_dict(actor_state)
         log.info(f"Load baseline pretrained models")
 
     def checkpoint(frames):
