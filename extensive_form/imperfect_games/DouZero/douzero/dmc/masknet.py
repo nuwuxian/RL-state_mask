@@ -20,33 +20,22 @@ class LandlordLstmModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.lstm = nn.LSTM(162, 128, batch_first=True)
+        self.dense1 = nn.Linear(373 + 128, 512)
+        self.dense2 = nn.Linear(512, 512)
+        self.dense3 = nn.Linear(512, 512)
+        self.dense4 = nn.Linear(512, 512)
+        self.dense5 = nn.Linear(512, 512)
 
         self.policy_network = []
         self.value_network = []
         # policy network
-        self.policy_network.append(layer_init(nn.Linear(319 + 128, 512)))
-        self.policy_network.append(nn.Tanh())
-        self.policy_network.append(layer_init(nn.Linear(512, 512)))
-        self.policy_network.append(nn.Tanh())
-        self.policy_network.append(layer_init(nn.Linear(512, 512)))
-        self.policy_network.append(nn.Tanh())
-        self.policy_network.append(layer_init(nn.Linear(512, 512)))
-        self.policy_network.append(nn.Tanh())
         self.policy_network.append(layer_init(nn.Linear(512, 256)))
         self.policy_network.append(nn.Tanh())
         self.policy_network.append(layer_init(nn.Linear(256, 2), std=1.0))
 
         # value network
-        self.value_network.append(layer_init(nn.Linear(319 + 128, 512)))
-        self.value_network.append(nn.Tanh())
-        self.value_network.append(layer_init(nn.Linear(512, 512)))
-        self.value_network.append(nn.Tanh())
-        self.value_network.append(layer_init(nn.Linear(512, 512)))
-        self.value_network.append(nn.Tanh())
-        self.value_network.append(layer_init(nn.Linear(512, 512)))
-        self.value_network.append(nn.Tanh())
-        self.value_network.append(layer_init(nn.Linear(512, 256)))
-        self.value_network.append(nn.Tanh())
+        self.policy_network.append(layer_init(nn.Linear(512, 256)))
+        self.policy_network.append(nn.Tanh())
         self.value_network.append(layer_init(nn.Linear(256, 1), std=1.0))
 
         self.value_network = nn.Sequential(*self.value_network)
@@ -57,6 +46,16 @@ class LandlordLstmModel(nn.Module):
         lstm_out, (h_n, _) = self.lstm(z)
         lstm_out = lstm_out[:,-1,:]
         x = torch.cat([lstm_out,x], dim=-1)
+        x = self.dense1(x)
+        x = torch.relu(x)
+        x = self.dense2(x)
+        x = torch.relu(x)
+        x = self.dense3(x)
+        x = torch.relu(x)
+        x = self.dense4(x)
+        x = torch.relu(x)
+        x = self.dense5(x)
+        x = torch.relu(x)
         
         values = self.value_network(x)
         logits = self.policy_network(x)
@@ -73,6 +72,16 @@ class LandlordLstmModel(nn.Module):
             lstm_out, (h_n, _) = self.lstm(z)
             lstm_out = lstm_out[:,-1,:]
             x = torch.cat([lstm_out,x], dim=-1)
+            x = self.dense1(x)
+            x = torch.relu(x)
+            x = self.dense2(x)
+            x = torch.relu(x)
+            x = self.dense3(x)
+            x = torch.relu(x)
+            x = self.dense4(x)
+            x = torch.relu(x)
+            x = self.dense5(x)
+            x = torch.relu(x)
         
             values = self.value_network(x)
             probs = F.softmax(self.policy_network(x), dim=1)
@@ -85,33 +94,22 @@ class FarmerLstmModel(nn.Module):
     def __init__(self):
         super().__init__()
         self.lstm = nn.LSTM(162, 128, batch_first=True)
+        self.dense1 = nn.Linear(484 + 128, 512)
+        self.dense2 = nn.Linear(512, 512)
+        self.dense3 = nn.Linear(512, 512)
+        self.dense4 = nn.Linear(512, 512)
+        self.dense5 = nn.Linear(512, 512)
 
         self.policy_network = []
         self.value_network = []
         # policy network
-        self.policy_network.append(layer_init(nn.Linear(430 + 128, 512)))
-        self.policy_network.append(nn.Tanh)
-        self.policy_network.append(layer_init(nn.Linear(512, 512)))
-        self.policy_network.append(nn.Tanh)
-        self.policy_network.append(layer_init(nn.Linear(512, 512)))
-        self.policy_network.append(nn.Tanh)
-        self.policy_network.append(layer_init(nn.Linear(512, 512)))
-        self.policy_network.append(nn.Tanh)
         self.policy_network.append(layer_init(nn.Linear(512, 256)))
-        self.policy_network.append(nn.Tanh)
+        self.policy_network.append(nn.Tanh())
         self.policy_network.append(layer_init(nn.Linear(256, 2), std=1.0))
 
         # value network
-        self.value_network.append(layer_init(nn.Linear(430 + 128, 512)))
-        self.value_network.append(nn.Tanh)
-        self.value_network.append(layer_init(nn.Linear(512, 512)))
-        self.value_network.append(nn.Tanh)
-        self.value_network.append(layer_init(nn.Linear(512, 512)))
-        self.value_network.append(nn.Tanh)
-        self.value_network.append(layer_init(nn.Linear(512, 512)))
-        self.value_network.append(nn.Tanh)
         self.value_network.append(layer_init(nn.Linear(512, 256)))
-        self.value_network.append(nn.Tanh)
+        self.value_network.append(nn.Tanh())
         self.value_network.append(layer_init(nn.Linear(256, 1), std=1.0))
 
         self.value_network = nn.Sequential(*self.value_network)
@@ -121,8 +119,16 @@ class FarmerLstmModel(nn.Module):
         lstm_out, (h_n, _) = self.lstm(z)
         lstm_out = lstm_out[:,-1,:]
         x = torch.cat([lstm_out,x], dim=-1)
-
-
+        x = self.dense1(x)
+        x = torch.relu(x)
+        x = self.dense2(x)
+        x = torch.relu(x)
+        x = self.dense3(x)
+        x = torch.relu(x)
+        x = self.dense4(x)
+        x = torch.relu(x)
+        x = self.dense5(x)
+        x = torch.relu(x)
 
         values = self.value_network(x)
         logits = self.policy_network(x)
@@ -139,6 +145,16 @@ class FarmerLstmModel(nn.Module):
             lstm_out, (h_n, _) = self.lstm(z)
             lstm_out = lstm_out[:,-1,:]
             x = torch.cat([lstm_out,x], dim=-1)
+            x = self.dense1(x)
+            x = torch.relu(x)
+            x = self.dense2(x)
+            x = torch.relu(x)
+            x = self.dense3(x)
+            x = torch.relu(x)
+            x = self.dense4(x)
+            x = torch.relu(x)
+            x = self.dense5(x)
+            x = torch.relu(x)
 
             values = self.value_network(x)
             probs = F.softmax(self.policy_network(x), dim=1)
