@@ -25,12 +25,12 @@ parser.add_argument('--load_model', default=True, type=bool,
                     help='Load an existing model')
 parser.add_argument('--disable_checkpoint', action='store_true',
                     help='Disable saving checkpoint')
-parser.add_argument('--savedir', default='douzero_checkpoints',
+parser.add_argument('--savedir', default='down_checkpoints',
                     help='Root dir where experiment data will be saved')
 parser.add_argument('--pretrain_path', default='./baselines/douzero_WP')
 
 # Hyperparameters
-parser.add_argument('--total_frames', default=30000000, type=int,
+parser.add_argument('--total_frames', default=50000000, type=int,
                     help='Total environment frames to train for')
 parser.add_argument('--exp_epsilon', default=0.01, type=float,
                     help='The probability for exploration')
@@ -42,11 +42,11 @@ parser.add_argument('--num_buffers', default=50, type=int,
                     help='Number of shared-memory buffers')
 parser.add_argument('--max_grad_norm', default=0.5, type=float,
                     help='Max norm of gradients')
-parser.add_argument('--position', default='landlord', type=str,
+parser.add_argument('--position', default='landlord_down', type=str,
                     help='explain position')
 
 # Optimizer settings
-parser.add_argument('--learning_rate', default=0.0003, type=float,
+parser.add_argument('--learning_rate', default=0.0001, type=float,
                     help='Learning rate')
 
 parser.add_argument('--anneal_rl', default=True, type=bool)

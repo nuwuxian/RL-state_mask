@@ -128,7 +128,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                 _action_idx = int(agent_output['action'].cpu().detach().numpy())
                 action = obs['legal_actions'][_action_idx]
                 if position == exp_id and mask_net != None:
-                    # concate the 'obs_x_no_action' with action
+                    # concate the 'obs_z' with action
                     x = torch.cat((env_output['obs_x_no_action'], _cards2tensor(action).to(device))).float()
                     dist, value = mask_net.inference(env_output['obs_z'], x)
                     # add to buf
