@@ -19,7 +19,7 @@ def load_card_play_models(card_play_model_path_dict):
     for position in ['landlord', 'landlord_up', 'landlord_down']:
         model.get_model(position).load_state_dict(torch.load(card_play_model_path_dict[position], map_location='cuda:0'))
 
-    masknet = MaskNet()
+    masknet = MaskNet(position='landlord_down')
     masknet.get_model().load_state_dict(torch.load(card_play_model_path_dict['masknet'], map_location='cuda:0'))
     masknet.eval()
     return model, masknet
@@ -150,18 +150,14 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, obs
 
 def cal_fidelity_score(critical_ratios, results, replay_results):
     p_ls = critical_ratios
-
-    fids = []
-
+    p_ds = []
     for j in range(len(p_ls)):
-        p_l = p_ls[j]
         p_d = np.abs(results[j]-replay_results[j])
-        if p_l == 0 or p_d ==0:
-            p_l = 0.001
-            p_d = 0.001
-        fids.append(np.log(p_l) - np.log(p_d))
+        p_ds.append(p_d)
+    reward_diff = np.mean(p_ds) if np.mean(p_ds)>0 else 0.001
+    fid_score = np.log(np.mean(p_ls)) - np.log(reward_diff)
   
-    return np.mean(fids)
+    return fid_score
 
 def mp_simulate(card_play_model_path_dict, q, test_idx, game_per_worker):
     path = str(test_idx) + "/"
@@ -404,11 +400,11 @@ if __name__ == '__main__':
     parser.add_argument('--landlord_down', type=str,
             default='baselines/douzero_WP/landlord_down.ckpt')
     parser.add_argument('--masknet', type=str, 
-            default='douzero_checkpoints_inner_iter_5/douzero/landlord_masknet_weights_9882600.ckpt')
+            default='down_checkpoints/LR_0.0001_NUM_EPOCH_2_NMINIBATCHES_4/douzero/landlord_down_masknet_weights_10684800.ckpt')
     parser.add_argument('--num_workers', type=int, default=25)
     parser.add_argument('--total_games', type=int, default=500)
-    parser.add_argument('--gpu_device', type=str, default='1')
-    parser.add_argument('--position', default='landlord', type=str,
+    parser.add_argument('--gpu_device', type=str, default='0')
+    parser.add_argument('--position', default='landlord_down', type=str,
                     help='explain position')
     args = parser.parse_args()
 
