@@ -19,7 +19,7 @@ from .utils import get_buffer, log, create_env, create_buffers, act
 mean_episode_return_buf = {p:deque(maxlen=100) for p in ['landlord', 'landlord_up', 'landlord_down']}
 clip_param = 0.2
 
-lambda_1 = 1e-3
+lambda_1 = 1e-2
 C_1 = 0.5 # squared loss coefficient
 C_2 = 0.0 # entropy coefficient
 
@@ -45,7 +45,7 @@ def learn(model, batch, optimizer, flags):
         device = torch.device('cpu')
     position = flags.position
     obs_z = batch['obs_z'].to(device).float()
-    obs_x_no_action = batch['obs_x_no_action'].to(device).float()
+    obs_x = batch['obs_x'].to(device).float()
     act = batch['act'].to(device)
     log_probs = batch['logpac'].to(device)
     ret = batch['ret'].to(device)
@@ -59,7 +59,7 @@ def learn(model, batch, optimizer, flags):
     episode_returns = batch['reward'][batch['done']]
     mean_episode_return_buf[position].append(torch.mean(episode_returns).to(device))
     
-    dist, value, log_prob = model.forward(obs_z, obs_x_no_action)
+    dist, value, log_prob = model.forward(obs_z, obs_x)
     onehot_action = F.gumbel_softmax(log_prob, tau=1.0, hard=True)
 
     new_log_probs = dist.log_prob(act)
@@ -161,8 +161,21 @@ def train(flags):
                 pretrain_path + '/' + k + '.ckpt', map_location=("cuda:"+str(flags.training_device) if flags.training_device != "cpu" else "cpu")
             )
         for k in ['landlord', 'landlord_up', 'landlord_down']:
+            # load backbone for mask-learner
+            if k == position:
+               learner_state = learner_model.state_dict()
+               pretrained_state = {_k: _v for _k, _v in checkpoint_states[k].iteritems() if _k in mask_net and _v.size() == masknet_state[_k].size()}
+               learner_state.update(pretrained_state)
+               learner_model.load_state_dict(learner_state)
+
             for device in device_iterator:
                 models[device].get_model(k).load_state_dict(checkpoint_states[k])
+                # load backbone for mask-actor
+                if k == position:
+                    actor_state = mask_models[device].state_dict()
+                    pretrained_state = {_k: _v for _k, _v in checkpoint_states[k].iteritems() if _k in mask_net and _v.size() == masknet_state[_k].size()}
+                    actor_state.update(pretrained_state)
+                    mask_models[device].load_state_dict(actor_state)
         log.info(f"Load baseline pretrained models")
 
     def checkpoint(frames):
