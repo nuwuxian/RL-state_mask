@@ -8,6 +8,7 @@ import numpy as np
 import pickle
 from douzero.dmc.models import Model
 from douzero.dmc.masknet import MaskNet
+from douzero.dmc.utils import _cards2tensor
 from douzero.env.game import GameEnv
 from douzero.env.env import Env, get_obs
 from douzero.dmc.env_utils import Environment, _format_observation
@@ -174,10 +175,10 @@ def mp_simulate(card_play_model_path_dict, q, test_idx, game_per_worker):
     reward_buf = []
 
     card_play_data_buff, card_play_data = [], []
-    for _ in range(500):
+    for _ in range(100):
         card_play_data_buff.append(generate())
     game_num = 0
-    for i in range(500):
+    for i in range(100):
         obs_buf = []
         act_buf = []
         logpac_buf = []
@@ -191,7 +192,8 @@ def mp_simulate(card_play_model_path_dict, q, test_idx, game_per_worker):
             act_buf.append(action)
             obs_buf.append(obs)
             if position == exp_id and masknet != None:
-                dist, value = masknet.inference(env_output['obs_z'], env_output['obs_x_no_action'])
+                x = torch.cat((env_output['obs_x_no_action'], _cards2tensor(action).to("cuda:0"))).float()
+                dist, value = masknet.inference(env_output['obs_z'], x)
                 log_prob = dist.log_prob(torch.Tensor([1]).to('cuda:0'))
                 logpac_buf.append(log_prob.cpu())
             game_len += 1
@@ -200,7 +202,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx, game_per_worker):
                 utility = env_output['episode_return'] if exp_id == 'landlord' else -env_output['episode_return']
                 reward = 1 if utility.cpu().numpy() > 0 else 0
                 break
-        if game_len >= 10:
+        if game_len >= 1:
             reward_buf.append(reward)
             card_play_data.append(card_play_data_buff[i])
             eps_len_filename = path + "eps_len_" + str(game_num) + ".out"
@@ -400,8 +402,8 @@ if __name__ == '__main__':
     parser.add_argument('--landlord_down', type=str,
             default='baselines/douzero_WP/landlord_down.ckpt')
     parser.add_argument('--masknet', type=str, 
-            default='down_checkpoints/LR_0.0001_NUM_EPOCH_2_NMINIBATCHES_4/douzero/landlord_down_masknet_weights_10684800.ckpt')
-    parser.add_argument('--num_workers', type=int, default=25)
+            default='down_checkpoints/LR_0.0001_NUM_EPOCH_4_NMINIBATCHES_4/douzero/landlord_down_masknet_weights_142800.ckpt')
+    parser.add_argument('--num_workers', type=int, default=10)
     parser.add_argument('--total_games', type=int, default=500)
     parser.add_argument('--gpu_device', type=str, default='0')
     parser.add_argument('--position', default='landlord_down', type=str,
