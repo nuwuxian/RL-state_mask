@@ -150,7 +150,7 @@ def train(flags):
 
     # Create optimizer
     optimizer = torch.optim.Adam(
-            learner_model.parameters(),
+            filter(lambda p: p.requires_grad, learner_model.parameters()),
             lr=flags.learning_rate, eps=1e-5)
     frames = 0
     # Load models if any
@@ -167,6 +167,18 @@ def train(flags):
                pretrained_state = {_k: _v for _k, _v in checkpoint_states[k].items() if _k in learner_state and _v.size() == learner_state[_k].size()}
                learner_state.update(pretrained_state)
                learner_model.get_model().load_state_dict(learner_state)
+               for param in learner_model.get_model().lstm.parameters():
+                   param.requires_grad = False
+               for param in learner_model.get_model().dense1.parameters():
+                   param.requires_grad = False
+               for param in learner_model.get_model().dense2.parameters():
+                   param.requires_grad = False
+               for param in learner_model.get_model().dense3.parameters():
+                   param.requires_grad = False
+               for param in learner_model.get_model().dense4.parameters():
+                   param.requires_grad = False
+               for param in learner_model.get_model().dense5.parameters():
+                   param.requires_grad = False
 
             for device in device_iterator:
                 models[device].get_model(k).load_state_dict(checkpoint_states[k])
