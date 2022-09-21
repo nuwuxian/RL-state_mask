@@ -160,7 +160,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                         reward_buf.extend([0.0 for _ in range(diff-1)])
                         reward_buf.append(reward)
                         reward_bonus_buf.extend([0.0 for _ in range(diff-1)])
-                        reward_bonus_buf.append(reward + flags.reward_bonus_coeff * num_mask / game_len)
+                        reward_bonus_buf.append(reward + flags.reward_bonus_coeff * num_mask)
                     break
             done = True 
             last_values, lastgaelam = 0, 0
