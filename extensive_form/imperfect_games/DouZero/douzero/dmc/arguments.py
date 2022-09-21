@@ -30,7 +30,7 @@ parser.add_argument('--savedir', default='down_checkpoints',
 parser.add_argument('--pretrain_path', default='./baselines/douzero_WP')
 
 # Hyperparameters
-parser.add_argument('--total_frames', default=50000000, type=int,
+parser.add_argument('--total_frames', default=35000000, type=int,
                     help='Total environment frames to train for')
 parser.add_argument('--exp_epsilon', default=0.01, type=float,
                     help='The probability for exploration')
@@ -44,6 +44,8 @@ parser.add_argument('--max_grad_norm', default=0.5, type=float,
                     help='Max norm of gradients')
 parser.add_argument('--position', default='landlord_down', type=str,
                     help='explain position')
+parser.add_argument('--reward_bonus_coeff', default=0.1, type=float,
+                    help='The coefficient of bonus in the reward')
 
 # Optimizer settings
 parser.add_argument('--learning_rate', default=0.0001, type=float,

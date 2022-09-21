@@ -73,8 +73,9 @@ def create_buffers(flags, device_iterator):
         buffers[device] = {}
         x_dim = 373 if position == 'landlord' else 484
         specs = dict(
-            done=dict(size=(T,), dtype=torch.bool),
-            reward=dict(size=(T,), dtype=torch.float32),
+            done = dict(size=(T,), dtype=torch.bool),
+            reward = dict(size=(T,), dtype=torch.float32),
+            reward_bonus = dict(size=(T,), dtype=torch.float32),
             value = dict(size=(T,), dtype=torch.float32),
             logpac = dict(size=(T,), dtype=torch.float32),
             ret = dict(size=(T,), dtype=torch.float32),
@@ -113,12 +114,14 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
         act_buf = []
         value_buf = []
         reward_buf = []
+        reward_bonus_buf = []
         done_buf = []
         logpac_buf = []
         # ret, adv 
         ret_buf = []
         adv_buf = []
         sz, game_len = 0, 0
+        num_mask = 0
 
         position, obs, env_output = env.initial()
         while True:
@@ -137,6 +140,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                     mask_action = dist.sample()
                     if mask_action == 0:
                         action = random.choice(obs['legal_actions'])
+                        num_mask += 1
                     log_prob = dist.log_prob(mask_action)
                     act_buf.append(mask_action.cpu())
                     value_buf.append(value.cpu())
@@ -149,12 +153,14 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                 position, obs, env_output = env.step(action)
                 if env_output['done']:
                     # exp id
-                    diff = sz - len(reward_buf)
+                    diff = sz - len(reward_bonus_buf)
                     if diff > 0:
                         done_buf.extend([False for _ in range(diff)])
                         reward = env_output['episode_return'] if exp_id == 'landlord' else -env_output['episode_return']
                         reward_buf.extend([0.0 for _ in range(diff-1)])
                         reward_buf.append(reward)
+                        reward_bonus_buf.extend([0.0 for _ in range(diff-1)])
+                        reward_bonus_buf.append(reward + flags.reward_bonus_coeff * num_mask)
                     break
             done = True 
             last_values, lastgaelam = 0, 0
@@ -166,7 +172,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                 else:
                    nextnonterminal = 1.0 - done_buf[t+1]
                    nextvalues = value_buf[t+1]
-                delta = reward_buf[t] + GAMMA * nextvalues * nextnonterminal - value_buf[t]
+                delta = reward_bonus_buf[t] + GAMMA * nextvalues * nextnonterminal - value_buf[t]
                 adv_buf[t] = lastgaelam = delta + GAMMA * LAM * nextnonterminal * lastgaelam
                 ret_buf[t] = adv_buf[t] + value_buf[t]
             # reset game length
@@ -179,6 +185,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                 for t in range(T):
                     buffers['done'][index][t, ...] = done_buf[t]
                     buffers['reward'][index][t, ...] = reward_buf[t]
+                    buffers['reward_bonus'][index][t, ...] = reward_bonus_buf[t]
                     buffers['obs_x'][index][t, ...] = obs_x_buf[t]
                     buffers['act'][index][t, ...] = act_buf[t]
                     buffers['value'][index][t, ...] = value_buf[t]
@@ -189,6 +196,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                 full_queue.put(index)
                 done_buf = done_buf[T:]
                 reward_buf = reward_buf[T:]
+                reward_bonus_buf = reward_bonus_buf[T:]
                 obs_x_buf = obs_x_buf[T:]
                 act_buf = act_buf[T:]
                 value_buf = value_buf[T:]
