@@ -34,8 +34,8 @@ class LandlordLstmModel(nn.Module):
         self.policy_network.append(layer_init(nn.Linear(256, 2), std=1.0))
 
         # value network
-        self.policy_network.append(layer_init(nn.Linear(512, 256)))
-        self.policy_network.append(nn.Tanh())
+        self.value_network.append(layer_init(nn.Linear(512, 256)))
+        self.value_network.append(nn.Tanh())
         self.value_network.append(layer_init(nn.Linear(256, 1), std=1.0))
 
         self.value_network = nn.Sequential(*self.value_network)
