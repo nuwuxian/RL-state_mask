@@ -60,12 +60,14 @@ def select_steps(path, critical, import_thrd, game_per_worker):
         count = 0
         tmp_start = idx[i]
         tmp_end = idx[i]
-      if count >= ans:
+      if count > ans:
         ans = count
         steps_start = tmp_start
         steps_end = tmp_end
         for j in range(steps_start, steps_end+1):
             sum_prob += confs[j]
+            
+       
     # If multiple exists, return the maximum scores
     count, tmp_end, tmp_start = 0, idx[0], idx[0]
     for i in range(1, len(idx)):
@@ -84,6 +86,7 @@ def select_steps(path, critical, import_thrd, game_per_worker):
             steps_start, steps_end = tmp_start, tmp_end
         elif not critical and tmp_prob < sum_prob:
             steps_start, steps_end = tmp_start, tmp_end
+
     if critical:
       critical_steps_starts.append(steps_start)
       critical_steps_ends.append(steps_end)
@@ -124,6 +127,7 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, obs
                     count += 1
             else:
                 if position == exp_id and count <= step_end:
+
                     with torch.no_grad():
                         agent_output = model.forward(position, obs['z_batch'], obs['x_batch'])
                     _action_idx = int(agent_output['action'].cpu().detach().numpy())
@@ -133,6 +137,8 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, obs
                     else:
                         obs['legal_actions'].remove(gold_action)
                         action = random.choice(obs['legal_actions'])
+
+                    #action = random.choice(obs['legal_actions'])
                     count += 1
                 else:
                     with torch.no_grad():
@@ -175,10 +181,10 @@ def mp_simulate(card_play_model_path_dict, q, test_idx, game_per_worker):
     reward_buf = []
 
     card_play_data_buff, card_play_data = [], []
-    for _ in range(100):
+    for _ in range(500):
         card_play_data_buff.append(generate())
     game_num = 0
-    for i in range(100):
+    for i in range(500):
         obs_buf = []
         act_buf = []
         logpac_buf = []
@@ -202,7 +208,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx, game_per_worker):
                 utility = env_output['episode_return'] if exp_id == 'landlord' else -env_output['episode_return']
                 reward = 1 if utility.cpu().numpy() > 0 else 0
                 break
-        if game_len >= 1:
+        if game_len >= 10:
             reward_buf.append(reward)
             card_play_data.append(card_play_data_buff[i])
             eps_len_filename = path + "eps_len_" + str(game_num) + ".out"
@@ -402,10 +408,10 @@ if __name__ == '__main__':
     parser.add_argument('--landlord_down', type=str,
             default='baselines/douzero_WP/landlord_down.ckpt')
     parser.add_argument('--masknet', type=str, 
-            default='down_checkpoints/LR_0.0001_NUM_EPOCH_4_NMINIBATCHES_4/douzero/landlord_down_masknet_weights_142800.ckpt')
+            default='down_checkpoints/LR_0.0001_NUM_EPOCH_4_NMINIBATCHES_4/douzero/landlord_down_masknet_weights_5720400.ckpt')
     parser.add_argument('--num_workers', type=int, default=10)
     parser.add_argument('--total_games', type=int, default=500)
-    parser.add_argument('--gpu_device', type=str, default='0')
+    parser.add_argument('--gpu_device', type=str, default='3')
     parser.add_argument('--position', default='landlord_down', type=str,
                     help='explain position')
     args = parser.parse_args()
