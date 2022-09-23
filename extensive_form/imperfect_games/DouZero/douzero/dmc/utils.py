@@ -71,16 +71,16 @@ def create_buffers(flags, device_iterator):
     buffers = {}
     for device in device_iterator:
         buffers[device] = {}
-        x_dim = 373 if position == 'landlord' else 484
+        x_dim = 319 if position == 'landlord' else 430
         specs = dict(
-            done = dict(size=(T,), dtype=torch.bool),
-            reward = dict(size=(T,), dtype=torch.float32),
+            done=dict(size=(T,), dtype=torch.bool),
+            reward=dict(size=(T,), dtype=torch.float32),
             reward_bonus = dict(size=(T,), dtype=torch.float32),
             value = dict(size=(T,), dtype=torch.float32),
             logpac = dict(size=(T,), dtype=torch.float32),
             ret = dict(size=(T,), dtype=torch.float32),
             adv = dict(size=(T,), dtype=torch.float32),
-            obs_x=dict(size=(T, x_dim), dtype=torch.float32),
+            obs_x_no_action=dict(size=(T, x_dim), dtype=torch.float32),
             act=dict(size=(T,), dtype=torch.int8),
             obs_z=dict(size=(T, 5, 162), dtype=torch.float32),
         )
@@ -109,7 +109,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
         env = create_env(flags)
         env = Environment(env, device)
 
-        obs_x_buf = []
+        obs_x_no_action_buf = []
         obs_z_buf = []
         act_buf = []
         value_buf = []
@@ -126,17 +126,15 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
         position, obs, env_output = env.initial()
         while True:
             while True:
+                if position == exp_id:
+                    obs_x_no_action_buf.append(env_output['obs_x_no_action'].cpu().detach())
+                    obs_z_buf.append(env_output['obs_z'].cpu().detach())
                 with torch.no_grad():
                     agent_output = model.forward(position, obs['z_batch'], obs['x_batch'], flags=flags)
                 _action_idx = int(agent_output['action'].cpu().detach().numpy())
                 action = obs['legal_actions'][_action_idx]
                 if position == exp_id and mask_net != None:
-                    # concate the 'obs_z' with action
-                    x = torch.cat((env_output['obs_x_no_action'], _cards2tensor(action).to(device))).float()
-                    dist, value = mask_net.inference(env_output['obs_z'], x)
-                    # add to buf
-                    obs_x_buf.append(x.cpu().detach())
-                    obs_z_buf.append(env_output['obs_z'].cpu().detach())
+                    dist, value = mask_net.inference(env_output['obs_z'], env_output['obs_x_no_action'])
                     mask_action = dist.sample()
                     if mask_action == 0:
                         action = random.choice(obs['legal_actions'])
@@ -153,7 +151,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                 position, obs, env_output = env.step(action)
                 if env_output['done']:
                     # exp id
-                    diff = sz - len(reward_bonus_buf)
+                    diff = sz - len(reward_buf)
                     if diff > 0:
                         done_buf.extend([False for _ in range(diff)])
                         reward = env_output['episode_return'] if exp_id == 'landlord' else -env_output['episode_return']
@@ -187,7 +185,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                     buffers['done'][index][t, ...] = done_buf[t]
                     buffers['reward'][index][t, ...] = reward_buf[t]
                     buffers['reward_bonus'][index][t, ...] = reward_bonus_buf[t]
-                    buffers['obs_x'][index][t, ...] = obs_x_buf[t]
+                    buffers['obs_x_no_action'][index][t, ...] = obs_x_no_action_buf[t]
                     buffers['act'][index][t, ...] = act_buf[t]
                     buffers['value'][index][t, ...] = value_buf[t]
                     buffers['logpac'][index][t, ...] = logpac_buf[t]
@@ -198,7 +196,7 @@ def act(i, device, free_queue, full_queue, model, mask_net, buffers, flags):
                 done_buf = done_buf[T:]
                 reward_buf = reward_buf[T:]
                 reward_bonus_buf = reward_bonus_buf[T:]
-                obs_x_buf = obs_x_buf[T:]
+                obs_x_no_action_buf = obs_x_no_action_buf[T:]
                 act_buf = act_buf[T:]
                 value_buf = value_buf[T:]
                 logpac_buf = logpac_buf[T:]

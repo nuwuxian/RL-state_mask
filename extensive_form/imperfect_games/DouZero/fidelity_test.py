@@ -8,10 +8,10 @@ import numpy as np
 import pickle
 from douzero.dmc.models import Model
 from douzero.dmc.masknet import MaskNet
-from douzero.dmc.utils import _cards2tensor
 from douzero.env.game import GameEnv
 from douzero.env.env import Env, get_obs
 from douzero.dmc.env_utils import Environment, _format_observation
+from douzero.dmc.utils import _cards2tensor
 from generate_eval_data import generate
 
 def load_card_play_models(card_play_model_path_dict):
@@ -20,7 +20,7 @@ def load_card_play_models(card_play_model_path_dict):
     for position in ['landlord', 'landlord_up', 'landlord_down']:
         model.get_model(position).load_state_dict(torch.load(card_play_model_path_dict[position], map_location='cuda:0'))
 
-    masknet = MaskNet(position='landlord_down')
+    masknet = MaskNet(position='landlord')
     masknet.get_model().load_state_dict(torch.load(card_play_model_path_dict['masknet'], map_location='cuda:0'))
     masknet.eval()
     return model, masknet
@@ -60,14 +60,12 @@ def select_steps(path, critical, import_thrd, game_per_worker):
         count = 0
         tmp_start = idx[i]
         tmp_end = idx[i]
-      if count > ans:
+      if count >= ans:
         ans = count
         steps_start = tmp_start
         steps_end = tmp_end
         for j in range(steps_start, steps_end+1):
             sum_prob += confs[j]
-            
-       
     # If multiple exists, return the maximum scores
     count, tmp_end, tmp_start = 0, idx[0], idx[0]
     for i in range(1, len(idx)):
@@ -86,7 +84,6 @@ def select_steps(path, critical, import_thrd, game_per_worker):
             steps_start, steps_end = tmp_start, tmp_end
         elif not critical and tmp_prob < sum_prob:
             steps_start, steps_end = tmp_start, tmp_end
-
     if critical:
       critical_steps_starts.append(steps_start)
       critical_steps_ends.append(steps_end)
@@ -127,7 +124,6 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, obs
                     count += 1
             else:
                 if position == exp_id and count <= step_end:
-
                     with torch.no_grad():
                         agent_output = model.forward(position, obs['z_batch'], obs['x_batch'])
                     _action_idx = int(agent_output['action'].cpu().detach().numpy())
@@ -137,8 +133,6 @@ def replay(env, model, step_start, step_end, orig_traj_len, exp_id, act_buf, obs
                     else:
                         obs['legal_actions'].remove(gold_action)
                         action = random.choice(obs['legal_actions'])
-
-                    #action = random.choice(obs['legal_actions'])
                     count += 1
                 else:
                     with torch.no_grad():
@@ -199,7 +193,7 @@ def mp_simulate(card_play_model_path_dict, q, test_idx, game_per_worker):
             obs_buf.append(obs)
             if position == exp_id and masknet != None:
                 x = torch.cat((env_output['obs_x_no_action'], _cards2tensor(action).to("cuda:0"))).float()
-                dist, value = masknet.inference(env_output['obs_z'], x)
+                dist, value = masknet.inference(env_output['obs_z'], env_output['obs_x_no_action'])
                 log_prob = dist.log_prob(torch.Tensor([1]).to('cuda:0'))
                 logpac_buf.append(log_prob.cpu())
             game_len += 1
@@ -408,11 +402,11 @@ if __name__ == '__main__':
     parser.add_argument('--landlord_down', type=str,
             default='baselines/douzero_WP/landlord_down.ckpt')
     parser.add_argument('--masknet', type=str, 
-            default='down_checkpoints/LR_0.0001_NUM_EPOCH_4_NMINIBATCHES_4/douzero/landlord_down_masknet_weights_5720400.ckpt')
+            default='landlord_entropy_0.01/LR_0.0003_NUM_EPOCH_4_NMINIBATCHES_4/douzero/landlord_masknet_weights_26686800.ckpt')
     parser.add_argument('--num_workers', type=int, default=10)
     parser.add_argument('--total_games', type=int, default=500)
-    parser.add_argument('--gpu_device', type=str, default='3')
-    parser.add_argument('--position', default='landlord_down', type=str,
+    parser.add_argument('--gpu_device', type=str, default='1')
+    parser.add_argument('--position', default='landlord', type=str,
                     help='explain position')
     args = parser.parse_args()
 
