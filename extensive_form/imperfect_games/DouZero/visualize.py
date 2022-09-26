@@ -1,5 +1,5 @@
 import os 
-import time
+import math
 import torch
 import random
 import argparse
@@ -78,13 +78,14 @@ def mp_simulate(card_play_model_path_dict, q, test_idx, game_per_worker):
             print(action_cards)
             act_buf.append(action_cards)
             
-            
-            
             if position == exp_id and masknet != None:
                 x = torch.cat((env_output['obs_x_no_action'], _cards2tensor(action).to("cuda:0"))).float()
                 dist, value = masknet.inference(env_output['obs_z'], x)
                 log_prob = dist.log_prob(torch.Tensor([1]).to('cuda:0'))
-                logpac_buf.append(log_prob.cpu())
+                prob = math.exp(log_prob.cpu())
+                print("Importance score:")
+                print(prob)
+                logpac_buf.append(prob)
             game_len += 1
             position, obs, env_output = env.step(action)
             if env_output['done']:
@@ -154,7 +155,7 @@ if __name__ == '__main__':
     parser.add_argument('--landlord_down', type=str,
             default='baselines/douzero_WP/landlord_down.ckpt')
     parser.add_argument('--masknet', type=str, 
-            default='landlord_batch_21_coeff_0.03/LR_0.0001_NUM_EPOCH_4_NMINIBATCHES_4/douzero/landlord_masknet_weights_5537700.ckpt')
+            default='/home/xkw5132/Masknet_explanation/extensive_form/imperfect_games/DouZero/landlord_entropy_0.0/LR_0.0003_NUM_EPOCH_4_NMINIBATCHES_4/douzero/landlord_masknet_weights_9563400.ckpt')
     parser.add_argument('--total_games', type=int, default=1)
     parser.add_argument('--num_workers', type=int, default=1)
     parser.add_argument('--gpu_device', type=str, default='0')
