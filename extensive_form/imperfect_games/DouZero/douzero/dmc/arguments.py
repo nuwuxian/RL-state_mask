@@ -44,14 +44,18 @@ parser.add_argument('--max_grad_norm', default=0.5, type=float,
                     help='Max norm of gradients')
 parser.add_argument('--position', default='landlord', type=str,
                     help='explain position')
-parser.add_argument('--reward_bonus_coeff', default=0.05, type=float,
+parser.add_argument('--reward_bonus_coeff', default=0, type=float,
                     help='The coefficient of bonus in the reward')
+parser.add_argument('--lasso_coeff', default=0.06, type=float,
+                    help='The coefficient of lasso in the loss')
 
 # Optimizer settings
 parser.add_argument('--learning_rate', default=0.0003, type=float,
                     help='Learning rate')
 
 parser.add_argument('--anneal_rl', default=True, type=bool)
+parser.add_argument('--fix_lr', default=False, type=bool)
+parser.add_argument('--step_lr', default=False, type=bool)
 parser.add_argument('--num_epochs', default=4, type=int,
                     help='PPO inner training epochs')
 parser.add_argument('--nminibatches', default=4, type=int,

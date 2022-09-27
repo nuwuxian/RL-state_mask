@@ -16,10 +16,11 @@ from .models import Model
 from .masknet import MaskNet
 from .utils import get_buffer, log, create_env, create_buffers, act
 
+
 mean_episode_return_buf = {p:deque(maxlen=100) for p in ['landlord', 'landlord_up', 'landlord_down']}
 clip_param = 0.2
 
-lambda_1 = 0.0
+
 C_1 = 0.5 # squared loss coefficient
 C_2 = 0.0 # entropy coefficient
 
@@ -72,7 +73,7 @@ def learn(model, batch, optimizer, flags):
 
     num_nomasks = torch.sum(onehot_action[:, 1]) / batch_sz
 
-    loss = C_1 * critic_loss + actor_loss - C_2 * entropy + lambda_1 * num_nomasks
+    loss = C_1 * critic_loss + actor_loss - C_2 * entropy + flags.lasso_coeff * num_nomasks
 
     avg_return = torch.mean(torch.stack([_r for _r in mean_episode_return_buf[position]])).item()
     avg_mask_ratio = act.float().mean().item()
@@ -94,8 +95,13 @@ def train(flags):
     if not flags.actor_device_cpu or flags.training_device != 'cpu':
         if not torch.cuda.is_available():
             raise AssertionError("CUDA not available. If you have GPUs, please specify the ID after `--gpu_devices`. Otherwise, please train with CPU with `python3 train.py --actor_device_cpu --training_device cpu`")
-    
-    savedir = flags.savedir + '/' + 'LR_' + str(flags.learning_rate) + '_NUM_EPOCH_' + str(flags.num_epochs) + '_NMINIBATCHES_' + str(flags.nminibatches)
+    if flags.anneal_rl:
+        lr_schedule = '_ANNEAL_RL'
+    if flags.fix_lr:
+        lr_schedule = '_FIX_LR'
+    if flags.step_lr:
+        lr_schedule = '_STEP_LR'
+    savedir = flags.savedir + '/' + 'LR_' + str(flags.learning_rate) + '_BATCH_' + str(flags.batch_size) + lr_schedule + '_LASSO_' + str(flags.lasso_coeff) + '_' + flags.position
 
     plogger = FileWriter(
         xpid=flags.xpid,
@@ -152,6 +158,8 @@ def train(flags):
     optimizer = torch.optim.Adam(
             learner_model.parameters(),
             lr=flags.learning_rate, eps=1e-5)
+
+
     frames = 0
     # Load models if any
     if flags.load_model and os.path.exists(pretrain_path):
@@ -202,6 +210,12 @@ def train(flags):
                 frac = 1.0 - frames / flags.total_frames
                 lrnow = frac * flags.learning_rate
                 optimizer.param_groups[0]['lr'] = lrnow
+            elif flags.fix_lr:
+                pass
+            elif flags.step_lr:
+                if frames % 5000000 == 0:
+                    lrnow = 0.5 ** (frames/5000000) * flags.learning_rate
+                    optimizer.param_groups[0]['lr'] = lrnow
 
             start_frames = frames
             start_time = timer()
