@@ -44,7 +44,7 @@ def select_steps(path, critical, import_thrd, game_per_worker):
 
     sorted_idx = np.argsort(confs)
 
-    k = max(int(iteration_ends/3 * import_thrd),1)
+    k = max(int(len(mask_probs) * import_thrd),1)
     idx = sorted_idx[-k:] if critical else sorted_idx[:k]
     idx.sort()
 
@@ -175,10 +175,10 @@ def mp_simulate(card_play_model_path_dict, q, test_idx, game_per_worker):
     reward_buf = []
 
     card_play_data_buff, card_play_data = [], []
-    for _ in range(500):
+    for _ in range(1000):
         card_play_data_buff.append(generate())
     game_num = 0
-    for i in range(500):
+    for i in range(1000):
         obs_buf = []
         act_buf = []
         logpac_buf = []
@@ -192,7 +192,6 @@ def mp_simulate(card_play_model_path_dict, q, test_idx, game_per_worker):
             act_buf.append(action)
             obs_buf.append(obs)
             if position == exp_id and masknet != None:
-                x = torch.cat((env_output['obs_x_no_action'], _cards2tensor(action).to("cuda:0"))).float()
                 dist, value = masknet.inference(env_output['obs_z'], env_output['obs_x_no_action'])
                 log_prob = dist.log_prob(torch.Tensor([1]).to('cuda:0'))
                 logpac_buf.append(log_prob.cpu())
@@ -240,11 +239,12 @@ def mp_simulate(card_play_model_path_dict, q, test_idx, game_per_worker):
         replay_results= []
         for game_num in range(game_per_worker):
             orig_traj_len = np.loadtxt(path + "eps_len_"+ str(game_num) + ".out")
+            mask_probs = np.loadtxt(path + "mask_probs_"+ str(game_num) + ".out")
             act_buf = np.load(path + "act_seq_" + str(game_num) + ".npy", allow_pickle=True)
             obs_buf = np.load(path + "obs_" + str(game_num) + ".npy", allow_pickle=True)
             critical_step_start = critical_steps_starts[game_num]
             critical_step_end = critical_steps_ends[game_num]
-            critical_ratios.append(3*(critical_step_end - critical_step_start + 1)/orig_traj_len)
+            critical_ratios.append((critical_step_end - critical_step_start + 1)/len(mask_probs))
             replay_result = replay(env, model, critical_step_start, critical_step_end, orig_traj_len, exp_id, act_buf, obs_buf,
                                    card_play_data[game_num], random_replace=False)
             replay_results.append(replay_result)
@@ -279,11 +279,12 @@ def mp_simulate(card_play_model_path_dict, q, test_idx, game_per_worker):
         replay_results= []
         for game_num in range(game_per_worker):
             orig_traj_len = np.loadtxt(path + "eps_len_"+ str(game_num) + ".out")
+            mask_probs = np.loadtxt(path + "mask_probs_"+ str(game_num) + ".out")
             act_buf = np.load(path + "act_seq_" + str(game_num) + ".npy", allow_pickle=True)
             obs_buf = np.load(path + "obs_" + str(game_num) + ".npy", allow_pickle=True)
             noncritical_step_start = noncritical_steps_starts[game_num]
             noncritical_step_end = noncritical_steps_ends[game_num]
-            noncritical_ratios.append(3*(noncritical_step_end - noncritical_step_start + 1)/orig_traj_len)
+            noncritical_ratios.append((noncritical_step_end - noncritical_step_start + 1)/len(mask_probs))
             replay_result = replay(env, model, noncritical_step_start, noncritical_step_end, orig_traj_len, exp_id, act_buf, obs_buf,
                                    card_play_data[game_num], random_replace=False)
             replay_results.append(replay_result)
@@ -402,10 +403,10 @@ if __name__ == '__main__':
     parser.add_argument('--landlord_down', type=str,
             default='baselines/douzero_WP/landlord_down.ckpt')
     parser.add_argument('--masknet', type=str, 
-            default='landlord_entropy_0.01/LR_0.0003_NUM_EPOCH_4_NMINIBATCHES_4/douzero/landlord_masknet_weights_26686800.ckpt')
+            default='landlord_lasso_0.06_batch_42/LR_0.0003_NUM_EPOCH_4_NMINIBATCHES_4/douzero/landlord_masknet_weights_19475400.ckpt')
     parser.add_argument('--num_workers', type=int, default=10)
     parser.add_argument('--total_games', type=int, default=500)
-    parser.add_argument('--gpu_device', type=str, default='1')
+    parser.add_argument('--gpu_device', type=str, default='0')
     parser.add_argument('--position', default='landlord', type=str,
                     help='explain position')
     args = parser.parse_args()
