@@ -213,9 +213,3 @@ if __name__ == '__main__':
              args.masknet,
              args.total_games,
              args.num_workers)
-
-
-
-
-
-
