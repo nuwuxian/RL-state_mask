@@ -156,6 +156,12 @@ def mp_simulate(card_play_model_path_dict, q, test_idx, path, game_per_worker):
 
     assert game_num == game_per_worker
 
+    winning_games_filename = path + str(test_idx) + "_winning_games.out"
+    np.savetxt(winning_games_filename, winning_games)
+
+    losing_games_filename = path + str(test_idx) + "_losing_games.out"
+    np.savetxt(losing_games_filename, losing_games)
+
 
 def evaluate(landlord, landlord_up, landlord_down, masknet, total_games, num_workers):
     card_play_model_path_dict = {
@@ -182,8 +188,17 @@ def evaluate(landlord, landlord_up, landlord_down, masknet, total_games, num_wor
 
     select_steps(pre_folder, 0.3, total_games)
 
-    
+    winning_games_buf = []
+    losing_games_buf = []
+    for i in range(num_workers):
+        winning_games = np.loadtxt(pre_folder + str(input) + "_winning_games.out")
+        winning_games_buf.extend(winning_games)
+        losing_games = np.loadtxt(pre_folder + str(input) + "_losing_games.out")
+        losing_games_buf.extend(losing_games)
+        
 
+    np.savetxt(pre_folder+"winning_games.out", winning_games_buf)
+    np.savetxt(pre_folder+"losing_games.out", losing_games_buf)
 
 
 if __name__ == '__main__':
@@ -213,3 +228,9 @@ if __name__ == '__main__':
              args.masknet,
              args.total_games,
              args.num_workers)
+
+
+
+
+
+
