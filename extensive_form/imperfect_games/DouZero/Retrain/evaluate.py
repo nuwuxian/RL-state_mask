@@ -14,10 +14,6 @@ if __name__ == '__main__':
             default='/data/zelei/DouZero_lasso_0.06/baselines/douzero_WP/landlord_down.ckpt')
     parser.add_argument('--retrain_landlord', type=str,
             default='/data/zelei/DouZero_lasso_0.06/DouZero-main/retrain_checkpoints/douzero/landlord_weights_83200.ckpt')
-    parser.add_argument('--landlord_up', type=str,
-            default='/data/zelei/DouZero_lasso_0.06/baselines/douzero_WP/landlord_up.ckpt')
-    parser.add_argument('--landlord_down', type=str,
-            default='/data/zelei/DouZero_lasso_0.06/baselines/douzero_WP/landlord_down.ckpt')
     parser.add_argument('--eval_data', type=str,
             default='eval_data.pkl')
     parser.add_argument('--num_workers', type=int, default=10)
