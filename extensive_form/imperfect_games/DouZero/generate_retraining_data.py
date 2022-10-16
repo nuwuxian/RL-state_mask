@@ -191,9 +191,9 @@ def evaluate(landlord, landlord_up, landlord_down, masknet, total_games, num_wor
     winning_games_buf = []
     losing_games_buf = []
     for i in range(num_workers):
-        winning_games = np.loadtxt(pre_folder + str(input) + "_winning_games.out")
+        winning_games = np.loadtxt(pre_folder +str(i) + "_winning_games.out")
         winning_games_buf.extend(winning_games)
-        losing_games = np.loadtxt(pre_folder + str(input) + "_losing_games.out")
+        losing_games = np.loadtxt(pre_folder + str(i) + "_losing_games.out")
         losing_games_buf.extend(losing_games)
         
 
