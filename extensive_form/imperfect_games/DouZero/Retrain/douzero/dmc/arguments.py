@@ -45,7 +45,7 @@ parser.add_argument('--max_grad_norm', default=40., type=float,
                     help='Max norm of gradients')
 
 # Optimizer settings
-parser.add_argument('--learning_rate', default=0.00001, type=float,
+parser.add_argument('--learning_rate', default=0.000001, type=float,
                     help='Learning rate')
 parser.add_argument('--alpha', default=0.99, type=float,
                     help='RMSProp smoothing constant')

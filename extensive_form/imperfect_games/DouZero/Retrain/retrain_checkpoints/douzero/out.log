@@ -1,24 +1,6 @@
 Saving logs data to retrain_checkpoints/douzero/logs.csv
 Saving logs' fields to retrain_checkpoints/douzero/fields.csv
-Updated log fields: ['_tick', '_time', 'frames', 'mean_episode_return_landlord', 'loss_landlord', 'mean_episode_return_landlord_up', 'loss_landlord_up', 'mean_episode_return_landlord_down', 'loss_landlord_down']
-Saving logs data to retrain_checkpoints/douzero/logs.csv
-Saving logs' fields to retrain_checkpoints/douzero/fields.csv
-Path to log file already exists. New data will be appended.
-Saving logs data to retrain_checkpoints/douzero/logs.csv
-Saving logs' fields to retrain_checkpoints/douzero/fields.csv
-Path to log file already exists. New data will be appended.
-Saving logs data to retrain_checkpoints/douzero/logs.csv
-Saving logs' fields to retrain_checkpoints/douzero/fields.csv
-Path to log file already exists. New data will be appended.
-Saving logs data to retrain_checkpoints/douzero/logs.csv
-Saving logs' fields to retrain_checkpoints/douzero/fields.csv
-Path to log file already exists. New data will be appended.
-Saving logs data to retrain_checkpoints/douzero/logs.csv
-Saving logs' fields to retrain_checkpoints/douzero/fields.csv
-Path to log file already exists. New data will be appended.
-Saving logs data to retrain_checkpoints/douzero/logs.csv
-Saving logs' fields to retrain_checkpoints/douzero/fields.csv
-Path to log file already exists. New data will be appended.
+Updated log fields: ['_tick', '_time', 'frames', 'mean_episode_return_landlord', 'loss_landlord']
 Saving logs data to retrain_checkpoints/douzero/logs.csv
 Saving logs' fields to retrain_checkpoints/douzero/fields.csv
 Path to log file already exists. New data will be appended.

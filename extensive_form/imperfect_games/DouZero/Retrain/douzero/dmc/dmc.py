@@ -124,13 +124,14 @@ def train(flags):
 
     pretrain_path = '/data/zelei/DouZero_lasso_0.06/baselines/douzero_WP'
     # Load models if any
-    if flags.load_model and os.path.exists(pretrain_path):
+    if os.path.exists(pretrain_path):
         checkpoint_states = {}
         for k in ['landlord', 'landlord_up', 'landlord_down']:
             checkpoint_states[k] = torch.load(
                 pretrain_path + '/' + k + '.ckpt', map_location=("cuda:"+str(flags.training_device) if flags.training_device != "cpu" else "cpu")
             )
         for k in ['landlord', 'landlord_up', 'landlord_down']:
+            learner_model.get_model(k).load_state_dict(checkpoint_states[k])
             for device in device_iterator:
                 models[device].get_model(k).load_state_dict(checkpoint_states[k])
         log.info(f"Load baseline pretrained models")

@@ -8,7 +8,7 @@ import torch
 
 class Training_pool():
     def __init__(self, losing_games_file, winning_games_file, ratio):
-        self.total_num = 5000
+        self.total_num = 50000
         self.ratio = ratio
         self.losing_games_idxs = self.extract_idxs(losing_games_file)
         self.winning_games_idxs = self.extract_idxs(winning_games_file)
