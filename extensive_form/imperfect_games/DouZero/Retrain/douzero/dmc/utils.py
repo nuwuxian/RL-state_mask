@@ -63,7 +63,7 @@ def create_optimizers(flags, learner_model):
     """
     Create three optimizers for the three positions
     """
-    positions = ['landlord', 'landlord_up', 'landlord_down']
+    positions = ['landlord']
     optimizers = {}
     for position in positions:
         optimizer = torch.optim.RMSprop(
@@ -82,7 +82,7 @@ def create_buffers(flags, device_iterator):
     will have three buffers for the three positions.
     """
     T = flags.unroll_length
-    positions = ['landlord', 'landlord_up', 'landlord_down']
+    positions = ['landlord']
     buffers = {}
     for device in device_iterator:
         buffers[device] = {}
@@ -114,6 +114,7 @@ def act(i, device, free_queue, full_queue, model, buffers, flags):
     a free queue and full queue to syncup with the main process.
     """
     positions = ['landlord', 'landlord_up', 'landlord_down']
+    posts = ['landlord']
     try:
         T = flags.unroll_length
         log.info('Device %s Actor %i started.', str(device), i)
@@ -156,7 +157,7 @@ def act(i, device, free_queue, full_queue, model, buffers, flags):
                             target_buf[p].extend([episode_return for _ in range(diff)])
                     break
 
-            for p in positions:
+            for p in posts:
                 while size[p] > T: 
                     index = free_queue[p].get()
                     if index is None:

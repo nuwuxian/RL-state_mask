@@ -56,7 +56,7 @@ class Environment:
         losing_game_file = '/data/zelei/DouZero_lasso_0.06/retrain_data/losing_games.out'
         winning_games_file = '/data/zelei/DouZero_lasso_0.06/retrain_data/winning_games.out'
 
-        ratio = 0.5
+        ratio = 0.8
         train_pool = Training_pool(losing_game_file, winning_games_file, ratio)
         self.idxs_list = train_pool.candidates
         self.critical_steps_starts = np.loadtxt('/data/zelei/DouZero_lasso_0.06/retrain_data/critical_steps_starts.out')
