@@ -1,0 +1,670 @@
+nohup: ignoring input
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:516: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint8 = np.dtype([("qint8", np.int8, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:517: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint8 = np.dtype([("quint8", np.uint8, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:518: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint16 = np.dtype([("qint16", np.int16, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:519: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint16 = np.dtype([("quint16", np.uint16, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:520: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint32 = np.dtype([("qint32", np.int32, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:525: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  np_resource = np.dtype([("resource", np.ubyte, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:541: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint8 = np.dtype([("qint8", np.int8, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:542: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint8 = np.dtype([("quint8", np.uint8, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:543: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint16 = np.dtype([("qint16", np.int16, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:544: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint16 = np.dtype([("quint16", np.uint16, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:545: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint32 = np.dtype([("qint32", np.int32, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:550: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  np_resource = np.dtype([("resource", np.ubyte, 1)])
+Version: B69232 (SC2.4.6-Publish)
+Build: Oct 23 2018 01:43:04
+Command Line: '"/home/jvy5516/StarCraftII/Versions/Base69232/SC2_x64" -listen 127.0.0.1 -port 41157 -dataDir /home/jvy5516/StarCraftII/ -tempDir /tmp/sc-99qovdbl/ -displayMode 0 -windowwidth 640 -windowheight 480 -windowx 50 -windowy 50 -eglpath libEGL.so'
+Starting up...
+Startup Phase 1 complete
+Startup Phase 2 complete
+Attempting to initialize EGL from file libEGL.so ...
+Successfully loaded EGL library!
+Successfully initialized display on device idx: 0, EGL version: 1.5
+
+Running CGLSimpleDevice::HALInit...
+Calling glGetString: 0x7f2d57c485e0
+Version: 4.6.0 NVIDIA 510.60.02
+Vendor: NVIDIA Corporation
+Renderer: NVIDIA RTX A6000/PCIe/SSE2
+OpenGL initialized!
+Listening on: 127.0.0.1:41157
+Startup Phase 3 complete. Ready for commands.
+Requesting to join a single player game
+Configuring interface options
+Configure: raw interface enabled
+Configure: feature layer interface enabled
+Configure: score interface enabled
+Configure: render interface disabled
+Entering load game phase.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Sending ResponseJoinGame
+2022-10-15 19:05:46.023912: I tensorflow/core/platform/cpu_feature_guard.cc:142] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2022-10-15 19:05:46.095661: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2000089999 Hz
+2022-10-15 19:05:46.139943: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x55e34db0d130 executing computations on platform Host. Devices:
+2022-10-15 19:05:46.140082: I tensorflow/compiler/xla/service/service.cc:175]   StreamExecutor device (0): <undefined>, <undefined>
+2022-10-15 19:05:48.750189: W tensorflow/compiler/jit/mark_for_compilation_pass.cc:1412] (One-time warning): Not using XLA:CPU for cluster because envvar TF_XLA_FLAGS=--tf_xla_cpu_global_jit was not set.  If you want XLA:CPU, either set that envvar, or use experimental_jit_scope to enable XLA:CPU.  To confirm that XLA is active, pass --vmodule=xla_compilation_cache=1 (as a proper command-line flag, not via TF_XLA_FLAGS) or set the envvar XLA_FLAGS=--xla_hlo_profile.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+RequestQuit command received.
+unable to parse websocket frame.
+Closing Application...
+Terminate action already called.
+Entering core terminate.
+Core shutdown finished.
+/home/zxc5262/PySC2TencentExtension/pysc2/env/sc2_env.py:476: FutureWarning: arrays to stack must be passed as a "sequence" type such as list or tuple. Support for non-sequence iterables such as generators is deprecated as of NumPy 1.16 and will raise an error in the future.
+  agent_obs = [f.transform_obs(o) for f, o in zip(
+pygame 2.1.2 (SDL 2.0.16, Python 3.6.13)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[2022-10-15 19:05:33] Creating game with seed 1245.
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:06:39] Episode Done. Difficulty: A Outcome -1.000000
+Episode: 0, Return: 0.0
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:07:07] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:07:37] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:08:04] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:08:33] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:09:01] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:09:32] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:10:03] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:10:33] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:11:00] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:11:37] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:12:08] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:12:33] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:13:05] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:13:38] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:14:07] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:14:34] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:15:02] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:15:30] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:15:58] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:16:26] Episode Done. Difficulty: A Outcome 1.000000
+Episode: 20, Return: 0.9523809523809523
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:16:53] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:17:27] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:17:55] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:18:24] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:18:54] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:19:25] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:19:58] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:20:33] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:21:00] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:21:30] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:22:02] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:22:30] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:22:58] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:23:23] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:23:51] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:24:18] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:24:46] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:25:16] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:25:40] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:26:04] Episode Done. Difficulty: A Outcome 1.000000
+Episode: 40, Return: 0.975609756097561
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:26:27] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:27:01] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:27:32] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:28:00] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:28:30] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:29:00] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:29:28] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:29:58] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+[2022-10-15 19:30:21] Episode Done. Difficulty: A Outcome 1.000000
+Average Return: 0.98

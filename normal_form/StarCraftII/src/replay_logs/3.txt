@@ -1,0 +1,854 @@
+nohup: ignoring input
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:516: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint8 = np.dtype([("qint8", np.int8, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:517: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint8 = np.dtype([("quint8", np.uint8, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:518: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint16 = np.dtype([("qint16", np.int16, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:519: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint16 = np.dtype([("quint16", np.uint16, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:520: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint32 = np.dtype([("qint32", np.int32, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorflow/python/framework/dtypes.py:525: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  np_resource = np.dtype([("resource", np.ubyte, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:541: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint8 = np.dtype([("qint8", np.int8, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:542: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint8 = np.dtype([("quint8", np.uint8, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:543: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint16 = np.dtype([("qint16", np.int16, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:544: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint16 = np.dtype([("quint16", np.uint16, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:545: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint32 = np.dtype([("qint32", np.int32, 1)])
+/home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:550: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  np_resource = np.dtype([("resource", np.ubyte, 1)])
+pygame 2.1.2 (SDL 2.0.16, Python 3.6.13)
+Hello from the pygame community. https://www.pygame.org/contribute.html
+[2022-10-17 20:01:00] Creating game with seed 1245.
+I1017 20:01:00.922724 140525463835008 sc_process.py:110] Launching SC2: /home/jvy5516/StarCraftII/Versions/Base69232/SC2_x64 -listen 127.0.0.1 -port 41243 -dataDir /home/jvy5516/StarCraftII/ -tempDir /tmp/sc-gdmmpuzh/ -displayMode 0 -windowwidth 640 -windowheight 480 -windowx 50 -windowy 50 -eglpath libEGL.so
+I1017 20:01:00.937266 140525463835008 remote_controller.py:127] Connecting to: ws://127.0.0.1:41243/sc2api, attempt: 0, running: True
+Version: B69232 (SC2.4.6-Publish)
+Build: Oct 23 2018 01:43:04
+Command Line: '"/home/jvy5516/StarCraftII/Versions/Base69232/SC2_x64" -listen 127.0.0.1 -port 41243 -dataDir /home/jvy5516/StarCraftII/ -tempDir /tmp/sc-gdmmpuzh/ -displayMode 0 -windowwidth 640 -windowheight 480 -windowx 50 -windowy 50 -eglpath libEGL.so'
+Starting up...
+Startup Phase 1 complete
+I1017 20:01:01.939765 140525463835008 remote_controller.py:127] Connecting to: ws://127.0.0.1:41243/sc2api, attempt: 1, running: True
+Startup Phase 2 complete
+Attempting to initialize EGL from file libEGL.so ...
+Successfully loaded EGL library!
+Successfully initialized display on device idx: 0, EGL version: 1.5
+
+Running CGLSimpleDevice::HALInit...
+Calling glGetString: 0x7fa19c5335e0
+Version: 4.6.0 NVIDIA 510.60.02
+Vendor: NVIDIA Corporation
+Renderer: NVIDIA RTX A6000/PCIe/SSE2
+OpenGL initialized!
+Listening on: 127.0.0.1:41243
+Startup Phase 3 complete. Ready for commands.
+I1017 20:01:02.941764 140525463835008 remote_controller.py:127] Connecting to: ws://127.0.0.1:41243/sc2api, attempt: 2, running: True
+Requesting to join a single player game
+Configuring interface options
+Configure: raw interface enabled
+Configure: feature layer interface enabled
+Configure: score interface enabled
+Configure: render interface disabled
+Entering load game phase.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+Sending ResponseJoinGame
+I1017 20:01:08.268174 140525463835008 sc2_env.py:309] Environment is ready on map: Flat64
+WARNING:tensorflow:From replay_noncritical_random.py:79: The name tf.ConfigProto is deprecated. Please use tf.compat.v1.ConfigProto instead.
+
+W1017 20:01:08.277592 140525463835008 deprecation_wrapper.py:119] From replay_noncritical_random.py:79: The name tf.ConfigProto is deprecated. Please use tf.compat.v1.ConfigProto instead.
+
+WARNING:tensorflow:From replay_noncritical_random.py:83: The name tf.Session is deprecated. Please use tf.compat.v1.Session instead.
+
+W1017 20:01:08.278111 140525463835008 deprecation_wrapper.py:119] From replay_noncritical_random.py:83: The name tf.Session is deprecated. Please use tf.compat.v1.Session instead.
+
+2022-10-17 20:01:08.294737: I tensorflow/core/platform/cpu_feature_guard.cc:142] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2022-10-17 20:01:08.339516: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2000089999 Hz
+2022-10-17 20:01:08.363296: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x56481dffd240 executing computations on platform Host. Devices:
+2022-10-17 20:01:08.363433: I tensorflow/compiler/xla/service/service.cc:175]   StreamExecutor device (0): <undefined>, <undefined>
+WARNING:tensorflow:From /data/jiahao/TencentSC2/StarCraftII/src/agents/ppo_agent.py:29: The name tf.get_default_session is deprecated. Please use tf.compat.v1.get_default_session instead.
+
+W1017 20:01:08.381710 140525463835008 deprecation_wrapper.py:119] From /data/jiahao/TencentSC2/StarCraftII/src/agents/ppo_agent.py:29: The name tf.get_default_session is deprecated. Please use tf.compat.v1.get_default_session instead.
+
+WARNING:tensorflow:From /data/jiahao/TencentSC2/StarCraftII/src/agents/ppo_policies.py:88: The name tf.placeholder is deprecated. Please use tf.compat.v1.placeholder instead.
+
+W1017 20:01:08.382072 140525463835008 deprecation_wrapper.py:119] From /data/jiahao/TencentSC2/StarCraftII/src/agents/ppo_policies.py:88: The name tf.placeholder is deprecated. Please use tf.compat.v1.placeholder instead.
+
+WARNING:tensorflow:From /data/jiahao/TencentSC2/StarCraftII/src/agents/ppo_policies.py:96: The name tf.variable_scope is deprecated. Please use tf.compat.v1.variable_scope instead.
+
+W1017 20:01:08.384091 140525463835008 deprecation_wrapper.py:119] From /data/jiahao/TencentSC2/StarCraftII/src/agents/ppo_policies.py:96: The name tf.variable_scope is deprecated. Please use tf.compat.v1.variable_scope instead.
+
+WARNING:tensorflow:From /data/jiahao/TencentSC2/StarCraftII/src/agents/ppo_policies.py:97: flatten (from tensorflow.python.layers.core) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use keras.layers.flatten instead.
+W1017 20:01:08.384506 140525463835008 deprecation.py:323] From /data/jiahao/TencentSC2/StarCraftII/src/agents/ppo_policies.py:97: flatten (from tensorflow.python.layers.core) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use keras.layers.flatten instead.
+WARNING:tensorflow:Entity <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fce162f2a90>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fce162f2a90>>: AttributeError: module 'gast' has no attribute 'Index'
+W1017 20:01:08.405548 140525463835008 ag_logging.py:145] Entity <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fce162f2a90>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fce162f2a90>>: AttributeError: module 'gast' has no attribute 'Index'
+WARNING:tensorflow:From /data/jiahao/TencentSC2/StarCraftII/src/agents/utils_tf.py:33: softmax_cross_entropy_with_logits (from tensorflow.python.ops.nn_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+
+Future major versions of TensorFlow will allow gradients to flow
+into the labels input on backprop by default.
+
+See `tf.nn.softmax_cross_entropy_with_logits_v2`.
+
+W1017 20:01:08.602890 140525463835008 deprecation.py:323] From /data/jiahao/TencentSC2/StarCraftII/src/agents/utils_tf.py:33: softmax_cross_entropy_with_logits (from tensorflow.python.ops.nn_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+
+Future major versions of TensorFlow will allow gradients to flow
+into the labels input on backprop by default.
+
+See `tf.nn.softmax_cross_entropy_with_logits_v2`.
+
+WARNING:tensorflow:Entity <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fce15dec3c8>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fce15dec3c8>>: AttributeError: module 'gast' has no attribute 'Index'
+W1017 20:01:08.644694 140525463835008 ag_logging.py:145] Entity <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fce15dec3c8>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fce15dec3c8>>: AttributeError: module 'gast' has no attribute 'Index'
+WARNING:tensorflow:From /data/jiahao/TencentSC2/StarCraftII/src/agents/utils_tf.py:35: calling reduce_max_v1 (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+W1017 20:01:08.724200 140525463835008 deprecation.py:506] From /data/jiahao/TencentSC2/StarCraftII/src/agents/utils_tf.py:35: calling reduce_max_v1 (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+WARNING:tensorflow:From /data/jiahao/TencentSC2/StarCraftII/src/agents/utils_tf.py:37: calling reduce_sum_v1 (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+W1017 20:01:08.726313 140525463835008 deprecation.py:506] From /data/jiahao/TencentSC2/StarCraftII/src/agents/utils_tf.py:37: calling reduce_sum_v1 (from tensorflow.python.ops.math_ops) with keep_dims is deprecated and will be removed in a future version.
+Instructions for updating:
+keep_dims is deprecated, use keepdims instead
+WARNING:tensorflow:From /data/jiahao/TencentSC2/StarCraftII/src/agents/ppo_agent.py:65: to_float (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use `tf.cast` instead.
+W1017 20:01:08.745925 140525463835008 deprecation.py:323] From /data/jiahao/TencentSC2/StarCraftII/src/agents/ppo_agent.py:65: to_float (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use `tf.cast` instead.
+WARNING:tensorflow:From /home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorflow/python/ops/math_grad.py:1250: add_dispatch_support.<locals>.wrapper (from tensorflow.python.ops.array_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.where in 2.0, which has the same broadcast rule as np.where
+W1017 20:01:08.763969 140525463835008 deprecation.py:323] From /home/jvy5516/miniconda3/envs/starcraft/lib/python3.6/site-packages/tensorflow/python/ops/math_grad.py:1250: add_dispatch_support.<locals>.wrapper (from tensorflow.python.ops.array_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use tf.where in 2.0, which has the same broadcast rule as np.where
+WARNING:tensorflow:From /data/jiahao/TencentSC2/StarCraftII/src/agents/ppo_agent.py:72: The name tf.train.AdamOptimizer is deprecated. Please use tf.compat.v1.train.AdamOptimizer instead.
+
+W1017 20:01:08.937597 140525463835008 deprecation_wrapper.py:119] From /data/jiahao/TencentSC2/StarCraftII/src/agents/ppo_agent.py:72: The name tf.train.AdamOptimizer is deprecated. Please use tf.compat.v1.train.AdamOptimizer instead.
+
+2022-10-17 20:01:09.158330: W tensorflow/compiler/jit/mark_for_compilation_pass.cc:1412] (One-time warning): Not using XLA:CPU for cluster because envvar TF_XLA_FLAGS=--tf_xla_cpu_global_jit was not set.  If you want XLA:CPU, either set that envvar, or use experimental_jit_scope to enable XLA:CPU.  To confirm that XLA is active, pass --vmodule=xla_compilation_cache=1 (as a proper command-line flag, not via TF_XLA_FLAGS) or set the envvar XLA_FLAGS=--xla_hlo_profile.
+WARNING:tensorflow:Entity <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fcae83b27b8>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fcae83b27b8>>: AttributeError: module 'gast' has no attribute 'Index'
+W1017 20:01:09.209170 140525463835008 ag_logging.py:145] Entity <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fcae83b27b8>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fcae83b27b8>>: AttributeError: module 'gast' has no attribute 'Index'
+WARNING:tensorflow:Entity <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fcae83b27b8>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fcae83b27b8>>: AttributeError: module 'gast' has no attribute 'Index'
+W1017 20:01:09.436023 140525463835008 ag_logging.py:145] Entity <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fcae83b27b8>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fcae83b27b8>>: AttributeError: module 'gast' has no attribute 'Index'
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+I1017 20:01:10.033005 140525463835008 sc2_env.py:436] Starting episode: 1
+/home/zxc5262/PySC2TencentExtension/pysc2/env/sc2_env.py:476: FutureWarning: arrays to stack must be passed as a "sequence" type such as list or tuple. Support for non-sequence iterables such as generators is deprecated as of NumPy 1.16 and will raise an error in the future.
+  agent_obs = [f.transform_obs(o) for f, o in zip(
+I1017 20:01:39.560678 140525463835008 sc2_env.py:529] Episode 1 finished after 12288 game steps. Outcome: [-1], reward: [-1], score: [666]
+[2022-10-17 20:01:39] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:01:42.674523 140525463835008 sc2_env.py:436] Starting episode: 2
+I1017 20:01:57.248684 140525463835008 sc2_env.py:529] Episode 2 finished after 8288 game steps. Outcome: [1], reward: [1], score: [5501]
+[2022-10-17 20:01:57] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:02:00.383519 140525463835008 sc2_env.py:436] Starting episode: 3
+I1017 20:02:15.333043 140525463835008 sc2_env.py:529] Episode 3 finished after 8096 game steps. Outcome: [1], reward: [1], score: [5235]
+[2022-10-17 20:02:15] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:02:18.376182 140525463835008 sc2_env.py:436] Starting episode: 4
+I1017 20:02:30.269705 140525463835008 sc2_env.py:529] Episode 4 finished after 7008 game steps. Outcome: [1], reward: [1], score: [5284]
+[2022-10-17 20:02:30] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:02:33.310570 140525463835008 sc2_env.py:436] Starting episode: 5
+I1017 20:02:44.843899 140525463835008 sc2_env.py:529] Episode 5 finished after 7168 game steps. Outcome: [1], reward: [1], score: [4678]
+[2022-10-17 20:02:44] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:02:47.987617 140525463835008 sc2_env.py:436] Starting episode: 6
+I1017 20:03:05.129795 140525463835008 sc2_env.py:529] Episode 6 finished after 9216 game steps. Outcome: [-1], reward: [-1], score: [2016]
+[2022-10-17 20:03:05] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:03:08.212950 140525463835008 sc2_env.py:436] Starting episode: 7
+I1017 20:03:18.449431 140525463835008 sc2_env.py:529] Episode 7 finished after 6496 game steps. Outcome: [1], reward: [1], score: [4422]
+[2022-10-17 20:03:18] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:03:21.505902 140525463835008 sc2_env.py:436] Starting episode: 8
+I1017 20:03:32.843218 140525463835008 sc2_env.py:529] Episode 8 finished after 7008 game steps. Outcome: [1], reward: [1], score: [3988]
+[2022-10-17 20:03:32] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:03:35.942705 140525463835008 sc2_env.py:436] Starting episode: 9
+I1017 20:03:57.654974 140525463835008 sc2_env.py:529] Episode 9 finished after 11200 game steps. Outcome: [-1], reward: [-1], score: [1320]
+[2022-10-17 20:03:57] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:04:00.687103 140525463835008 sc2_env.py:436] Starting episode: 10
+I1017 20:04:19.593745 140525463835008 sc2_env.py:529] Episode 10 finished after 10528 game steps. Outcome: [1], reward: [1], score: [5585]
+[2022-10-17 20:04:19] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:04:22.788555 140525463835008 sc2_env.py:436] Starting episode: 11
+I1017 20:04:33.187180 140525463835008 sc2_env.py:529] Episode 11 finished after 6496 game steps. Outcome: [1], reward: [1], score: [4233]
+[2022-10-17 20:04:33] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:04:36.302259 140525463835008 sc2_env.py:436] Starting episode: 12
+I1017 20:05:28.761865 140525463835008 sc2_env.py:529] Episode 12 finished after 16000 game steps. Outcome: [-1], reward: [-1], score: [587]
+[2022-10-17 20:05:28] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:05:32.197844 140525463835008 sc2_env.py:436] Starting episode: 13
+I1017 20:06:23.128771 140525463835008 sc2_env.py:529] Episode 13 finished after 16704 game steps. Outcome: [-1], reward: [-1], score: [921]
+[2022-10-17 20:06:23] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:06:26.665621 140525463835008 sc2_env.py:436] Starting episode: 14
+I1017 20:07:13.160158 140525463835008 sc2_env.py:529] Episode 14 finished after 18016 game steps. Outcome: [-1], reward: [-1], score: [984]
+[2022-10-17 20:07:13] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:07:16.610968 140525463835008 sc2_env.py:436] Starting episode: 15
+I1017 20:07:51.447385 140525463835008 sc2_env.py:529] Episode 15 finished after 12736 game steps. Outcome: [-1], reward: [-1], score: [614]
+[2022-10-17 20:07:51] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:07:54.956907 140525463835008 sc2_env.py:436] Starting episode: 16
+I1017 20:08:16.332865 140525463835008 sc2_env.py:529] Episode 16 finished after 10112 game steps. Outcome: [1], reward: [1], score: [4785]
+[2022-10-17 20:08:16] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:08:19.983114 140525463835008 sc2_env.py:436] Starting episode: 17
+I1017 20:08:35.174761 140525463835008 sc2_env.py:529] Episode 17 finished after 7680 game steps. Outcome: [1], reward: [1], score: [4652]
+[2022-10-17 20:08:35] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:08:38.602951 140525463835008 sc2_env.py:436] Starting episode: 18
+I1017 20:08:53.077982 140525463835008 sc2_env.py:529] Episode 18 finished after 7904 game steps. Outcome: [1], reward: [1], score: [5239]
+[2022-10-17 20:08:53] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:08:56.435164 140525463835008 sc2_env.py:436] Starting episode: 19
+I1017 20:09:12.011183 140525463835008 sc2_env.py:529] Episode 19 finished after 8032 game steps. Outcome: [1], reward: [1], score: [5362]
+[2022-10-17 20:09:12] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:09:15.407305 140525463835008 sc2_env.py:436] Starting episode: 20
+I1017 20:09:32.185898 140525463835008 sc2_env.py:529] Episode 20 finished after 8032 game steps. Outcome: [1], reward: [1], score: [4571]
+[2022-10-17 20:09:32] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:09:35.760706 140525463835008 sc2_env.py:436] Starting episode: 21
+I1017 20:09:49.127164 140525463835008 sc2_env.py:529] Episode 21 finished after 6944 game steps. Outcome: [1], reward: [1], score: [4790]
+[2022-10-17 20:09:49] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:09:52.689733 140525463835008 sc2_env.py:436] Starting episode: 22
+I1017 20:10:06.799664 140525463835008 sc2_env.py:529] Episode 22 finished after 7072 game steps. Outcome: [1], reward: [1], score: [5096]
+[2022-10-17 20:10:06] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:10:10.252460 140525463835008 sc2_env.py:436] Starting episode: 23
+I1017 20:10:47.725683 140525463835008 sc2_env.py:529] Episode 23 finished after 14336 game steps. Outcome: [-1], reward: [-1], score: [882]
+[2022-10-17 20:10:47] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:10:51.116367 140525463835008 sc2_env.py:436] Starting episode: 24
+I1017 20:11:19.259043 140525463835008 sc2_env.py:529] Episode 24 finished after 12000 game steps. Outcome: [-1], reward: [-1], score: [720]
+[2022-10-17 20:11:19] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:11:22.847165 140525463835008 sc2_env.py:436] Starting episode: 25
+I1017 20:12:07.035463 140525463835008 sc2_env.py:529] Episode 25 finished after 15776 game steps. Outcome: [-1], reward: [-1], score: [501]
+[2022-10-17 20:12:07] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:12:10.379884 140525463835008 sc2_env.py:436] Starting episode: 26
+I1017 20:12:34.044553 140525463835008 sc2_env.py:529] Episode 26 finished after 11456 game steps. Outcome: [1], reward: [1], score: [4347]
+[2022-10-17 20:12:34] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:12:37.635932 140525463835008 sc2_env.py:436] Starting episode: 27
+I1017 20:12:55.092816 140525463835008 sc2_env.py:529] Episode 27 finished after 8128 game steps. Outcome: [1], reward: [1], score: [5351]
+[2022-10-17 20:12:55] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:12:58.560891 140525463835008 sc2_env.py:436] Starting episode: 28
+I1017 20:13:12.432044 140525463835008 sc2_env.py:529] Episode 28 finished after 7200 game steps. Outcome: [1], reward: [1], score: [4852]
+[2022-10-17 20:13:12] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:13:15.885549 140525463835008 sc2_env.py:436] Starting episode: 29
+I1017 20:13:30.081466 140525463835008 sc2_env.py:529] Episode 29 finished after 7328 game steps. Outcome: [1], reward: [1], score: [4973]
+[2022-10-17 20:13:30] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:13:33.495106 140525463835008 sc2_env.py:436] Starting episode: 30
+I1017 20:13:46.456383 140525463835008 sc2_env.py:529] Episode 30 finished after 7232 game steps. Outcome: [1], reward: [1], score: [5454]
+[2022-10-17 20:13:46] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:13:49.771830 140525463835008 sc2_env.py:436] Starting episode: 31
+I1017 20:14:06.408513 140525463835008 sc2_env.py:529] Episode 31 finished after 8704 game steps. Outcome: [1], reward: [1], score: [4594]
+[2022-10-17 20:14:06] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:14:09.855735 140525463835008 sc2_env.py:436] Starting episode: 32
+I1017 20:15:13.517998 140525463835008 sc2_env.py:529] Episode 32 finished after 19008 game steps. Outcome: [-1], reward: [-1], score: [424]
+[2022-10-17 20:15:13] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:15:17.087821 140525463835008 sc2_env.py:436] Starting episode: 33
+I1017 20:16:03.190196 140525463835008 sc2_env.py:529] Episode 33 finished after 14976 game steps. Outcome: [-1], reward: [-1], score: [1475]
+[2022-10-17 20:16:03] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:16:06.665292 140525463835008 sc2_env.py:436] Starting episode: 34
+I1017 20:16:22.826329 140525463835008 sc2_env.py:529] Episode 34 finished after 7616 game steps. Outcome: [1], reward: [1], score: [4551]
+[2022-10-17 20:16:22] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:16:26.150801 140525463835008 sc2_env.py:436] Starting episode: 35
+I1017 20:16:40.978132 140525463835008 sc2_env.py:529] Episode 35 finished after 6944 game steps. Outcome: [1], reward: [1], score: [5050]
+[2022-10-17 20:16:40] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:16:44.443890 140525463835008 sc2_env.py:436] Starting episode: 36
+I1017 20:16:58.541404 140525463835008 sc2_env.py:529] Episode 36 finished after 6944 game steps. Outcome: [1], reward: [1], score: [4968]
+[2022-10-17 20:16:58] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:17:01.927817 140525463835008 sc2_env.py:436] Starting episode: 37
+I1017 20:17:22.865968 140525463835008 sc2_env.py:529] Episode 37 finished after 9184 game steps. Outcome: [-1], reward: [-1], score: [1275]
+[2022-10-17 20:17:22] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:17:26.364567 140525463835008 sc2_env.py:436] Starting episode: 38
+I1017 20:17:42.207149 140525463835008 sc2_env.py:529] Episode 38 finished after 7904 game steps. Outcome: [1], reward: [1], score: [4591]
+[2022-10-17 20:17:42] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:17:45.877651 140525463835008 sc2_env.py:436] Starting episode: 39
+I1017 20:18:07.018908 140525463835008 sc2_env.py:529] Episode 39 finished after 10496 game steps. Outcome: [1], reward: [1], score: [4457]
+[2022-10-17 20:18:07] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:18:10.492552 140525463835008 sc2_env.py:436] Starting episode: 40
+I1017 20:19:16.402095 140525463835008 sc2_env.py:529] Episode 40 finished after 19296 game steps. Outcome: [-1], reward: [-1], score: [582]
+[2022-10-17 20:19:16] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:19:19.666879 140525463835008 sc2_env.py:436] Starting episode: 41
+I1017 20:19:35.866785 140525463835008 sc2_env.py:529] Episode 41 finished after 8128 game steps. Outcome: [1], reward: [1], score: [4377]
+[2022-10-17 20:19:35] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:19:39.321069 140525463835008 sc2_env.py:436] Starting episode: 42
+I1017 20:20:04.267154 140525463835008 sc2_env.py:529] Episode 42 finished after 11360 game steps. Outcome: [-1], reward: [-1], score: [1165]
+[2022-10-17 20:20:04] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:20:07.583409 140525463835008 sc2_env.py:436] Starting episode: 43
+I1017 20:21:28.321892 140525463835008 sc2_env.py:529] Episode 43 finished after 24448 game steps. Outcome: [-1], reward: [-1], score: [873]
+[2022-10-17 20:21:28] Episode Done. Difficulty: A Outcome -1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:21:31.961519 140525463835008 sc2_env.py:436] Starting episode: 44
+I1017 20:21:52.472261 140525463835008 sc2_env.py:529] Episode 44 finished after 9952 game steps. Outcome: [1], reward: [1], score: [4850]
+[2022-10-17 20:21:52] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:21:55.876803 140525463835008 sc2_env.py:436] Starting episode: 45
+I1017 20:22:10.884657 140525463835008 sc2_env.py:529] Episode 45 finished after 7520 game steps. Outcome: [1], reward: [1], score: [4691]
+[2022-10-17 20:22:10] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:22:14.276489 140525463835008 sc2_env.py:436] Starting episode: 46
+I1017 20:22:32.161394 140525463835008 sc2_env.py:529] Episode 46 finished after 9024 game steps. Outcome: [1], reward: [1], score: [4364]
+[2022-10-17 20:22:32] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:22:35.659261 140525463835008 sc2_env.py:436] Starting episode: 47
+I1017 20:22:48.348107 140525463835008 sc2_env.py:529] Episode 47 finished after 7104 game steps. Outcome: [1], reward: [1], score: [3256]
+[2022-10-17 20:22:48] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:22:51.765119 140525463835008 sc2_env.py:436] Starting episode: 48
+I1017 20:23:05.119096 140525463835008 sc2_env.py:529] Episode 48 finished after 7072 game steps. Outcome: [1], reward: [1], score: [5122]
+[2022-10-17 20:23:05] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:23:08.428584 140525463835008 sc2_env.py:436] Starting episode: 49
+I1017 20:23:21.200830 140525463835008 sc2_env.py:529] Episode 49 finished after 6368 game steps. Outcome: [1], reward: [1], score: [4868]
+[2022-10-17 20:23:21] Episode Done. Difficulty: A Outcome 1.000000
+[33mWARN: Could not seed environment <SC2RawEnv instance>[0m
+Performing a full restart of the game.
+Launching next game.
+Next launch phase started: 2
+Next launch phase started: 3
+Next launch phase started: 4
+Next launch phase started: 5
+Next launch phase started: 6
+Next launch phase started: 7
+Next launch phase started: 8
+Game has started.
+I1017 20:23:24.529448 140525463835008 sc2_env.py:436] Starting episode: 50
+I1017 20:23:57.322074 140525463835008 sc2_env.py:529] Episode 50 finished after 12544 game steps. Outcome: [-1], reward: [-1], score: [1261]
+[2022-10-17 20:23:57] Episode Done. Difficulty: A Outcome -1.000000
+Average return: 0.66
+I1017 20:23:57.330118 140525463835008 sc2_env.py:556] Environment Close
+RequestQuit command received.
+unable to parse websocket frame.
+Closing Application...
+Terminate action already called.
+Entering core terminate.
+Core shutdown finished.
+I1017 20:23:58.838060 140525463835008 sc_process.py:197] Shutdown gracefully.
+I1017 20:23:58.838355 140525463835008 sc_process.py:182] Shutdown with return code: 0
+I1017 20:23:58.839772 140525463835008 sc2_env.py:578] 
