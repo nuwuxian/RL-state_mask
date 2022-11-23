@@ -1,7 +1,7 @@
 import numpy as np
 
-critical_steps_starts = []
-critical_steps_ends = []
+non_critical_steps_starts = []
+non_critical_steps_ends = []
 
 for i_episode in range(500):
     mask_probs_path = "./recording/mask_probs_" + str(i_episode) + ".out"
@@ -15,22 +15,22 @@ for i_episode in range(500):
     k = int(iteration_ends * 0.4)
 
     #find the top k:
-    idx = np.argpartition(confs, -k)[-k:]  # Indices not sorted
+    #idx = np.argpartition(confs, -k)[-k:]  # Indices not sorted
 
-    sorted_idxs = idx[np.argsort(confs[idx])][::-1] # Indices sorted by value from largest to smallest
+    #sorted_idxs = idx[np.argsort(confs[idx])][::-1] # Indices sorted by value from largest to smallest
     #print(sorted_idxs)
     #print(confs[sorted_idxs])
 
     #find the bottom k:
 
-    #idx = np.argpartition(x, k)[:k]  # Indices not sorted
+    idx = np.argpartition(confs, k)[:k]  # Indices not sorted
 
     #idx[np.argsort(x[idx])]  # Indices sorted by value from smallest to largest
 
     idx.sort()
 
-    critical_steps_start = idx[0]
-    critical_steps_end = idx[0]
+    non_critical_steps_start = idx[0]
+    non_critical_steps_end = idx[0]
 
     ans = 0
     count = 0
@@ -55,13 +55,13 @@ for i_episode in range(500):
         # Update the maximum
         if count > ans:
             ans = count
-            critical_steps_start = tmp_start
-            critical_steps_end = tmp_end
+            non_critical_steps_start = tmp_start
+            non_critical_steps_end = tmp_end
 
          
 
-    critical_steps_starts.append(critical_steps_start)
-    critical_steps_ends.append(critical_steps_end)
+    non_critical_steps_starts.append(non_critical_steps_start)
+    non_critical_steps_ends.append(non_critical_steps_end)
 
-np.savetxt("./recording/critical_steps_starts.out", critical_steps_starts)
-np.savetxt("./recording/critical_steps_ends.out", critical_steps_ends)
+np.savetxt("./recording/non_critical_steps_starts.out", non_critical_steps_starts)
+np.savetxt("./recording/non_critical_steps_ends.out", non_critical_steps_ends)
