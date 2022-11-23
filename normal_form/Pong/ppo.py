@@ -39,17 +39,6 @@ BASELINE_PATH = "./ppo_test/baseline/Pong-v0_+0.896_12150.dat"
 PATH = "./ppo_test/checkpoints/Pong-v0_+0.855_19700.dat"
 
 
-for func in [
-             lambda:os.mkdir(os.path.join('.', 'ppo_test')),
-             lambda: os.mkdir(os.path.join('.', 'ppo_test/checkpoints')),
-             lambda: os.mkdir(os.path.join('.', 'ppo_test/records')),
-             lambda: os.mkdir(os.path.join('.', 'ppo_test/plots'))
-             ]: # create directories
-   try:
-       func()
-   except Exception as error:
-       print (error)
-       continue
 
 def make_env():    # this function creates a single environment
     """
