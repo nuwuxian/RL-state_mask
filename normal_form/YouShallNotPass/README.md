@@ -1,0 +1,1 @@
+- run `src/mask_train.py` to train the masknet.
