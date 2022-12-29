@@ -108,15 +108,12 @@ class CriticNetwork(nn.Module):
         self.load_state_dict(T.load(self.checkpoint_file))
 
 class Masknet:
-    def __init__(self, eta_origin, n_actions, input_dims, gamma=0.99, alpha=0.0003, beta=0.001, gae_lambda=0.95,
-            policy_clip=0.2, batch_size=64, n_epochs=10, LAMBDA=0.5, L_RATE_LAMBDA=1e-3, chkpt_dir = 'tmp/ppo'):
+    def __init__(self, n_actions, input_dims, gamma=0.99, alpha=0.0003, beta=0.001, gae_lambda=0.95,
+            policy_clip=0.2, batch_size=64, n_epochs=10, chkpt_dir = 'tmp/ppo'):
         self.gamma = gamma
         self.policy_clip = policy_clip
         self.n_epochs = n_epochs
         self.gae_lambda = gae_lambda
-        self.LAMBDA = LAMBDA
-        self.L_RATE_LAMBDA = L_RATE_LAMBDA
-        self.eta_origin = eta_origin
 
         self.actor = ActorNetwork(n_actions, input_dims, alpha, chkpt_dir = chkpt_dir)
         self.critic = CriticNetwork(input_dims, beta , chkpt_dir = chkpt_dir)
@@ -145,8 +142,6 @@ class Masknet:
         return dist, value
 
     def learn(self, num_mask, fused_lasso):
-        loss_buff = []
-
         for _ in range(self.n_epochs):
             state_arr, action_arr, old_prob_arr, vals_arr,\
             reward_arr, dones_arr, batches = \
@@ -189,18 +184,10 @@ class Masknet:
                 critic_loss = critic_loss.mean()
 
                 total_loss = actor_loss + 0.5*critic_loss + 0*num_mask + 0*fused_lasso
-                if self.LAMBDA > 1:
-                    print("monotone decrease!")
-                    total_loss = -total_loss
                 self.actor.optimizer.zero_grad()
                 self.critic.optimizer.zero_grad()
                 total_loss.backward()
                 self.actor.optimizer.step()
                 self.critic.optimizer.step()
-
-                loss_buff.append(actor_loss.cpu().detach().numpy())
-        
-        self.LAMBDA -= self.L_RATE_LAMBDA * (np.mean(loss_buff) + 2 * self.eta_origin)
-        self.LAMBDA = max(self.LAMBDA, 0)
 
         self.memory.clear_memory()   
