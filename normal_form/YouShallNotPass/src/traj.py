@@ -21,9 +21,9 @@ sess.run(tf.variables_initializer(tf.global_variables()))
 
 env_name = 'multicomp/YouShallNotPassHumans-v0'
 adv_ismlp = True
-victim_agent_path = '/data/jiahao/mujoco/fidelity_runner/multiagent-competition/agent-zoo/you-shall-not-pass/agent2_parameters-v1.pkl'
-mask_agent_path = '/data/jiahao/mujoco/fidelity_runner/agent-zoo/YouShallNotPassHumans-v0_0_MLP_MLP_0_const_-1_const_0_const_False/20220830_162540-0/checkpoints/000019906560/model.pkl'
-mask_obs_normpath = '/data/jiahao/mujoco/fidelity_runner/agent-zoo/YouShallNotPassHumans-v0_0_MLP_MLP_0_const_-1_const_0_const_False/20220830_162540-0/checkpoints/000019906560/obs_rms.pkl'
+victim_agent_path = '/home/xkw5132/mujoco/fidelity_runner/multiagent-competition/agent-zoo/you-shall-not-pass/agent2_parameters-v1.pkl'
+mask_agent_path = '/home/xkw5132/mujoco/fidelity_runner/agent-zoo/YouShallNotPassHumans-v0_0_MLP_MLP_0_const_-1_const_0_const_False/20220830_162540-0/checkpoints/000019906560/model.pkl'
+mask_obs_normpath = '/home/xkw5132/mujoco/fidelity_runner/agent-zoo/YouShallNotPassHumans-v0_0_MLP_MLP_0_const_-1_const_0_const_False/20220830_162540-0/checkpoints/000019906560/obs_rms.pkl'
 mask_action_space = spaces.Discrete(2)
 # Load agent, build environment, and play an episode.
 env = gym.make(env_name)
@@ -35,16 +35,14 @@ with tf.variable_scope("mask_agent", reuse=False):
     mask_agent = make_adv_agent(env.observation_space.spaces[1], mask_action_space,1,mask_agent_path,adv_ismlp,mask_obs_normpath, name='mask_agent')
 
 
-traj_path = 'trajs/' + env_name.split('/')[1]
+traj_path = 'trajs'
 #traj_path = 'trajs/Pong-v0.npz'
-num_traj = 500
+num_traj = 10
 max_ep_len = 400
 
+# if os.path.isdir("recording"):
+#     os.system("rm -rf recording")
 
-if os.path.isdir("recording"):
-    os.system("rm -rf recording")
 
-
-os.system("mkdir recording")
-
+# os.system("mkdir recording")
 rollout(victim_agent, adv_agent, mask_agent, env, num_traj=num_traj, max_ep_len=400, save_path=traj_path)

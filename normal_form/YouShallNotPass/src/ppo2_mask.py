@@ -30,7 +30,7 @@ class MyPPO2(ActorCriticRLModel):
     def __init__(self, policy, env, gamma=0.99, n_steps=128, ent_coef=0.01, learning_rate=2.5e-4, vf_coef=0.2,
                  coef_opp_init=1, coef_opp_schedule='const', coef_adv_init=1, coef_adv_schedule='const',
                  coef_abs_init=1, coef_abs_schedule='const', max_grad_norm=0.5, lam=0.95, nminibatches=4,
-                 noptepochs=4, cliprange=0.2, eta_origin=None, verbose=0,  lr_schedule='const', tensorboard_log=None,
+                 noptepochs=4, cliprange=0.2, eta_origin=None, verbose=0, lr_schedule='const', tensorboard_log=None,
                  _init_setup_model=True, policy_kwargs=None, is_mlp=True, full_tensorboard_log=False,
                  model_saved_loc=None, env_name=None, opp_value=None, retrain_victim=False, norm_victim=False,
                  use_baseline_policy=None, vic_agt_id=None):
@@ -87,13 +87,14 @@ class MyPPO2(ActorCriticRLModel):
         self.noptepochs = noptepochs
         self.tensorboard_log = tensorboard_log
         self.full_tensorboard_log = full_tensorboard_log
-        self.lasso_coef = 1e-4
-        self.fuss_lasso_coef = 1e-4
+        self.lasso_coef = 1e-5
+        self.fuss_lasso_coef = 1e-5
 
         # Lagrange penalty
         self.lambda_penalty = 0.5
         self.L_RATE_LAMBDA = 2e-4
         self.eta_origin = eta_origin
+
 
         self.graph = None
         self.sess = None
@@ -158,7 +159,7 @@ class MyPPO2(ActorCriticRLModel):
         if _init_setup_model:
             self.setup_model()
         
-        self.adv_agent = ZooAgent(self.env_name, self.observation_space, self.action_space, tag=2, version=1, scope='')
+        self.adv_agent = ZooAgent(self.env_name, self.observation_space, self.action_space, n_envs=8, tag=1, version=1, scope='')
 
     def _get_pretrain_placeholders(self):
         policy = self.act_model
@@ -282,11 +283,9 @@ class MyPPO2(ActorCriticRLModel):
                     self.abs_rewards_ph = tf.placeholder(tf.float32, [None], name="abs_rewards_ph")
                     self.old_abs_vpred_ph = tf.placeholder(tf.float32, [None], name='old_abs_vpred_ph')
 
-
                     self.origin_advs_ph = tf.placeholder(tf.float32, [None], name="origin_advs_ph")
                     self.origin_opp_advs_ph = tf.placeholder(tf.float32, [None], name="origin_opp_advs_ph")
                     self.origin_abs_advs_ph = tf.placeholder(tf.float32, [None], name="origin_abs_advs_ph")
-
                     # add lambda
                     self.lambda_ph = tf.placeholder(tf.float32, [], name='penalty')
 
@@ -332,11 +331,8 @@ class MyPPO2(ActorCriticRLModel):
                     # estimation for lambda
                     origin_pg_losses = (self.coef_abs_ph*self.origin_abs_advs_ph + self.coef_opp_ph*self.origin_opp_advs_ph
                                  + self.coef_adv_ph*self.origin_advs_ph) * ratio
-                    origin_pg_losses2 = (self.coef_abs_ph*self.origin_abs_advs_ph + self.coef_opp_ph*self.origin_opp_advs_ph
-                                  + self.coef_adv_ph*self.origin_advs_ph) * \
-                                 tf.clip_by_value(ratio, 1.0 - self.clip_range_ph, 1.0 + self.clip_range_ph)
-                    self.est = tf.reduce_mean(tf.maximum(origin_pg_losses, origin_pg_losses2))
-                    
+                    self.est = tf.reduce_mean(origin_pg_losses)
+
                     # seperate the loss function
                     opp_pg_losses = self.coef_opp_ph * self.opp_advs_ph * ratio
                     opp_pg_losses2 = self.coef_opp_ph * self.opp_advs_ph * \
@@ -753,13 +749,13 @@ class MyPPO2(ActorCriticRLModel):
                     self.num_timesteps += self.n_envs * self.n_steps
 			
                 loss_vals = np.mean(mb_loss_vals, axis=0)
+                est = loss_vals[0]
                 # update lambda_penalty
                 # loss_vals[0] is the est
-                self.lambda_penalty -= self.L_RATE_LAMBDA * (loss_vals[0] + 2 * self.eta_origin)
+                self.lambda_penalty -= self.L_RATE_LAMBDA * (est + 2 * self.eta_origin)
                 self.lambda_penalty = max(self.lambda_penalty, 0)
                 # delete the est
                 loss_vals = loss_vals[1:]
-
                 t_now = time.time()
                 fps = int(self.n_batch / (t_now - t_start))
 
@@ -790,6 +786,7 @@ class MyPPO2(ActorCriticRLModel):
                     logger.logkv("adv_loss_weight", np.mean(coef_adv_now))
                     logger.logkv("diff_loss_weight", np.mean(coef_abs_now))
                     logger.logkv("lambda_penalty", self.lambda_penalty)
+                    logger.logkv("est", -1.0 * est)
 
                     logger.logkv("explained_variance", float(explained_var))
 
@@ -917,6 +914,8 @@ class Runner(AbstractEnvRunner):
         self.abs_states = v1_model.initial_state
         self.use_victim_ob = use_victim_ob
         self.adv_agent = adv_agent
+        # init-state: LSTM
+        self.adv_states = self.adv_agent.initial_state()
     def run(self):
         """
         Run a learning step of the model
@@ -953,8 +952,9 @@ class Runner(AbstractEnvRunner):
             # self.obs (n_envs, obs_shape) self.dones (n_envs, 1)
             # actions (n_envs, action_shape) value(n_envs,) neglogpacs (n_envs, 1)
             mask_actions, values, self.states, neglogpacs = self.model.step(self.obs, self.states, self.dones)
-            baseline_actions = self.adv_agent.step(self.env.get_original_obs())
+            baseline_actions, _, self.adv_states, _ = self.adv_agent.step(self.env.get_original_obs(), self.adv_states, self.dones)
             actions = baseline_actions.copy()
+
             for i in range(len(mask_actions)):
                 if mask_actions[i] == 1 :
                     actions[i] = actions[i] + np.random.rand(actions[i].shape[0]) * 3 -1
@@ -1004,7 +1004,7 @@ class Runner(AbstractEnvRunner):
 
         mb_opp_obs = np.asarray(mb_opp_obs, dtype=self.obs.dtype)
         # print(mb_actions.shape)
-        print("the mask ratio is: ", np.sum(mb_actions) / (mb_actions.shape[0]*mb_actions.shape[1]))
+        print("The mask ratio is: ", np.sum(mb_actions) / (mb_actions.shape[0]*mb_actions.shape[1]))
         if not self.is_mlp:
             mb_opp_states = np.asarray(mb_opp_states, dtype=np.float32)
             mb_abs_states = np.asarray(mb_abs_states, dtype=np.float32)

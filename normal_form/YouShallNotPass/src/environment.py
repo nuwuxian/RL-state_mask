@@ -13,13 +13,13 @@ from agent import make_zoo_agent, make_adv_agent
 from collections import Counter
 # running-mean std
 from stable_baselines.common.running_mean_std import RunningMeanStd
+import random
 
 def func(x):
   if type(x) == np.ndarray:
     return x[0]
   else:
     return x
-
 
 # norm-agent
 class Monitor(VecEnvWrapper):
@@ -31,9 +31,12 @@ class Monitor(VecEnvWrapper):
         VecEnvWrapper.__init__(self, venv)
         self.outcomes = []
         self.num_games = 0
+        self.eta = 0
         self.agent_idx = agent_idx
+        self.steps = np.zeros((8)).astype('int32')
 
     def reset(self):
+        self.steps = np.zeros((8)).astype('int32')
         return self.venv.reset()
 
     def step_wait(self):
@@ -44,8 +47,12 @@ class Monitor(VecEnvWrapper):
         :return: infos: winning information.
         """
         obs, rew, dones, infos = self.venv.step_wait()
+        self.steps += 1
+        cnt = 0
         for done, info in zip(dones, infos):
             if done:
+                self.eta  += 0.01 * infos[1 - self.agent_idx]['reward_remaining'] * (0.99 ** (self.steps[cnt] - 1))
+                self.steps[cnt] = 0
                 if 'winner' in info:
                     self.outcomes.append(1 - self.agent_idx)
                 elif 'loser' in info:
@@ -53,6 +60,7 @@ class Monitor(VecEnvWrapper):
                 else:
                     self.outcomes.append(None)
                 self.num_games += 1
+            cnt += 1
 
         return obs, rew, dones, infos
 
@@ -67,7 +75,9 @@ class Monitor(VecEnvWrapper):
             logger.logkv("game_win0", c.get(0, 0) / num_games) # agent 0 winning rate.
             logger.logkv("game_win1", c.get(1, 0) / num_games) # agent 1 winning rate.
             logger.logkv("game_tie", c.get(None, 0) / num_games) # tie rate.
+            logger.logkv("game_diff_eta", abs(self.eta / num_games - 0.57334))
         logger.logkv("game_total", num_games)
+        self.eta = 0
         self.num_games = 0
         self.outcomes = []
 
@@ -150,6 +160,40 @@ class Multi_Monitor(VecEnvWrapper):
         self.adv_outcomes = []
 
 
+
+class training_pool():
+    def __init__(self, reward_record_file ,ratio):
+        self.reward_record_file = reward_record_file
+        self.ratio = ratio
+        self.losing_games_idxs = self.select_losing_game()
+        self.winning_games_idxs = self.select_winning_game()
+        self.candidates = self.create_pool(self.losing_games_idxs, self.winning_games_idxs, self.ratio)
+        
+    
+    def create_pool(self, losing_idxs, winning_idxs, ratio):
+        losing_num = len(losing_idxs)
+        winning_num = int(losing_num * ratio)
+        winning_idxs_selected = np.random.choice(winning_idxs, winning_num)
+        pool = np.concatenate((losing_idxs, winning_idxs_selected), axis=None)
+        return pool
+
+    def select_winning_game(self):
+        rewards = np.loadtxt(self.reward_record_file)
+        winning_list = []
+        for i in range(len(rewards)):
+            if rewards[i] == 1:
+                winning_list.append(i)
+        return winning_list
+
+    def select_losing_game(self):
+        rewards = np.loadtxt(self.reward_record_file)
+        losing_list = []
+        for i in range(len(rewards)):
+            if rewards[i] == -1:
+                losing_list.append(i)
+        return losing_list
+
+
 class Multi2SingleEnv(Wrapper):
 
     def __init__(self, env, env_name, agent, agent_idx, shaping_params, scheduler, total_step, norm=True,
@@ -216,6 +260,11 @@ class Multi2SingleEnv(Wrapper):
         # return - total discounted reward.
         self.ret = np.zeros(1)
         self.ret_abs = np.zeros(1)
+        
+        self.reward_record_file = './recording/reward_record.out'
+        self.train_pool = training_pool(self.reward_record_file , 1.0)
+        self.idxs_list = self.train_pool.candidates
+        self.critical_steps_starts = np.loadtxt("./recording/critical_steps_starts.out")
 
     def step(self, action):
         """get the reward, observation, and information at each step.
@@ -227,20 +276,20 @@ class Multi2SingleEnv(Wrapper):
         """
 
         self.cnt += 1
-        self.oppo_ob = self.ob.copy()
-        self.obs_rms.update(self.oppo_ob)
-        self.oppo_ob = np.clip((self.oppo_ob - self.obs_rms.mean) / np.sqrt(self.obs_rms.var + self.epsilon),
-                               -self.clip_obs, self.clip_obs)
-        if self.retrain_victim:
-            if not self.agent.adv_loadnorm:
-                self_action = self.agent.act(observation=self.oppo_ob[None, :], reward=self.reward, done=self.done).flatten()
-            else:
-                self_action = self.agent.act(observation=self.ob[None,:], reward=self.reward, done=self.done).flatten()
-            # mix agent
-            if self.mix_agent and not self.is_advagent:
-                self_action = self._agent.act(observation=self.ob, reward=self.reward, done=self.done)
-        else:
-            self_action = self.agent.act(observation=self.ob, reward=self.reward, done=self.done)
+        # self.oppo_ob = self.ob.copy()
+        # self.obs_rms.update(self.oppo_ob)
+        # self.oppo_ob = np.clip((self.oppo_ob - self.obs_rms.mean) / np.sqrt(self.obs_rms.var + self.epsilon),
+        #                        -self.clip_obs, self.clip_obs)
+        # # if self.retrain_victim:
+        # #     if not self.agent.adv_loadnorm:
+        # #         self_action = self.agent.act(observation=self.oppo_ob[None, :], reward=self.reward, done=self.done).flatten()
+        # #     else:
+        # #         self_action = self.agent.act(observation=self.ob[None,:], reward=self.reward, done=self.done).flatten()
+        # #     # mix agent
+        # #     if self.mix_agent and not self.is_advagent:
+        # #         self_action = self._agent.act(observation=self.ob, reward=self.reward, done=self.done)
+        # # else:
+        self_action = self.agent.act(observation=self.ob, reward=self.reward, done=self.done).flatten()
         # note: current observation
         self.action = self_action
 
@@ -252,24 +301,18 @@ class Multi2SingleEnv(Wrapper):
             
         # obtain needed information from the environment.
         obs, rewards, dones, infos = self.env.step(actions)
-
-        # if dones[0] and 'Ant' in self.env_name:
-        #     if infos[0]['reward_remaining']==0:
-        #         infos[0]['reward_remaining'] = -1000
-        #     if infos[1]['reward_remaining']==0:
-        #         infos[1]['reward_remaining'] = -1000
-
+        
         # separate victim and adversarial information.
         if self.agent_idx == 0: # vic is 0; adv is 1
           self.ob, ob = obs
           self.reward, reward = rewards
-          self.done, done = dones
-          self.info, info = infos
+          self.done =  done = dones
+          self.info, info = infos[0],infos[1]
         else: # vic is 1; adv is 0
           ob, self.ob = obs
           reward, self.reward = rewards
-          done, self.done = dones
-          info, self.info = infos
+          done = self.done = dones
+          info, self.info = infos[0],infos[1]
         done = func(done)
         # print("Observation:", obs)
         # print("Reward: ", rewards)
@@ -327,6 +370,14 @@ class Multi2SingleEnv(Wrapper):
         """reset everything.
         :return: ob: reset observation.
         """
+        i_episode = int(random.choice(self.idxs_list))
+        # print(i_episode)
+        adv_action_sequence_path = "./recording/adv_act_seq_" + str(i_episode) + ".out"
+        vic_action_sequence_path = "./recording/vic_act_seq_" + str(i_episode) + ".out"
+        # print(action_sequence_path)
+        adv_recorded_actions = np.loadtxt(adv_action_sequence_path)
+        vic_recorded_actions = np.loadtxt(vic_action_sequence_path)
+        self.env.seed(i_episode)
         self.cnt = 0
         self.reward = 0
         self.done = False
@@ -338,17 +389,30 @@ class Multi2SingleEnv(Wrapper):
         if self._agent != None:
             self._agent.reset()
 
-        ## sampling from the mix-ratio
-        ## mix-ratio adv_agent:norm_agent
-        if self.mix_ratio == 0.5:
-            self.is_advagent = not self.is_advagent
-        else:
-            self.is_advagent = (random.uniform(0, 1) < self.mix_ratio) # mix_ratio means the ratio of adv_agent
-
+        obs = self.env.reset()
         if self.agent_idx == 1:
-            ob, self.ob = self.env.reset()
+            ob, self.ob = obs
         else:
-            self.ob, ob = self.env.reset()
+            self.ob, ob = obs
+
+        count = 0
+        while count < self.critical_steps_starts[i_episode]:
+            if self.agent_idx == 1:
+                actions = (adv_recorded_actions[count], vic_recorded_actions[count])
+            else:
+                actions = (vic_recorded_actions[count], adv_recorded_actions[count])
+
+            obs, rewards, dones, infos = self.env.step(actions)
+        
+            count+=1
+        
+        ob = 0
+        if self.agent_idx == 1:
+            ob, self.ob = obs
+        else:
+            self.ob, ob = obs
+
+
         return ob
 
 
@@ -386,9 +450,9 @@ def make_mixadv_multi2single_env(env_name, version, adv_agent_path, adv_agent_no
     adv_agent = make_adv_agent(env.observation_space.spaces[1], env.action_space.spaces[1], n_envs, adv_agent_path,
                                adv_ismlp=adv_ismlp, adv_obs_normpath=adv_agent_norm_path)
 
-    return Multi2SingleEnv(env, env_name, adv_agent, agent_idx=reverse, shaping_params=shaping_params,
-                           scheduler=scheduler, retrain_victim=True, mix_agent=True,
-                           mix_ratio=ratio, _agent=opp_agent, total_step=total_step)
+    return Multi2SingleEnv(env, env_name, opp_agent, agent_idx=reverse, shaping_params=shaping_params,
+                           scheduler=scheduler, retrain_victim=True, mix_agent=False,
+                           mix_ratio=ratio, _agent=adv_agent, total_step=total_step)
 
 
 from scheduling import ConditionalAnnealer, ConstantAnnealer, LinearAnnealer

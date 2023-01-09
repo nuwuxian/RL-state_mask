@@ -3,7 +3,7 @@ import numpy as np
 critical_steps_starts = []
 critical_steps_ends = []
 
-for i_episode in range(500):
+for i_episode in range(5000):
     mask_probs_path = "./recording/mask_probs_" + str(i_episode) + ".out"
     mask_probs = np.loadtxt(mask_probs_path)
 

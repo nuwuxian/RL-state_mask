@@ -103,7 +103,7 @@ def make_victim_agent(env_name, ob_space, action_space, end=40):
     return VictimAgent(env_name, ob_space, action_space, end=end)
 
 
-def load_zoo_agent(env_name, ob_space, action_space, tag=1, version=3, scope=""):
+def load_zoo_agent(env_name, ob_space, action_space, n_envs=1, tag=1, version=3, scope=""):
     sess=tf.get_default_session()
     if sess is None:
         tf_config = tf.ConfigProto(inter_op_parallelism_threads=1, intra_op_parallelism_threads=1)
@@ -119,7 +119,7 @@ def load_zoo_agent(env_name, ob_space, action_space, tag=1, version=3, scope="")
     else:
         zoo_agent = LSTMPolicy(scope="lstm_policy"+scope, reuse=False,
                                 ob_space=ob_space,
-                                ac_space=action_space,
+                                ac_space=action_space, n_envs=n_envs,
                                 hiddens=[128, 128], normalize=True)
 
     sess.run(tf.variables_initializer(zoo_agent.get_variables()))
@@ -136,10 +136,10 @@ def load_zoo_agent(env_name, ob_space, action_space, tag=1, version=3, scope="")
 
     return zoo_agent
 
-
+#ZooAgent(self.env_name, self.observation_space, self.action_space, n_envs=8, tag=2, version=1, scope='')
 class ZooAgent(object):
-    def __init__(self, env_name, ob_space, action_space, tag, version, scope):
-        self.agent = load_zoo_agent(env_name, ob_space, action_space, tag=tag, version=version, scope=scope)
+    def __init__(self, env_name, ob_space, action_space, n_envs, tag, version, scope):
+        self.agent = load_zoo_agent(env_name, ob_space, action_space, n_envs=n_envs, tag=tag, version=version, scope=scope)
 
     def reset(self):
         return self.agent.reset()
@@ -152,15 +152,16 @@ class ZooAgent(object):
     def act(self, observation, reward=None, done=None):
         return self.agent.act(stochastic=False, observation=observation)[0]
     # support vectorized environment
-    def step(self, observation, reward=None, done=None):
-        action, _, _, _ = self.agent.step(obs=observation, state=None, mask=None, deterministic=False)
-        return action
+    def step(self, observation, state=None, mask=None):
+        action, values, states, neglogpacs = self.agent.step(obs=observation, state=state, mask=mask, deterministic=False)
+        return action, values, states, neglogpacs
+    
+    def initial_state(self):
+        return self.agent.initial_state
 
+def make_zoo_agent(env_name, ob_space, action_space, n_envs=1, tag=2, version=1, scope=""):
 
-
-def make_zoo_agent(env_name, ob_space, action_space, tag=2, version=1, scope=""):
-
-    return ZooAgent(env_name, ob_space, action_space, tag, version, scope)
+    return ZooAgent(env_name, ob_space, action_space, n_envs, tag, version, scope)
 
 
 def load_adv_agent(ob_space, action_space, n_envs, adv_model_path, adv_ismlp=True):

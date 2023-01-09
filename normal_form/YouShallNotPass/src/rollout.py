@@ -37,14 +37,14 @@ def rollout(victim_agent, adv_agent, mask_agent, env, num_traj, max_ep_len=1e3, 
 
             for id, obs in enumerate(observation):
                 if id==0:
-                   act = victim_agent.act(observation=obs)[0]
-                   vic_action_seq.append(act)
+                   act = victim_agent.act(observation=obs[None])[0]
+                   vic_action_seq.append(act[0])
                    clipped_actions = np.clip(act, env.action_space.spaces[0].low, env.action_space.spaces[0].high)
                 else:
-                    act, value = adv_agent.act(observation=obs)
+                    act, value = adv_agent.act(observation=obs[None])
                     value_seq.append(value['vpred'])
                     '''mask action'''
-                    mask_act, neglogp = mask_agent.act(observation=obs)
+                    mask_act, neglogp = mask_agent.act(observation=obs[None])
                     mask_act = mask_act[0]
                     prob = np.exp(-neglogp)[0]
                     if mask_act == 1:
@@ -57,7 +57,7 @@ def rollout(victim_agent, adv_agent, mask_agent, env, num_traj, max_ep_len=1e3, 
                             # change_num+=1
                         mask_probs.append([1-prob, prob])
                     '''mask action finish'''
-                    adv_action_seq.append(act)
+                    adv_action_seq.append(act[0])
                     clipped_actions = np.clip(act, env.action_space.spaces[0].low, env.action_space.spaces[0].high)
 
                 actions.append(clipped_actions)
@@ -77,28 +77,28 @@ def rollout(victim_agent, adv_agent, mask_agent, env, num_traj, max_ep_len=1e3, 
             reward_record.append(-1)
 
 
-        mask_pos_filename = "./recording/mask_pos_" + str(i) + ".out" 
+        mask_pos_filename = save_path + "/mask_pos_" + str(i) + ".out" 
         np.savetxt(mask_pos_filename, mask_pos)
 
 
-        eps_len_filename = "./recording/eps_len_" + str(i) + ".out" 
+        eps_len_filename = save_path + "/eps_len_" + str(i) + ".out" 
         np.savetxt(eps_len_filename, [episode_length])
 
-        value_seq_filename = './recording/value_seq_' + str(i) + '.out'
+        value_seq_filename = save_path + '/value_seq_' + str(i) + '.out'
         np.savetxt(value_seq_filename, value_seq)
 
-        vic_act_seq_filename = "./recording/vic_act_seq_" + str(i) + ".out" 
+        vic_act_seq_filename = save_path + "/vic_act_seq_" + str(i) + ".out" 
         np.savetxt(vic_act_seq_filename, vic_action_seq)
 
-        adv_act_seq_filename = "./recording/adv_act_seq_" + str(i) + ".out" 
+        adv_act_seq_filename = save_path + "/adv_act_seq_" + str(i) + ".out" 
         np.savetxt(adv_act_seq_filename, adv_action_seq)
 
-        mask_probs_filename = "./recording/mask_probs_" + str(i) + ".out" 
+        mask_probs_filename = save_path + "/mask_probs_" + str(i) + ".out" 
         np.savetxt(mask_probs_filename, mask_probs)
         
     print("The winning rate is: ", win_count / valid_num)
     # print("average change:", change_num/valid_num)
-    np.savetxt("./recording/reward_record.out", reward_record)
+    # np.savetxt("./recording/reward_record.out", reward_record)
 
 
 def load_agent(env_name, agent_type, agent_path):

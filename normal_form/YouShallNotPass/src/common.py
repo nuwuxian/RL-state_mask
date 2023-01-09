@@ -15,23 +15,31 @@ action_map = {
 def get_zoo_path(env_name, **kwargs):
     if env_name == 'multicomp/RunToGoalAnts-v0':
         tag = kwargs.pop('tag', 1)
-        return '../multiagent-competition/agent-zoo/run-to-goal/ants/agent%d_parameters-v1.pkl'%tag
+        return '/data/jiahao/mujoco/retrain_runner/multiagent-competition/agent-zoo/run-to-goal/ants/agent%d_parameters-v1.pkl'%tag
     elif env_name == 'multicomp/RunToGoalHumans-v0':
         tag = kwargs.pop('tag', 1)
-        return '../multiagent-competition/agent-zoo/run-to-goal/humans/agent%d_parameters-v1.pkl'%tag
+        return '/data/jiahao/mujoco/retrain_runner/multiagent-competition/agent-zoo/run-to-goal/humans/agent%d_parameters-v1.pkl'%tag
     elif env_name == 'multicomp/YouShallNotPassHumans-v0':
         tag = kwargs.pop('tag', 1)
-        return '../multiagent-competition/agent-zoo/you-shall-not-pass/agent%d_parameters-v1.pkl'%tag
+        return '/data/jiahao/mujoco/retrain_runner/multiagent-competition/agent-zoo/you-shall-not-pass/agent%d_parameters-v1.pkl'%tag
     elif env_name == 'multicomp/KickAndDefend-v0':
         tag = kwargs.pop('tag', 1)
         dir_name='kicker'
         if tag is 2:
             dir_name='defender'
         version = kwargs.pop('version', 1)
-        return '../multiagent-competition/agent-zoo/kick-and-defend/%s/agent%d_parameters-v%d.pkl'%(dir_name, tag, version)
+        return '/data/jiahao/mujoco/retrain_runner/multiagent-competition/agent-zoo/kick-and-defend/%s/agent%d_parameters-v%d.pkl'%(dir_name, tag, version)
     elif env_name == 'multicomp/SumoAnts-v0':
         version = kwargs.pop('version', 1)
-        return '../multiagent-competition/agent-zoo/sumo/ants/agent_parameters-v%d.pkl'%version
+        return '/data/jiahao/mujoco/retrain_runner/multiagent-competition/agent-zoo/sumo/ants/agent_parameters-v%d.pkl'%version
     elif env_name == 'multicomp/SumoHumans-v0':
         version = kwargs.pop('version', 1)
-        return '../multiagent-competition/agent-zoo/sumo/humans/agent_parameters-v%d.pkl'%version
+        return '/data/jiahao/mujoco/retrain_runner/multiagent-competition/agent-zoo/sumo/humans/agent_parameters-v%d.pkl'%version
+
+def get_retrain_zoo_path(env_name, **kwargs):
+    if env_name == 'multicomp/YouShallNotPassHumans-v0':
+        # return '/data/jiahao/mujoco/retrain_runner/victim-agent-zoo/YouShallNotPassHumans-v0_0_MLP_0_const_-1_const_0_const_False/20220903_185721-0/YouShallNotPassHumans-v0.pkl' #value
+        # return '/data/jiahao/mujoco/retrain_runner/victim-agent-zoo/YouShallNotPassHumans-v0_0_MLP_0_const_-1_const_0_const_False/20220903_222455-0/YouShallNotPassHumans-v0.pkl'   #masknet
+        return '/data/jiahao/mujoco/lazy_runner/victim-agent-zoo/YouShallNotPassHumans-v0_0_MLP_0_const_-1_const_0_const_False/20220904_221900-0/YouShallNotPassHumans-v0.pkl' #lazymdp
+    elif env_name == 'multicomp/KickAndDefend-v0':
+        return '/data/jiahao/mujoco/retrain_runner/multiagent-competition/agent-zoo/kick-and-defend/%s/agent%d_parameters-v%d.pkl'

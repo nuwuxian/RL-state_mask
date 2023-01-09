@@ -492,7 +492,6 @@ class LSTMPolicy(Policy):
         for state_tmp in state:
             for state_tmp_1 in state_tmp:
                 state_np.append(state_tmp_1)
-
         return action, value, np.array(state_np), neglogp
 
     def proba_step(self, obs, state=None, mask=None):
