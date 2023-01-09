@@ -26,27 +26,36 @@ def grey_crop_resize(state): # deal with single observation
     return array_3d # C*H*W
 
 
-def run_exploration(budget, importance, num_trajs, num_step=3, fix_importance=True, random_importance=False):
+def run_exploration(method, budget, num_trajs, num_step=3, fix_importance=True, random_importance=False):
     tie = []
     win = []
     correct_trajs_all = []
     num_loss = 0
     loss_seeds = []
+
+    win_lose_path = "./recording/reward_record.out"
+    win_lose = np.loadtxt(win_lose_path).astype('int32')
+
     for i in range(num_trajs):
-        original_traj = np.load('trajs_exp/Pong-v0_traj_{}.npz'.format(i))
-        orin_reward = original_traj['final_rewards']
-        seed = int(original_traj['seed'])
-        if orin_reward == 1:
+        if method == 'mask_net':
+            mask_probs_path = "./recording/mask_probs_" + str(i) + ".out"
+            mask_probs = np.loadtxt(mask_probs_path)
+            confs = mask_probs[:,1]
+        elif method == 'value_max':
+            value_path = "./recording/value_seq_" + str(i) + ".out"
+            confs = np.loadtxt(value_path)
+        
+        iteration_ends_path = "./recording/eps_len_" + str(i) + ".out"
+        iteration_ends = int(np.loadtxt(iteration_ends_path))
+
+        orin_reward = 1000 if win_lose[i] == 1 else -1000
+
+        if orin_reward == 1000:
             continue
-        loss_seeds.append(seed)
-        # print(num_loss)
-        if random_importance:
-            importance_traj = np.arange(num_step)
-            np.random.shuffle(importance_traj)
-        elif fix_importance:
-            importance_traj = [184, 185, 186]
-        else:
-            importance_traj = np.argsort(importance[i,])[::-1][0:num_step]
+        seed = i
+        loss_seeds,append(seed)
+        importance_traj = np.argpartition(confs, -num_step)[-num_step:]  # Indices not sorted
+
         j = 0
         j_1 = 0
         correct_trajs = []
@@ -83,11 +92,10 @@ def run_exploration(budget, importance, num_trajs, num_step=3, fix_importance=Tr
     return np.array(tie), np.array(win), correct_trajs_all, obs_all, acts_all, loss_seeds
 
 
-def run_exploration_traj(env_name, seed, model, original_traj, importance, max_ep_len=200, render=False):
+def run_exploration_traj(env_name, seed, model, traj_len, importance, max_ep_len=200, render=False):
 
     acts_orin = original_traj['actions']
-    traj_len = np.count_nonzero(acts_orin)
-    start_step = max_ep_len - traj_len
+    start_step = 0
 
     env = gym.make("Pong-v0").env
 
@@ -180,17 +188,17 @@ else:
 model.load_state_dict(checkpoint['state_dict'])
 
 # Patch individual trajs and policy.
-def patch_trajs_policy(exp_method, sal, budget, num_patch_traj, num_test_traj, free_test=False, collect_dict=True):
+def patch_trajs_policy(exp_method, budget, num_patch_traj, num_test_traj, free_test=False, collect_dict=True):
     print(exp_method)
     if collect_dict:
         if exp_method == 'dgp':
-            tie, win, trajs_all, obs_dict, acts_dict, loss_seeds = run_exploration(budget, sal, num_patch_traj)
+            tie, win, trajs_all, obs_dict, acts_dict, loss_seeds = run_exploration(exp_method, budget, sal, num_patch_traj)
         elif exp_method == 'saliency':
-            tie, win, trajs_all, obs_dict, acts_dict, loss_seeds = run_exploration(budget, sal, num_patch_traj,
+            tie, win, trajs_all, obs_dict, acts_dict, loss_seeds = run_exploration(exp_method, budget, sal, num_patch_traj,
                                                                                    fix_importance=False,
                                                                                    random_importance=True)
         else:
-            tie, win, trajs_all, obs_dict, acts_dict, loss_seeds = run_exploration(budget, sal, num_patch_traj,
+            tie, win, trajs_all, obs_dict, acts_dict, loss_seeds = run_exploration(exp_method, budget, sal, num_patch_traj,
                                                                                    fix_importance=False,
                                                                                    random_importance=False)
     else:
@@ -282,8 +290,7 @@ budget = 10
 num_patch_traj = 1880
 num_test_traj = 500
 
-exp_methods = ['dgp', 'value', 'rudder', 'attention', 'rationale', 'saliency']
-sals = [dgp_1_sal, sal_value, rudder_sal, attn_sal, rat_sal, saliency_sal]
+exp_methods = ['mask_net', 'value_max']
 
-for k in range(6):
+for k in range(2):
     patch_trajs_policy(exp_methods[k], sals[k], budget, num_patch_traj, num_test_traj, free_test=True, collect_dict=True)
