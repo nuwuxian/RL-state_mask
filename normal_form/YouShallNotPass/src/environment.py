@@ -261,10 +261,10 @@ class Multi2SingleEnv(Wrapper):
         self.ret = np.zeros(1)
         self.ret_abs = np.zeros(1)
         
-        self.reward_record_file = './recording/reward_record.out'
-        self.train_pool = training_pool(self.reward_record_file , 1.0)
-        self.idxs_list = self.train_pool.candidates
-        self.critical_steps_starts = np.loadtxt("./recording/critical_steps_starts.out")
+        # self.reward_record_file = './recording/reward_record.out'
+        # self.train_pool = training_pool(self.reward_record_file , 1.0)
+        # self.idxs_list = self.train_pool.candidates
+        # self.critical_steps_starts = np.loadtxt("./recording/critical_steps_starts.out")
 
     def step(self, action):
         """get the reward, observation, and information at each step.
@@ -370,14 +370,14 @@ class Multi2SingleEnv(Wrapper):
         """reset everything.
         :return: ob: reset observation.
         """
-        i_episode = int(random.choice(self.idxs_list))
-        # print(i_episode)
-        adv_action_sequence_path = "./recording/adv_act_seq_" + str(i_episode) + ".out"
-        vic_action_sequence_path = "./recording/vic_act_seq_" + str(i_episode) + ".out"
-        # print(action_sequence_path)
-        adv_recorded_actions = np.loadtxt(adv_action_sequence_path)
-        vic_recorded_actions = np.loadtxt(vic_action_sequence_path)
-        self.env.seed(i_episode)
+        # i_episode = int(random.choice(self.idxs_list))
+        # # print(i_episode)
+        # adv_action_sequence_path = "./recording/adv_act_seq_" + str(i_episode) + ".out"
+        # vic_action_sequence_path = "./recording/vic_act_seq_" + str(i_episode) + ".out"
+        # # print(action_sequence_path)
+        # adv_recorded_actions = np.loadtxt(adv_action_sequence_path)
+        # vic_recorded_actions = np.loadtxt(vic_action_sequence_path)
+        # self.env.seed(i_episode)
         self.cnt = 0
         self.reward = 0
         self.done = False
@@ -395,24 +395,20 @@ class Multi2SingleEnv(Wrapper):
         else:
             self.ob, ob = obs
 
-        count = 0
-        while count < self.critical_steps_starts[i_episode]:
-            if self.agent_idx == 1:
-                actions = (adv_recorded_actions[count], vic_recorded_actions[count])
-            else:
-                actions = (vic_recorded_actions[count], adv_recorded_actions[count])
+        # count = 0
+        # while count < self.critical_steps_starts[i_episode]:
+        #     if self.agent_idx == 1:
+        #         actions = (adv_recorded_actions[count], vic_recorded_actions[count])
+        #     else:
+        #         actions = (vic_recorded_actions[count], adv_recorded_actions[count])
 
-            obs, rewards, dones, infos = self.env.step(actions)
+        #     obs, rewards, dones, infos = self.env.step(actions)
         
-            count+=1
-        
-        ob = 0
-        if self.agent_idx == 1:
-            ob, self.ob = obs
-        else:
-            self.ob, ob = obs
-
-
+        #     count+=1
+        # if self.agent_idx == 1:
+        #     ob, self.ob = obs
+        # else:
+        #     self.ob, ob = obs
         return ob
 
 
