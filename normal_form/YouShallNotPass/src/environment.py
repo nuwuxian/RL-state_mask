@@ -75,7 +75,7 @@ class Monitor(VecEnvWrapper):
             logger.logkv("game_win0", c.get(0, 0) / num_games) # agent 0 winning rate.
             logger.logkv("game_win1", c.get(1, 0) / num_games) # agent 1 winning rate.
             logger.logkv("game_tie", c.get(None, 0) / num_games) # tie rate.
-            logger.logkv("game_diff_eta", abs(self.eta / num_games - 0.57334))
+            logger.logkv("game_diff_eta", abs(self.eta / num_games + 0.40270))
         logger.logkv("game_total", num_games)
         self.eta = 0
         self.num_games = 0
