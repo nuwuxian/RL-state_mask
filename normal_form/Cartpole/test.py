@@ -21,13 +21,15 @@ def test_baseline(agent, env, n_games=500):
         done = False
         score = 0
         discounted_score = 0
+        count = 0
 
         while not done:
             action, _states = agent.predict(observation)
 
             observation_, reward, done, info = env.step(action)
-            discounted_score += np.power(0.99, n_steps) * reward
+            discounted_score += np.power(0.99, count) * reward
             n_steps += 1
+            count += 1
             score += reward           
             observation = observation_
 
@@ -141,6 +143,6 @@ if __name__ == '__main__':
 
 
     test_baseline(agent, env)
-    test_mask(agent, masknet, env)
+    #test_mask(agent, masknet, env)
 
 

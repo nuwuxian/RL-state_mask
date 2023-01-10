@@ -5,6 +5,8 @@ from utils import plot_learning_curve
 import torch as T
 from stable_baselines3 import PPO
 
+#eta_origin = 0.2
+
 if __name__ == '__main__':
     env = gym.make('CartPole-v1')
     N = 20
@@ -20,9 +22,11 @@ if __name__ == '__main__':
     n_games = 1000
 
     figure_file = 'plots/masknet.png'
+    figure_file_2 = 'plots/eta.png'
 
     best_score = env.reward_range[0]
     score_history = []
+    discounted_reward_history = []
 
     learn_iters = 0
     avg_score = 0
@@ -32,10 +36,12 @@ if __name__ == '__main__':
         observation = env.reset()
         done = False
         score = 0
+        discounted_reward = 0
 
         num_mask = 0
         traj_len = 0
         fused_lasso = 0
+        count = 0
 
         previous_mask_action = None
         current_mask_action = None
@@ -67,7 +73,9 @@ if __name__ == '__main__':
                     fused_lasso += 1
                 previous_mask_action = mask_action
             observation_, reward, done, info = env.step(action)
+            discounted_reward += np.power(0.99, count) * reward
             n_steps += 1
+            count += 1
             score += reward
             masknet.remember(observation, mask_action, mask_prob, mask_val, reward, done)
 
@@ -78,10 +86,11 @@ if __name__ == '__main__':
             observation = observation_
             traj_len += 1
 
-        
+           
         print("traj " + str(i) + ": " + str(traj_len))
         print("num of mask: " + str(num_mask))
         score_history.append(score)
+        discounted_reward_history.append(discounted_reward)
         avg_score = np.mean(score_history[-100:])
 
         if avg_score > best_score:
@@ -90,5 +99,8 @@ if __name__ == '__main__':
 
         print('episode', i, 'score %.1f' % score, 'avg score %.1f' % avg_score,
                 'time_steps', n_steps, 'learning_steps', learn_iters)
+    np.savetxt("final_reward.out", score_history)
+    np.savetxt("discounted_reward.out", discounted_reward_history)
     x = [i+1 for i in range(len(score_history))]
     plot_learning_curve(x, score_history, figure_file)
+    plot_learning_curve(x, discounted_reward_history, figure_file_2)
