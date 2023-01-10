@@ -24,15 +24,16 @@ def test_baseline(agent, env, n_games=500):
         done = False
         score = 0
         discounted_score = 0
+        count = 0
 
         while not done:
             action, _states = agent.predict(observation)
 
             observation_, reward, done, info = env.step(action)
+            discounted_score += np.power(gamma, count) * reward
             n_steps += 1
             score += reward
-            discounted_score += np.power(gamma, n_steps) * reward
-           
+            count += 1
    
             observation = observation_
 
@@ -190,7 +191,7 @@ if __name__ == '__main__':
 
 
     os.system("mkdir recording")
-    env = gym.make('Pendulum-v0')
+    env = gym.make('Pendulum-v1')
     N = 20
     batch_size = 5
     n_epochs = 4
@@ -199,11 +200,11 @@ if __name__ == '__main__':
     agent = PPO.load("./baseline/Pendulum-v0")
 
 
-    #test_baseline(agent, env)
+    test_baseline(agent, env)
 
-    masknet = Masknet(eta_origin=eta_origin, n_actions=2, batch_size=batch_size, 
-                    alpha=alpha, n_epochs=n_epochs, 
-                    input_dims=env.observation_space.shape)
-    masknet.load_models()
+    #masknet = Masknet(n_actions=2, batch_size=batch_size, 
+    #                alpha=alpha, n_epochs=n_epochs, 
+    #                input_dims=env.observation_space.shape)
+    #masknet.load_models()
 
-    test_mask(agent, masknet, env)
+    #test_mask(agent, masknet, env)
