@@ -141,6 +141,6 @@ if __name__ == '__main__':
 
 
     test_baseline(agent, env)
-    #test_mask(agent, masknet, env)
+    test_mask(agent, masknet, env)
 
 
