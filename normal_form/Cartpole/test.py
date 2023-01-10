@@ -11,6 +11,7 @@ from stable_baselines3 import PPO
 def test_baseline(agent, env, n_games=500):
 
     score_history = []
+    discounted_reward_history = []
 
     n_steps = 0
 
@@ -19,24 +20,25 @@ def test_baseline(agent, env, n_games=500):
         observation = env.reset()
         done = False
         score = 0
+        discounted_score = 0
 
         while not done:
             action, _states = agent.predict(observation)
 
             observation_, reward, done, info = env.step(action)
+            discounted_score += np.power(0.99, n_steps) * reward
             n_steps += 1
-            score += reward
-           
-   
+            score += reward           
             observation = observation_
-
 
         print('episode', i, 'score %.4f' % score) 
         score_history.append(score)
+        discounted_reward_history.append(discounted_score)
         
 
     print("=====Test baseline network=====")
     print("Average score: ", np.mean(score_history))
+    print("Expected total reward: ", np.mean(discounted_reward_history))
 
 
 
@@ -139,6 +141,6 @@ if __name__ == '__main__':
 
 
     test_baseline(agent, env)
-    test_mask(agent, masknet, env)
+    #test_mask(agent, masknet, env)
 
 
