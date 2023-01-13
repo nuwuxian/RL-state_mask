@@ -12,12 +12,12 @@ import matplotlib.pyplot as plt
 from PIL import Image
 from torch.distributions import Categorical
 from stable_baselines3.common.vec_env import VecVideoRecorder, SubprocVecEnv
-from model import CNN
+import torch.nn.functional as F
 
 ENV_ID = "Pong-v0"
 H_SIZE = 256 # hidden size, linear units of the output layer
-L_RATE = 1e-6 # learning rate, gradient coefficient for CNN weight update
-L_RATE_LAMBDA = 1e-4
+L_RATE = 1e-4 # learning rate, gradient coefficient for CNN weight update
+
 G_GAE = 0.99 # gamma param for GAE
 L_GAE = 0.95 # lambda param for GAE
 E_CLIP = 0.2 # clipping coefficient
@@ -25,20 +25,63 @@ C_1 = 0.5 # squared loss coefficient
 C_2 = 0.01 # entropy coefficient
 
 lambda_1 = 0.0001 # lasso regularization
-lambda_2 = 0.0001 # fused lasso regularization
-eta_origin = 0.16752868969273424 # original policy value
+
 N = 32 # simultaneous processing environments
 T = 256 # PPO steps
 M = 64 # mini batch size
 K = 10 # PPO epochs
-T_EPOCHS = 25 # each T_EPOCH
-N_TESTS = 200 # do N_TESTS tests
-TARGET_REWARD = 0.95
+T_EPOCHS = 200 # each T_EPOCH
+N_TESTS = 50 # do N_TESTS tests
+TARGET_REWARD = 0.906
 TRANSFER_LEARNING = False
 BASELINE_PATH = "./ppo_test/baseline/Pong-v0_+0.896_12150.dat"
-PATH = "./ppo_test/checkpoints/Pong-v0_+0.855_19700.dat"
 
+class CNN(nn.Module):
+    def __init__(self, num_inputs, num_outputs, hidden_size):
+        super(CNN, self).__init__()
+        self.critic = nn.Sequential(  # The “Critic” estimates the value function
+            nn.Conv2d(in_channels=num_inputs,
+                      out_channels=16, kernel_size=8, stride=4),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=16,
+                      out_channels=32, kernel_size=4, stride=2),
+            nn.ReLU(),
+            nn.Flatten(),
+            nn.Linear(in_features=2592, out_features=hidden_size),
+            nn.ReLU(),
+            nn.Linear(in_features=hidden_size, out_features=1),
+        )
+        self.actor = nn.Sequential(  # The “Actor” updates the policy distribution in the direction suggested by the Critic (such as with policy gradients)
+            nn.Conv2d(in_channels=num_inputs,
+                      out_channels=16, kernel_size=8, stride=4),
+            nn.ReLU(),
+            nn.Conv2d(in_channels=16,
+                      out_channels=32, kernel_size=4, stride=2),
+            nn.ReLU(),
+            nn.Flatten(),
+            nn.Linear(in_features=2592, out_features=hidden_size),
+            nn.ReLU(),
+            nn.Linear(in_features=hidden_size, out_features=num_outputs),
+            nn.Softmax(dim=1),
+        )
 
+    def forward(self, x):
+        value = self.critic(x)
+        probs = self.actor(x)
+        dist = Categorical(probs)
+        return dist, value
+
+for func in [
+             lambda:os.mkdir(os.path.join('.', 'ppo_test')),
+             lambda: os.mkdir(os.path.join('.', 'ppo_test/checkpoints')),
+             lambda: os.mkdir(os.path.join('.', 'ppo_test/records')),
+             lambda: os.mkdir(os.path.join('.', 'ppo_test/plots'))
+             ]: # create directories
+   try:
+       func()
+   except Exception as error:
+       print (error)
+       continue
 
 def make_env():    # this function creates a single environment
     """
@@ -93,7 +136,6 @@ def test_env(i_episode, env, baseline_model, model, device):
         return 0
 
 def plot(train_epoch, rewards, save=True):
-    clear_output(True)
     plt.close('all')
     fig = plt.figure()
     fig = plt.ion()
@@ -169,24 +211,24 @@ def compute_gae(next_value, rewards, masks, values, gamma=G_GAE, lam=L_GAE):
 
 
 
-def ppo_iter(states, actions, log_probs, returns, advantage, unnorm_advantage):
+def ppo_iter(states, actions, log_probs, returns, advantage):
     batch_size = states.size(0) # lenght of data collected
 
     for _ in range(batch_size // M):
 
-        #rand_ids = np.random.randint(0, batch_size, M)  # integer array of random indices for selecting M mini batches
-        rand_start = np.random.randint(0, batch_size-M)
-        #yield states[rand_ids, :], actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
-        yield states[rand_start:rand_start+M, :], actions[rand_start:rand_start+M, :], log_probs[rand_start:rand_start+M, :], returns[rand_start:rand_start+M, :], advantage[rand_start:rand_start+M, :], unnorm_advantage[rand_start:rand_start+M, :]
+        rand_ids = np.random.randint(0, batch_size, M)  # integer array of random indices for selecting M mini batches
+        #rand_start = np.random.randint(0, batch_size-M)
+        yield states[rand_ids, :], actions[rand_ids, :], log_probs[rand_ids, :], returns[rand_ids, :], advantage[rand_ids, :]
+        #yield states[rand_start:rand_start+M, :], actions[rand_start:rand_start+M, :], log_probs[rand_start:rand_start+M, :], returns[rand_start:rand_start+M, :], advantage[rand_start:rand_start+M, :], unnorm_advantage[rand_start:rand_start+M, :]
 
 
 
-def ppo_update(states, actions, log_probs, returns, advantages, unnorm_advantage, LAMBDA, clip_param=E_CLIP):
+def ppo_update(states, actions, log_probs, returns, advantages, clip_param=E_CLIP):
 
     loss_buff = []
 
     for _ in range(K):
-        for state, action, old_log_probs, return_, advantage, unnorm_adv in ppo_iter(states, actions, log_probs, returns, advantages, unnorm_advantage):
+        for state, action, old_log_probs, return_, advantage in ppo_iter(states, actions, log_probs, returns, advantages):
             dist, value = model(state)
             action = action.reshape(1, len(action)) # take the relative action and take the column
             new_log_probs = dist.log_prob(action)
@@ -194,41 +236,28 @@ def ppo_update(states, actions, log_probs, returns, advantages, unnorm_advantage
             ratio = (new_log_probs - old_log_probs).exp() # new_prob/old_prob
             surr1 = ratio * advantage
             surr2 = torch.clamp(ratio, 1.0 - clip_param, 1.0 + clip_param) * advantage
-            actor_loss = - torch.min(surr1, surr2).mean()
-
-            unnorm_actor_loss = - torch.min(ratio*unnorm_adv, torch.clamp(ratio, 1.0-clip_param, 1.0+clip_param)*unnorm_adv).mean()
-            
+            actor_loss = - torch.min(surr1, surr2).mean()         
             critic_loss = (return_ - value).pow(2).mean()
             entropy = dist.entropy().mean()
+            onehot_action = F.gumbel_softmax(new_log_probs, tau=1.0, hard=True)
+            num_masks = torch.sum(onehot_action[1]) 
 
-            num_masks = torch.sum(action)
-
-            action_roll = torch.roll(action, 1, 0)
-            cont = torch.sum(torch.square(action - action_roll))
-
-            loss = C_1 * critic_loss + actor_loss - C_2 * entropy + lambda_1 * num_masks + lambda_2 * cont # loss function clip+vs+f
-            if LAMBDA > 1:
-                print("monotone decrease!")
-                loss = -loss
+            loss = C_1 * critic_loss + actor_loss - C_2 * entropy + lambda_1 * num_masks   #loss function clip+vs+f
             optimizer.zero_grad() # in PyTorch, we need to set the gradients to zero before starting to do backpropragation because PyTorch accumulates the gradients on subsequent backward passes.
             loss.backward() # computes dloss/dx for every parameter x which has requires_grad=True. These are accumulated into x.grad for every parameter x
             optimizer.step() # performs the parameters update based on the current gradient and the update rule
 
-            loss_buff.append(unnorm_actor_loss.cpu().detach().numpy())
-
-    LAMBDA -= L_RATE_LAMBDA * (np.mean(loss_buff) + 2 * eta_origin)
-    LAMBDA = max(LAMBDA, 0)
-    
-    return LAMBDA
 
 
 
 def ppo_train(baseline_model, model, envs, device, use_cuda, test_rewards, test_epochs, train_epoch, best_reward, early_stop = False):
-    LAMBDA = 0.5 # lagrange multiplier
+
     
-    env = Pong_Env()
+    env = gym.make(ENV_ID).env
     state = envs.reset()
     state = grey_crop_resize_batch(state)
+    torch.manual_seed(0)
+
 
     while not early_stop:
 
@@ -287,7 +316,7 @@ def ppo_train(baseline_model, model, envs, device, use_cuda, test_rewards, test_
         actions = torch.cat(actions)
         unnorm_advantage = returns - values # compute advantage for each action
         advantage = normalize(unnorm_advantage) # compute the normalization of the vector to make uniform values
-        LAMBDA = ppo_update(states, actions, log_probs, returns, advantage, unnorm_advantage, LAMBDA)
+        ppo_update(states, actions, log_probs, returns, advantage)
         train_epoch += 1
         
         
@@ -301,7 +330,7 @@ def ppo_train(baseline_model, model, envs, device, use_cuda, test_rewards, test_
             test_rewards.append(test_reward) # collect the mean rewards for saving performance metric
             test_epochs.append(train_epoch)
             print('Epoch: %s -> Reward: %.3f' % (train_epoch, test_reward))
-            print("current lambda: %.3f" % LAMBDA)
+
 
             if best_reward is None or best_reward < test_reward: # save a checkpoint every time it achieves a better reward
                 if best_reward is not None:
@@ -317,15 +346,12 @@ def ppo_train(baseline_model, model, envs, device, use_cuda, test_rewards, test_
                     torch.save(states, fname) # save the model, for transfer learning is important to save: model parameters, optimizer parameters, epochs and rewards record as well
                     print("model saved")
                 best_reward = test_reward
-            states = {
-                      'state_dict': model.state_dict(),
-                      'optimizer': optimizer.state_dict(),
-                      'test_rewards': test_rewards,
-                      'test_epochs': test_epochs,
-                    }
-            torch.save(states, './ppo_test/checkpoints/latest.dat')
+
             if test_reward > TARGET_REWARD: # stop training if archive the best
                 early_stop = True
+    
+    np.savetxt("reward_record.out", test_rewards)
+    np.savetxt("epoch_record.out", test_epochs)
 
 
 if __name__ == "__main__":
