@@ -12,4 +12,4 @@ Most of the codebase is written for ```python3.7 and Pytorch``` except for `You-
 - Extensive-form games contain the following four games: Connect 4, Tic-Tac-Toe, Breakthrough, and DouDizhu. The first three belongs to perfect-information games while the last is a imperfect-information game.
 
 ### Training
-- To run all the code, please refer to the readme in the corresponding subfolder.
+- To run all the code, please refer to the code in the corresponding subfolder.
