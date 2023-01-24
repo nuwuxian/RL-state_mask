@@ -1,36 +1,3 @@
-# Copyright 2019 DeepMind Technologies Limited
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-"""A basic AlphaZero implementation.
-
-This implements the AlphaZero training algorithm. It spawns N actors which feed
-trajectories into a replay buffer which are consumed by a learner. The learner
-generates new weights, saves a checkpoint, and tells the actors to update. There
-are also M evaluators running games continuously against a standard MCTS+Solver,
-though each at a different difficulty (ie number of simulations for MCTS).
-
-Due to the multi-process nature of this algorithm the logs are written to files,
-one per process. The learner logs are also output to stdout. The checkpoints are
-also written to the same directory.
-
-Links to relevant articles/papers:
-  https://deepmind.com/blog/article/alphago-zero-starting-scratch has an open
-    access link to the AlphaGo Zero nature paper.
-  https://deepmind.com/blog/article/alphazero-shedding-new-light-grand-games-chess-shogi-and-go
-    has an open access link to the AlphaZero science paper.
-"""
-
 import collections
 import datetime
 import functools
