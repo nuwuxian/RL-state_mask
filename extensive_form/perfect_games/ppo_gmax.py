@@ -1,24 +1,3 @@
-"""A basic AlphaZero implementation.
-
-This implements the AlphaZero training algorithm. It spawns N actors which feed
-trajectories into a replay buffer which are consumed by a learner. The learner
-generates new weights, saves a checkpoint, and tells the actors to update. There
-are also M evaluators running games continuously against a standard MCTS+Solver,
-though each at a different difficulty (ie number of simulations for MCTS).
-
-Due to the multi-process nature of this algorithm the logs are written to files,
-one per process. The learner logs are also output to stdout. The checkpoints are
-also written to the same directory.
-
-Links to relevant articles/papers:
-  https://deepmind.com/blog/article/alphago-zero-starting-scratch has an open
-    access link to the AlphaGo Zero nature paper.
-  https://deepmind.com/blog/article/alphazero-shedding-new-light-grand-games-chess-shogi-and-go
-    has an open access link to the AlphaZero science paper.
-"""
-
-### /home/zxc5262/anaconda3/envs/pong/lib/python3.7/site-packages/open_spiel/python/algorithms/
-
 import collections
 import datetime
 import functools
