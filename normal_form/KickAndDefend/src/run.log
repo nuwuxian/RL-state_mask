@@ -1,0 +1,84 @@
+nohup: ignoring input
+/home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:516: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint8 = np.dtype([("qint8", np.int8, 1)])
+/home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:517: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint8 = np.dtype([("quint8", np.uint8, 1)])
+/home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:518: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint16 = np.dtype([("qint16", np.int16, 1)])
+/home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:519: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint16 = np.dtype([("quint16", np.uint16, 1)])
+/home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:520: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint32 = np.dtype([("qint32", np.int32, 1)])
+/home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/tensorflow/python/framework/dtypes.py:525: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  np_resource = np.dtype([("resource", np.ubyte, 1)])
+/home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:541: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint8 = np.dtype([("qint8", np.int8, 1)])
+/home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:542: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint8 = np.dtype([("quint8", np.uint8, 1)])
+/home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:543: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint16 = np.dtype([("qint16", np.int16, 1)])
+/home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:544: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_quint16 = np.dtype([("quint16", np.uint16, 1)])
+/home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:545: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  _np_qint32 = np.dtype([("qint32", np.int32, 1)])
+/home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/tensorboard/compat/tensorflow_stub/dtypes.py:550: FutureWarning: Passing (type, 1) or '1type' as a synonym of type is deprecated; in a future version of numpy, it will be understood as (type, (1,)) / '(1,)type'.
+  np_resource = np.dtype([("resource", np.ubyte, 1)])
+WARNING:tensorflow:From attack.py:65: The name tf.ConfigProto is deprecated. Please use tf.compat.v1.ConfigProto instead.
+
+WARNING:tensorflow:From attack.py:68: The name tf.Session is deprecated. Please use tf.compat.v1.Session instead.
+
+2022-09-01 01:22:16.957829: I tensorflow/core/platform/cpu_feature_guard.cc:142] Your CPU supports instructions that this TensorFlow binary was not compiled to use: AVX2 FMA
+2022-09-01 01:22:16.966257: I tensorflow/core/platform/profile_utils/cpu_utils.cc:94] CPU Frequency: 2000089999 Hz
+2022-09-01 01:22:16.998185: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x561d2ecff600 executing computations on platform Host. Devices:
+2022-09-01 01:22:16.998394: I tensorflow/compiler/xla/service/service.cc:175]   StreamExecutor device (0): <undefined>, <undefined>
+WARNING:tensorflow:From attack.py:70: The name tf.variables_initializer is deprecated. Please use tf.compat.v1.variables_initializer instead.
+
+WARNING:tensorflow:From attack.py:70: The name tf.global_variables is deprecated. Please use tf.compat.v1.global_variables instead.
+
+2022-09-01 01:22:17.002679: W tensorflow/compiler/jit/mark_for_compilation_pass.cc:1412] (One-time warning): Not using XLA:CPU for cluster because envvar TF_XLA_FLAGS=--tf_xla_cpu_global_jit was not set.  If you want XLA:CPU, either set that envvar, or use experimental_jit_scope to enable XLA:CPU.  To confirm that XLA is active, pass --vmodule=xla_compilation_cache=1 (as a proper command-line flag, not via TF_XLA_FLAGS) or set the envvar XLA_FLAGS=--xla_hlo_profile.
+Creating agent humanoid_kicker
+Reading agent XML from: /home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/gym_compete/new_envs/assets/humanoid_body.xml
+Creating agent humanoid_goalkeeper
+Reading agent XML from: /home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/gym_compete/new_envs/assets/humanoid_body.xml
+Scene XML path: /home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/gym_compete/new_envs/assets/world_body_football.humanoid_body.humanoid_body.xml
+Created Scene with agents
+WARNING:tensorflow:From /data/jiahao/mujoco/fidelity_kicker/src/agent_fidelity.py:107: The name tf.get_default_session is deprecated. Please use tf.compat.v1.get_default_session instead.
+
+WARNING:tensorflow:From /data/jiahao/mujoco/fidelity_kicker/src/zoo_utils.py:172: to_float (from tensorflow.python.ops.math_ops) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use `tf.cast` instead.
+WARNING:tensorflow:Entity <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb144636b50>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb144636b50>>: AttributeError: module 'gast' has no attribute 'Index'
+WARNING:tensorflow:From /data/jiahao/mujoco/fidelity_kicker/src/zoo_utils.py:369: BasicLSTMCell.__init__ (from tensorflow.python.ops.rnn_cell_impl) is deprecated and will be removed in a future version.
+Instructions for updating:
+This class is equivalent as tf.keras.layers.LSTMCell, and will be replaced by that in Tensorflow 2.0.
+WARNING:tensorflow:From /data/jiahao/mujoco/fidelity_kicker/src/zoo_utils.py:377: dynamic_rnn (from tensorflow.python.ops.rnn) is deprecated and will be removed in a future version.
+Instructions for updating:
+Please use `keras.layers.RNN(cell)`, which is equivalent to this API
+WARNING:tensorflow:From /home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/tensorflow/python/ops/init_ops.py:1251: calling VarianceScaling.__init__ (from tensorflow.python.ops.init_ops) with dtype is deprecated and will be removed in a future version.
+Instructions for updating:
+Call initializer instance with the dtype argument instead of passing it to the constructor
+WARNING:tensorflow:From /home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/tensorflow/python/ops/rnn_cell_impl.py:738: calling Zeros.__init__ (from tensorflow.python.ops.init_ops) with dtype is deprecated and will be removed in a future version.
+Instructions for updating:
+Call initializer instance with the dtype argument instead of passing it to the constructor
+WARNING:tensorflow:Entity <bound method BasicLSTMCell.call of <tensorflow.python.ops.rnn_cell_impl.BasicLSTMCell object at 0x7fb19049dc90>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method BasicLSTMCell.call of <tensorflow.python.ops.rnn_cell_impl.BasicLSTMCell object at 0x7fb19049dc90>>: AttributeError: module 'gast' has no attribute 'Str'
+WARNING:tensorflow:Entity <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb1445c1b10>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb1445c1b10>>: AttributeError: module 'gast' has no attribute 'Index'
+WARNING:tensorflow:Entity <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb1445c1e90>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb1445c1e90>>: AttributeError: module 'gast' has no attribute 'Index'
+WARNING:tensorflow:Entity <bound method BasicLSTMCell.call of <tensorflow.python.ops.rnn_cell_impl.BasicLSTMCell object at 0x7fb14450cfd0>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method BasicLSTMCell.call of <tensorflow.python.ops.rnn_cell_impl.BasicLSTMCell object at 0x7fb14450cfd0>>: AttributeError: module 'gast' has no attribute 'Str'
+WARNING:tensorflow:Entity <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb144502150>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb144502150>>: AttributeError: module 'gast' has no attribute 'Index'
+WARNING:tensorflow:Entity <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb144163bd0>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb144163bd0>>: AttributeError: module 'gast' has no attribute 'Index'
+WARNING:tensorflow:Entity <bound method BasicLSTMCell.call of <tensorflow.python.ops.rnn_cell_impl.BasicLSTMCell object at 0x7fb144286d50>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method BasicLSTMCell.call of <tensorflow.python.ops.rnn_cell_impl.BasicLSTMCell object at 0x7fb144286d50>>: AttributeError: module 'gast' has no attribute 'Str'
+WARNING:tensorflow:Entity <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb144541d50>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb144541d50>>: AttributeError: module 'gast' has no attribute 'Index'
+WARNING:tensorflow:Entity <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb144163bd0>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb144163bd0>>: AttributeError: module 'gast' has no attribute 'Index'
+WARNING:tensorflow:Entity <bound method BasicLSTMCell.call of <tensorflow.python.ops.rnn_cell_impl.BasicLSTMCell object at 0x7fb12c7d92d0>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method BasicLSTMCell.call of <tensorflow.python.ops.rnn_cell_impl.BasicLSTMCell object at 0x7fb12c7d92d0>>: AttributeError: module 'gast' has no attribute 'Str'
+WARNING:tensorflow:Entity <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb144163bd0>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Dense.call of <tensorflow.python.layers.core.Dense object at 0x7fb144163bd0>>: AttributeError: module 'gast' has no attribute 'Index'
+WARNING:tensorflow:From /home/jvy5516/miniconda3/envs/mujoco/lib/python3.7/site-packages/stable_baselines/common/policies.py:569: flatten (from tensorflow.python.layers.core) is deprecated and will be removed in a future version.
+Instructions for updating:
+Use keras.layers.flatten instead.
+WARNING:tensorflow:Entity <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fb12c51d710>> could not be transformed and will be executed as-is. Please report this to the AutgoGraph team. When filing the bug, set the verbosity to 10 (on Linux, `export AUTOGRAPH_VERBOSITY=10`) and attach the full output. Cause: converting <bound method Flatten.call of <tensorflow.python.layers.core.Flatten object at 0x7fb12c51d710>>: AttributeError: module 'gast' has no attribute 'Index'
+Traj 0 out of 500.
+Traj 100 out of 500.
+Traj 200 out of 500.
+Traj 300 out of 500.
+Traj 400 out of 500.
+Average winning rate after:  0.486
+Average attack ratio:  0.11870574340522605

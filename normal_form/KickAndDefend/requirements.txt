@@ -1,0 +1,5 @@
+numpy>=1.15
+mujoco-py==0.5.7
+git+git://github.com/HumanCompatibleAI/baselines.git@f70377#egg=baselines
+git+git://github.com/HumanCompatibleAI/baselines.git@906d83#egg=stable-baselines
+git+git://github.com/HumanCompatibleAI/gym.git@1918002#wheel=gym
