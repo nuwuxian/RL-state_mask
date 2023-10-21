@@ -1,6 +1,6 @@
-# ExpMask: Explainable Deep Reinforcement Learning through Action Mask
+# StateMask: Explainable Deep Reinforcement Learning through State Mask
 
-This repo contains the code for the paper titled "ExpMask: Explainable Deep Reinforcement Learning through Action Mask".
+This repo contains the code for the paper titled "StateMask: Explainable Deep Reinforcement Learning through State Mask".
 
 ## Requirement
 Most of the codebase is written for ```python3.7``` and ```Pytorch``` except for `You-Shall-Not-Pass` and `Kick-And-Defend` which requires `TensorFlow`. Most of the games require gym==0.19.0. Installing the requirements of `You-Shall-Not-Pass` and `Kick-And-Defend` could refer to https://github.com/openai/multiagent-competition. If you run errors in some programs, install the missing lib via pip install as the error report. 
