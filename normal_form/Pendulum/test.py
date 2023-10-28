@@ -191,7 +191,7 @@ if __name__ == '__main__':
 
 
     os.system("mkdir recording")
-    env = gym.make('Pendulum-v1')
+    env = gym.make('Pendulum-v0')
     N = 20
     batch_size = 5
     n_epochs = 4
