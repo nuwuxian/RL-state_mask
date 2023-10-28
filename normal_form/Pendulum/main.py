@@ -6,7 +6,7 @@ import torch as T
 from stable_baselines3 import PPO
 
 if __name__ == '__main__':
-    env = gym.make('Pendulum-v1')
+    env = gym.make('Pendulum-v0')
     N = 20
     batch_size = 5
     n_epochs = 4
