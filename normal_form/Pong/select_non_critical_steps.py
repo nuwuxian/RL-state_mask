@@ -12,7 +12,7 @@ for i_episode in range(500):
     iteration_ends_path = "./recording/eps_len_" + str(i_episode) + ".out"
     iteration_ends = np.loadtxt(iteration_ends_path)
 
-    k = int(iteration_ends * 0.4)
+    k = int(iteration_ends * 0.1)
 
     #find the top k:
     #idx = np.argpartition(confs, -k)[-k:]  # Indices not sorted
@@ -40,8 +40,6 @@ for i_episode in range(500):
 
     for i in range(1, len(idx)):
      
-        # Check if the current element is
-        # equal to previous element +1
         if idx[i] == idx[i - 1] + 1:
             count += 1
             tmp_end = idx[i]

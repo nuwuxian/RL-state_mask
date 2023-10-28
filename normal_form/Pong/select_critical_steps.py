@@ -12,7 +12,7 @@ for i_episode in range(500):
     iteration_ends_path = "./recording/eps_len_" + str(i_episode) + ".out"
     iteration_ends = np.loadtxt(iteration_ends_path)
 
-    k = int(iteration_ends * 0.4)
+    k = int(iteration_ends * 0.1)
 
     #find the top k:
     idx = np.argpartition(confs, -k)[-k:]  # Indices not sorted
@@ -62,6 +62,6 @@ for i_episode in range(500):
 
     critical_steps_starts.append(critical_steps_start)
     critical_steps_ends.append(critical_steps_end)
-
+    
 np.savetxt("./recording/critical_steps_starts.out", critical_steps_starts)
 np.savetxt("./recording/critical_steps_ends.out", critical_steps_ends)

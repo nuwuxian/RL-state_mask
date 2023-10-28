@@ -10,10 +10,7 @@ import torch.nn as nn
 import torch.optim as optim
 import matplotlib.pyplot as plt
 from PIL import Image
-#from pyvirtualdisplay import Display
-#from IPython.display import clear_output
 from torch.distributions import Categorical
-#from IPython import display as ipythondisplay
 from stable_baselines3.common.vec_env import VecVideoRecorder, SubprocVecEnv
 from model import CNN
 from gym.wrappers.monitoring import video_recorder
@@ -41,8 +38,8 @@ num_outputs = env.action_space.n
 use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 
-BASELINE_PATH = "./ppo_test/baseline/Pong-v0_+0.896_12150.dat"
-PATH = "./ppo_test/checkpoints/Pong-v0_+0.910_20170.dat"
+BASELINE_PATH = "./ppo_test/baseline/Pong-v0_+0.340_100.dat"
+PATH = "./ppo_test/checkpoints/Pong-v0_+0.850_7200.dat"
 
 baseline_model = CNN(num_inputs, num_outputs, H_SIZE).to(device)
 if use_cuda:
@@ -66,7 +63,7 @@ critical_steps_ends = np.loadtxt("./recording/critical_steps_ends.out")
 
 avg_rewards = []
 
-for j in range(6):
+for j in range(1):
     replay_rewards = []
     for i_episode in range(500):
         action_sequence_path = "./recording/act_seq_" + str(i_episode) + ".out"

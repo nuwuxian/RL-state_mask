@@ -5,7 +5,7 @@ from torch.distributions import Categorical
 class CNN(nn.Module):
     def __init__(self, num_inputs, num_outputs, hidden_size):
         super(CNN, self).__init__()
-        self.critic = nn.Sequential(  # The “Critic” estimates the value function
+        self.critic = nn.Sequential(  # The "Critic" estimates the value function
             nn.Conv2d(in_channels=num_inputs,
                       out_channels=16, kernel_size=8, stride=4),
             nn.ReLU(),
@@ -17,7 +17,7 @@ class CNN(nn.Module):
             nn.ReLU(),
             nn.Linear(in_features=hidden_size, out_features=1),
         )
-        self.actor = nn.Sequential(  # The “Actor” updates the policy distribution in the direction suggested by the Critic (such as with policy gradients)
+        self.actor = nn.Sequential(  # The "Actor" updates the policy distribution in the direction suggested by the Critic (such as with policy gradients)
             nn.Conv2d(in_channels=num_inputs,
                       out_channels=16, kernel_size=8, stride=4),
             nn.ReLU(),

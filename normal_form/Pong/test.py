@@ -160,12 +160,13 @@ H_SIZE = 256
 
 N_TESTS = 500
 
+"""
 if os.path.isdir("recording"):
     os.system("rm -rf recording")
 
 
 os.system("mkdir recording")
-
+"""
 env = gym.make("Pong-v0").env
 
 num_inputs = 1
@@ -176,7 +177,7 @@ use_cuda = torch.cuda.is_available()
 device = torch.device("cuda" if use_cuda else "cpu")
 #device = torch.device("cpu")
 
-BASELINE_PATH = "./ppo_test/baseline/Pong-v0_+0.896_12150.dat"
+BASELINE_PATH = "./ppo_test/baseline/Pong-v0_+0.340_100.dat"
 
 baseline_model = CNN(num_inputs, num_outputs, H_SIZE).to(device)
 if use_cuda:
@@ -185,7 +186,7 @@ else:
     checkpoint = torch.load(BASELINE_PATH, map_location=torch.device('cpu'))
 baseline_model.load_state_dict(checkpoint['state_dict'])
 
-PATH = "./ppo_test/checkpoints/Pong-v0_+0.910_20170.dat"
+PATH = "./ppo_test/checkpoints/Pong-v0_+0.850_7200.dat"
 mask_network = CNN(num_inputs, 2, H_SIZE).to(device)
 if use_cuda:
     checkpoint = torch.load(PATH)
@@ -199,10 +200,10 @@ tmp_rewards = []
 tmp_counts = []
 tmp_disc_rewards = []
 
-"""
+
 print("=====Test baseline model=====")
 for i in range(N_TESTS):
-    total_reward, total_disc_reward, count = test_baseline(i, env, baseline_model, device)
+    total_reward, total_disc_reward, count, _, _ = test_baseline(i, env, baseline_model, device)
     #print("Test " + str(i) + " :")
     #print("reward: " + str(total_reward))
     tmp_rewards.append(total_reward)
@@ -218,22 +219,27 @@ for i in range(N_TESTS):
 print("Average winning rate: ", np.mean(tmp_rewards))
 print("Policy value: ", np.mean(tmp_disc_rewards))   #500 tests avg policy value:  0.20682985172193316
 
-
+"""
 print("=====Test mask network=====")
 
 tmp_rewards = []
 tmp_counts = []
 tmp_num_masks = []
+
 for i in range(N_TESTS):
     total_reward, count, num_mask, mask_pos, action_seq, mask_probs = test_mask(i, env, baseline_model, mask_network, device)
+    tmp_rewards.append(total_reward)
 print("Average winning rate: ", np.mean(tmp_rewards))
-"""
+
+tmp_rewards = []
+tmp_disc_rewards = []
 print("=====Generating fid tests=====")
 for i in range(N_TESTS):
     total_reward, total_disc_reward, count, action_seq, mask_probs = test_baseline(i, env, baseline_model, device)
     tmp_rewards.append(total_reward)
     #print("current reward mean ", np.mean(tmp_rewards))
     tmp_counts.append(count)
+    tmp_disc_rewards.append(total_disc_reward)
 
     eps_len_filename = "./recording/eps_len_" + str(i) + ".out" 
     np.savetxt(eps_len_filename, [count])
@@ -245,7 +251,8 @@ for i in range(N_TESTS):
     np.savetxt(mask_probs_filename, mask_probs)
 
 print("Average winning rate: ", np.mean(tmp_rewards))
+print("Policy value: ", np.mean(tmp_disc_rewards))
 
 np.savetxt("./recording/reward_record.out", tmp_rewards)
-
+"""
 
