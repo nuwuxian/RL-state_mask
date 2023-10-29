@@ -219,7 +219,7 @@ for i in range(N_TESTS):
 print("Average winning rate: ", np.mean(tmp_rewards))
 print("Policy value: ", np.mean(tmp_disc_rewards))   #500 tests avg policy value:  0.20682985172193316
 
-"""
+
 print("=====Test mask network=====")
 
 tmp_rewards = []
@@ -254,5 +254,5 @@ print("Average winning rate: ", np.mean(tmp_rewards))
 print("Policy value: ", np.mean(tmp_disc_rewards))
 
 np.savetxt("./recording/reward_record.out", tmp_rewards)
-"""
+
 
