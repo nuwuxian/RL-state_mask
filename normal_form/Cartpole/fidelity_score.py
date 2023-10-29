@@ -8,7 +8,6 @@ original_rewards = np.loadtxt("./recording/reward_record.out")
 
 print(np.mean(original_rewards))
 
-
 p_ls = []
 p_ds = []
 
@@ -24,14 +23,10 @@ for i_episode in range(500):
     random_replacement_steps = critical_frames_end - critical_frames_start
 
     p_ls.append(random_replacement_steps/iteration_ends)
-
     p_ds.append(abs(replay_rewards[i_episode] - original_rewards[i_episode])/500)
 
-    fidelity_scores.append(np.log(p_ls[-1]) - np.log(p_ds[-1] + 1e-10))
 
 p_l = np.mean(p_ls)
 p_d = np.mean(p_ds)
 
-print(p_l)
 print(np.log(p_l) - np.log(p_d))
-print(np.mean(fidelity_scores))
