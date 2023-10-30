@@ -4,15 +4,9 @@ The three perfect games use same library OpenSpiel and have similar code structu
 
 *Target Agent*
 
-We provide a pre-trained target agent in `./ppo_test/baseline/Pong-v0_+0.896_12150.dat` folder.
+We provide the code to train a target agent in the `baseline/` folder of each game.
 
 *StateMask*
 
-- Run `ppo.py` to train the masknet. To train from scratch, set `TRANSFER_LEARNING=False` in `ppo.py`. We give one trained masknet model in `./ppo_test/checkpoints/Pong-v0_+0.855_19700.dat`. It can be used to calculate the fidelity test score or loaded as a pre-trained masknet model (set `TRANSFER_LEARNING=True` in `ppo.py`).
-- Run `test.py` to test the performance of the target agent and the masknet.
-- To do fidelity tests, execute the following programs:
-- - `python test.py` to generate trajectories for explanation
-  - `python select_critical_steps.py ` to select most important time steps
-  - `python replay.py` to randomize actions in the identified critical steps
-  - `python fidelity_score.py` to calculate the fidelity score.
-- We provide the code for applications such as attack and retraining in `attack.py` and `retrain.py`.
+- Run `alpha_zero.py` to train the masknet and do a fidelity test. Set `FLAGS.is_training=True` for training the masknet. Set `FLAGS.is_training=False` for the fidelity test.
+ - We provide the code for visualization in `alpha_zero_visualize.py`.
