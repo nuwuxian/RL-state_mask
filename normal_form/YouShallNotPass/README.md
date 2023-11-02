@@ -5,4 +5,4 @@ Please install the MuJoCo environment before executing any program. We use the `
 *StateMask*
 
 - run `src/mask_train.py` to train the masknet.
-- run `src/mask_train.py` to retrain the agent.
+- run `src/victim_train.py` to retrain the agent.
