@@ -117,6 +117,7 @@ class Masknet:
         self.n_epochs = n_epochs
         self.gae_lambda = gae_lambda
         self.LAMBDA = 0
+        self.L_RATE_LAMBDA = 1e-3
 
         self.actor = ActorNetwork(n_actions, input_dims, alpha, chkpt_dir = chkpt_dir)
         self.critic = CriticNetwork(input_dims, beta , chkpt_dir = chkpt_dir)
@@ -183,6 +184,8 @@ class Masknet:
                 weighted_clipped_probs = T.clamp(prob_ratio, 1-self.policy_clip,
                         1+self.policy_clip)*advantage[batch]
                 actor_loss = -T.min(weighted_probs, weighted_clipped_probs).mean()
+                if self.LAMBDA > 1:
+                    actor_loss = - actor_loss
 
                 returns = advantage[batch] + values[batch]
                 critic_loss = (returns-critic_value)**2
@@ -198,7 +201,7 @@ class Masknet:
 
                 loss_buff.append(weighted_probs.cpu().detach().numpy())
 
-                self.LAMBDA -= self.L_RATE_LAMBDA * (np.mean(loss_buff) - 2 * np.mean(disc_score) + 2 * eta_origin)
-                self.LAMBDA = max(self.LAMBDA, 0)
+            self.LAMBDA -= self.L_RATE_LAMBDA * (np.mean(loss_buff) - 2 * np.mean(disc_score) + 2 * eta_origin)
+            self.LAMBDA = max(self.LAMBDA, 0)
 
         self.memory.clear_memory()   
