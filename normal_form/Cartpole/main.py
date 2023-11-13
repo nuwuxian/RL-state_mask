@@ -1,6 +1,6 @@
 import gym
 import numpy as np
-from ppo_fused_lasso import Masknet
+from ppo_lasso import Masknet
 from utils import plot_learning_curve
 import torch as T
 from stable_baselines3 import PPO
@@ -40,11 +40,8 @@ if __name__ == '__main__':
 
         num_mask = 0
         traj_len = 0
-        fused_lasso = 0
         count = 0
 
-        previous_mask_action = None
-        current_mask_action = None
 
         while not done:
             agent_action, _states = agent.predict(observation)
@@ -65,13 +62,6 @@ if __name__ == '__main__':
                 #action = np.random.choice(env.action_space.n)
                 action = env.action_space.sample()
             
-            if previous_mask_action == None:
-                previous_mask_action = mask_action
-            else:
-                current_mask_action = mask_action
-                if previous_mask_action != current_mask_action:
-                    fused_lasso += 1
-                previous_mask_action = mask_action
             observation_, reward, done, info = env.step(action)
             discounted_reward += np.power(0.99, count) * reward
             n_steps += 1
@@ -80,7 +70,7 @@ if __name__ == '__main__':
             masknet.remember(observation, mask_action, mask_prob, mask_val, reward, done)
 
             if n_steps % N == 0:
-                masknet.learn(num_mask, fused_lasso)
+                masknet.learn(num_mask)
                 learn_iters += 1
                 
             observation = observation_
