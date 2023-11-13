@@ -7,7 +7,6 @@ from stable_baselines3 import PPO
 
 if __name__ == '__main__':
     env = gym.make('Pendulum-v0')
-    N = 20
     batch_size = 5
     n_epochs = 4
     alpha = 0.0003
@@ -71,19 +70,20 @@ if __name__ == '__main__':
             score += reward
             masknet.remember(observation, mask_action, mask_prob, mask_val, reward, done)
 
-            if n_steps % N == 0:
-                masknet.learn(num_mask, 0)
-                learn_iters += 1
                 
             observation = observation_
             traj_len += 1
 
-        
+
+        masknet.learn(num_mask, discounted_score)
+        learn_iters += 1
         print("traj " + str(i) + ": " + str(traj_len))
         print("num of mask: " + str(num_mask))
         score_history.append(score)
         discounted_score_history.append(discounted_score)
         avg_score = np.mean(score_history)
+
+
 
         if avg_score > best_score:
             best_score = avg_score
