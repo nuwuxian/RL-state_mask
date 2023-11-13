@@ -26,11 +26,11 @@ flags.DEFINE_float("temperature", 1,
                    "Temperature for final move selection.")
 flags.DEFINE_integer("temperature_drop", 0,  # Less than AZ due to short games.
                      "Drop the temperature to 0 after this many moves.")
-flags.DEFINE_enum("nn_model", "mlp", model_lib.Model.valid_model_types,
+flags.DEFINE_enum("nn_model", "conv2d", model_lib.Model.valid_model_types,
                   "What type of model should be used?.")
 flags.DEFINE_integer("nn_width", 2 ** 7, "How wide should the network be.")
 flags.DEFINE_integer("nn_depth", 6, "How deep should the network be.")
-flags.DEFINE_string("path", "test_conv/models/", "Where to save checkpoints.")
+flags.DEFINE_string("path", "masknet/", "Where to save checkpoints.")
 flags.DEFINE_integer("checkpoint_freq", 100, "Save a checkpoint every N steps.")
 flags.DEFINE_integer("actors", 80, "How many actors to run.")
 flags.DEFINE_integer("evaluators", 1, "How many evaluators to run.")
@@ -79,7 +79,7 @@ def main(unused_argv):
       nn_depth=FLAGS.nn_depth,
       observation_shape=None,
       output_size=None,
-      az_path='open_spiel/open_spiel/python/examples/connect_four/alpha_zero_checkpoints/checkpoint--1',
+      az_path='baseline/checkpoint--1',
       n_epochs=10,
       test_masknet=FLAGS.test_masknet,
       quiet=FLAGS.quiet,
