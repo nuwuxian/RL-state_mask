@@ -40,7 +40,7 @@ C_2 = 0 # entropy coefficient
 
 lambda_1 = 1e-3 # lasso regularization
 LAMBDA_lr = 1e-3 # LAMBDA learning rate
-eta_origin = 0.98 # target agent's performance
+eta_origin = 0.762 # target agent's performance
 
 class Config(collections.namedtuple(
     "Config", [
