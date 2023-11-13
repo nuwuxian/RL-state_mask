@@ -5,6 +5,8 @@ import torch.nn as nn
 import torch.optim as optim
 from torch.distributions.categorical import Categorical
 
+eta_origin = -144.16
+
 class PPOMemory:
     def __init__(self, batch_size):
         self.states = []
@@ -114,8 +116,7 @@ class Masknet:
         self.policy_clip = policy_clip
         self.n_epochs = n_epochs
         self.gae_lambda = gae_lambda
-
-
+        self.LAMBDA = 0
 
         self.actor = ActorNetwork(n_actions, input_dims, alpha, chkpt_dir = chkpt_dir)
         self.critic = CriticNetwork(input_dims, beta , chkpt_dir = chkpt_dir)
@@ -143,7 +144,7 @@ class Masknet:
 
         return dist, value
 
-    def learn(self, num_mask):
+    def learn(self, num_mask, disc_score):
         loss_buff = []
 
         for _ in range(self.n_epochs):
@@ -195,6 +196,9 @@ class Masknet:
                 self.actor.optimizer.step()
                 self.critic.optimizer.step()
 
-                loss_buff.append(actor_loss.cpu().detach().numpy())
+                loss_buff.append(weighted_probs.cpu().detach().numpy())
+
+                self.LAMBDA -= self.L_RATE_LAMBDA * (np.mean(loss_buff) - 2 * np.mean(disc_score) + 2 * eta_origin)
+                self.LAMBDA = max(self.LAMBDA, 0)
 
         self.memory.clear_memory()   
