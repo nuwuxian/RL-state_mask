@@ -1,6 +1,6 @@
 import gym
 import numpy as np
-from ppo_fused_lasso import Masknet
+from ppo_lasso import Masknet
 from utils import plot_learning_curve
 import torch as T
 from stable_baselines3 import PPO
