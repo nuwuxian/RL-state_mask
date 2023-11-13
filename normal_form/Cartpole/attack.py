@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 from ppo_torch import Agent
-from ppo_fused_lasso import Masknet
+from ppo_lasso import Masknet
 import os
 import torch as T
 from stable_baselines3 import PPO
