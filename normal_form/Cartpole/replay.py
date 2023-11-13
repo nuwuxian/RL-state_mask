@@ -1,6 +1,6 @@
 import gym
 import numpy as np
-from ppo_fused_lasso import Masknet
+from ppo_lasso import Masknet
 from stable_baselines3 import PPO
 
 def replay_important(agent, masknet, env, n_games=500):
