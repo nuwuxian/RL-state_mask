@@ -9,7 +9,6 @@ from stable_baselines3 import PPO
 
 if __name__ == '__main__':
     env = gym.make('CartPole-v1')
-    N = 20
     batch_size = 5
     n_epochs = 4
     alpha = 0.0003
@@ -67,16 +66,12 @@ if __name__ == '__main__':
             n_steps += 1
             count += 1
             score += reward
-            masknet.remember(observation, mask_action, mask_prob, mask_val, reward, done)
-
-            if n_steps % N == 0:
-                masknet.learn(num_mask)
-                learn_iters += 1
-                
+            masknet.remember(observation, mask_action, mask_prob, mask_val, reward, done)               
             observation = observation_
             traj_len += 1
 
-           
+        masknet.learn(num_mask, discounted_reward)  
+        learn_iters += 1
         print("traj " + str(i) + ": " + str(traj_len))
         print("num of mask: " + str(num_mask))
         score_history.append(score)
