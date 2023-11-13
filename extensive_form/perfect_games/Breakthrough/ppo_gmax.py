@@ -1,38 +1,3 @@
-# Copyright 2019 DeepMind Technologies Limited
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-"""A basic AlphaZero implementation.
-
-This implements the AlphaZero training algorithm. It spawns N actors which feed
-trajectories into a replay buffer which are consumed by a learner. The learner
-generates new weights, saves a checkpoint, and tells the actors to update. There
-are also M evaluators running games continuously against a standard MCTS+Solver,
-though each at a different difficulty (ie number of simulations for MCTS).
-
-Due to the multi-process nature of this algorithm the logs are written to files,
-one per process. The learner logs are also output to stdout. The checkpoints are
-also written to the same directory.
-
-Links to relevant articles/papers:
-  https://deepmind.com/blog/article/alphago-zero-starting-scratch has an open
-    access link to the AlphaGo Zero nature paper.
-  https://deepmind.com/blog/article/alphazero-shedding-new-light-grand-games-chess-shogi-and-go
-    has an open access link to the AlphaZero science paper.
-"""
-
-### /home/zxc5262/anaconda3/envs/pong/lib/python3.7/site-packages/open_spiel/python/algorithms/
-
 import collections
 import datetime
 import functools
@@ -74,7 +39,8 @@ C_1 = 0.5 # squared loss coefficient
 C_2 = 0 # entropy coefficient
 
 lambda_1 = 1e-3 # lasso regularization
-lambda_2 = 0.0001 # fused lasso regularization
+LAMBDA_lr = 1e-3 # LAMBDA learning rate
+eta_origin = 0.762 # target agent's performance
 
 class Config(collections.namedtuple(
     "Config", [
@@ -122,6 +88,7 @@ class TrajectoryState(object):
     self.log_prob = log_prob
     self._return= _return
     self.adv= adv
+
 
 class Trajectory(object):
   def __init__(self):
@@ -387,7 +354,7 @@ def evaluator(*, game, config, logger, queue):
   results = Buffer(config.evaluation_window)
   logger.print("Initializing model")
   input_size = int(np.prod(config.observation_shape))
-  model = MLP(input_size, config.nn_width, config.nn_depth, 2, config.path)
+  model = Conv2d(input_size, config.nn_width, config.nn_depth, 2, config.path)
   logger.print("Initializing bots")
   base_model = load_pretrain(config.az_path)
   az_evaluator = evaluator_lib.AlphaZeroEvaluator(game, base_model)
@@ -430,14 +397,15 @@ def learner(*, game, config, device, actors, evaluators, broadcast_fn, logger):
 
   # build model for masknet
   input_size = int(np.prod(config.observation_shape))
-  model = MLP(input_size, config.nn_width, config.nn_depth, 2, config.path).to(device)
+  model = Conv2d(input_size, config.nn_width, config.nn_depth, 2, config.path).to(device)
   save_path = model.save_checkpoint(0)
   logger.print("Initial checkpoint:", save_path)
   # build optimizer
   optimizer = optim.Adam(model.parameters(), lr=config.learning_rate)
 
-  data_log = data_logger.DataLoggerJsonLines(config.path, "learner", True)
+  LAMBDA = 0
 
+  data_log = data_logger.DataLoggerJsonLines(config.path, "learner", True)
   game_lengths = stats.BasicStats()
   game_lengths_hist = stats.HistogramNumbered(game.max_game_length() + 1)
   outcomes = stats.HistogramNamed(["Player1", "Player2", "Draw"])
@@ -462,6 +430,7 @@ def learner(*, game, config, device, actors, evaluators, broadcast_fn, logger):
     """Collects the trajectories from actors into the replay buffer."""
     num_trajectories = 0
     num_states = 0
+    disc_rewards = []
     for trajectory in trajectory_generator():
       num_trajectories += 1
       num_states += len(trajectory.states)
@@ -469,6 +438,7 @@ def learner(*, game, config, device, actors, evaluators, broadcast_fn, logger):
       game_lengths_hist.add(len(trajectory.states))
 
       p1_outcome = trajectory.returns[0]
+      disc_rewards.append(p1_outcome)
       if p1_outcome > 0:
         outcomes.add(0)
       elif p1_outcome < 0:
@@ -481,9 +451,9 @@ def learner(*, game, config, device, actors, evaluators, broadcast_fn, logger):
 
       if num_states >= learn_rate:
         break
-    return num_trajectories, num_states
+    return num_trajectories, num_states, np.mean(disc_rewards)
 
-  def learn(step):
+  def learn(step, old_reward, LAMBDA):
     losses = []
     """Sample from the replay buffer, update weights and save a checkpoint."""
     for epoch in range(config.n_epochs):
@@ -496,7 +466,7 @@ def learner(*, game, config, device, actors, evaluators, broadcast_fn, logger):
         actions = torch.Tensor(batch.actions).to(device)
         log_probs = torch.Tensor(batch.log_probs).to(device)
         returns = torch.Tensor(batch.returns).to(device)
-
+        unnorm_advs = torch.Tensor(batch.advs).to(device)
         # normalize the advs
         advs = (batch.advs - batch.advs.mean())/(batch.advs.std() + 1e-8)
         advs = torch.Tensor(advs).to(device)
@@ -512,11 +482,13 @@ def learner(*, game, config, device, actors, evaluators, broadcast_fn, logger):
         surr1 = ratio * advs
         surr2 = torch.clamp(ratio, 1.0 - clip_param, 1.0 + clip_param) * advs
         actor_loss = - torch.min(surr1, surr2).mean()
+        unnorm_actor_loss = -ratio*unnorm_advs.mean().detach.cpu().numpy()
         critic_loss = (returns - value).pow(2).mean()
         entropy = dist.entropy().mean()
-
-
         num_nomasks = torch.sum(onehot_action[:, 1]) / config.train_batch_size
+
+        if LAMBDA > 1:
+          critic_loss = - critic_loss
 
         loss = C_1 * critic_loss + actor_loss - C_2 * entropy + lambda_1 * num_nomasks 
         losses.append(Losses(actor_loss.item(), critic_loss.item(), entropy.item(), num_nomasks.item ()))
@@ -524,6 +496,9 @@ def learner(*, game, config, device, actors, evaluators, broadcast_fn, logger):
         optimizer.zero_grad() 
         loss.backward() 
         optimizer.step()
+
+        LAMBDA -= LAMBDA_lr * (unnorm_actor_loss - 2*old_reward + 2*eta_origin)
+        LAMBDA = max(LAMBDA, 0)
     # Always save a checkpoint, either for keeping or for loading the weights to
     # the actors. It only allows numbers, so use -1 as "latest".
     save_path = model.save_checkpoint(
@@ -532,7 +507,7 @@ def learner(*, game, config, device, actors, evaluators, broadcast_fn, logger):
     losses = sum(losses, Losses(0, 0, 0, 0)) / len(losses)
     logger.print(losses)
     logger.print("Checkpoint saved:", save_path)
-    return save_path, losses
+    return save_path, losses, LAMBDA
 
   last_time = time.time() - 60
   for step in itertools.count(1):
@@ -541,7 +516,7 @@ def learner(*, game, config, device, actors, evaluators, broadcast_fn, logger):
     game_lengths_hist.reset()
     outcomes.reset()
 
-    num_trajectories, num_states = collect_trajectories()
+    num_trajectories, num_states, old_reward = collect_trajectories()
     total_trajectories += num_trajectories
     now = time.time()
     seconds = now - last_time
@@ -557,7 +532,7 @@ def learner(*, game, config, device, actors, evaluators, broadcast_fn, logger):
     logger.print("Buffer size: {}. States seen: {}".format(
         len(replay_buffer), replay_buffer.total_seen))
 
-    save_path, losses = learn(step)
+    save_path, losses, LAMBDA = learn(step, old_reward, LAMBDA)
 
     for eval_process in evaluators:
       while True:
@@ -631,7 +606,6 @@ def alpha_zero(config: Config):
   if game_type.chance_mode != pyspiel.GameType.ChanceMode.DETERMINISTIC:
     raise ValueError("Game must be deterministic.")
   
-
   path = config.path
   if not path:
     path = tempfile.mkdtemp(prefix="az-{}-{}-".format(
