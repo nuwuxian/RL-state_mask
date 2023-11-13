@@ -141,7 +141,7 @@ class Masknet:
 
         return dist, value
 
-    def learn(self, num_mask, fused_lasso):
+    def learn(self, num_mask):
         for _ in range(self.n_epochs):
             state_arr, action_arr, old_prob_arr, vals_arr,\
             reward_arr, dones_arr, batches = \
@@ -183,7 +183,7 @@ class Masknet:
                 critic_loss = (returns-critic_value)**2
                 critic_loss = critic_loss.mean()
 
-                total_loss = actor_loss + 0.5*critic_loss + 0*num_mask + 0*fused_lasso
+                total_loss = actor_loss + 0.5*critic_loss + 0*num_mask
                 self.actor.optimizer.zero_grad()
                 self.critic.optimizer.zero_grad()
                 total_loss.backward()
