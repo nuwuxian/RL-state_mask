@@ -42,7 +42,7 @@ flags.DEFINE_enum("nn_model", "mlp", model_lib.Model.valid_model_types,
                   "What type of model should be used?.")
 flags.DEFINE_integer("nn_width", 2 ** 7, "How wide should the network be.")
 flags.DEFINE_integer("nn_depth", 10, "How deep should the network be.")
-flags.DEFINE_string("path", "/home/zxc5262/masknet_break300/models/", "Where to save checkpoints.")
+flags.DEFINE_string("path", "masknet/", "Where to save checkpoints.")
 flags.DEFINE_integer("checkpoint_freq", 100, "Save a checkpoint every N steps.")
 flags.DEFINE_integer("actors", 40, "How many actors to run.")
 flags.DEFINE_integer("evaluators", 2, "How many evaluators to run.")
@@ -91,7 +91,7 @@ def main(unused_argv):
       nn_depth=FLAGS.nn_depth,
       observation_shape=None,
       output_size=None,
-      az_path='/data/zelei/breakthrough/checkpoint--1',
+      az_path='baseline/checkpoint--1',
       n_epochs=10,
       test_masknet=FLAGS.test_masknet,
       quiet=FLAGS.quiet,
