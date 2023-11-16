@@ -1,12 +1,12 @@
 # StateMask: Explainable Deep Reinforcement Learning through State Mask
 
-This repo contains the code for the paper titled "StateMask: Explainable Deep Reinforcement Learning through State Mask".
+This repo contains the code for the paper titled "StateMask: Explainable Deep Reinforcement Learning through State Mask" (https://openreview.net/forum?id=pzc6LnUxYN).
 
 Paper citation:
 ```
 @inproceedings{cheng2023statemask,
 title={StateMask: Explainable Deep Reinforcement Learning through State Mask},
-author={Cheng, Zelei, and Wu, Xian, and Yu, Jiahao, and Sun, Wenhai, and Guo, Wenbo, and Xinyu Xing},
+author={Zelei Cheng and Xian Wu and Jiahao Yu and Wenhai Sun and Wenbo Guo and Xinyu Xing},
 booktitle={Proc. of NeurIPS},
 year={2023}
 ```
