@@ -22,4 +22,4 @@ Most of the codebase is written for ```python3.7``` and ```Pytorch``` except for
 - In each game, we provide code for training and evaluating the explanation mask and retraining the target agent under the guidance of explanation.
 
 ### Usage
-- To run all the code, please refer to the code in the corresponding subfolder.
+- To run all the experiments, please refer to the README for detailed instructions in each corresponding subfolder.
