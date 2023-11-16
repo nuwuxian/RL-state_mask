@@ -1,4 +1,4 @@
-*Environment*
+#Environment
 
 Please install the atari environment before executing any program. We use the `Pong-v0` environment for our experiment.
 
