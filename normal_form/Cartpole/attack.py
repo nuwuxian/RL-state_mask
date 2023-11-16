@@ -1,6 +1,5 @@
 import gym
 import numpy as np
-from ppo_torch import Agent
 from ppo_lasso import Masknet
 import os
 import torch as T
