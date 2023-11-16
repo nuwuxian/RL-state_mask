@@ -1,6 +1,0 @@
-Saving logs data to retrain_checkpoints/douzero/logs.csv
-Saving logs' fields to retrain_checkpoints/douzero/fields.csv
-Updated log fields: ['_tick', '_time', 'frames', 'mean_episode_return_landlord', 'loss_landlord']
-Saving logs data to retrain_checkpoints/douzero/logs.csv
-Saving logs' fields to retrain_checkpoints/douzero/fields.csv
-Path to log file already exists. New data will be appended.
