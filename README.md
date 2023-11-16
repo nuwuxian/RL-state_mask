@@ -1,6 +1,6 @@
 # StateMask: Explainable Deep Reinforcement Learning through State Mask
 
-This repo contains the code for the paper titled "StateMask: Explainable Deep Reinforcement Learning through State Mask" (https://openreview.net/forum?id=pzc6LnUxYN).
+This repo contains the code for the paper "StateMask: Explainable Deep Reinforcement Learning through State Mask" (https://openreview.net/forum?id=pzc6LnUxYN).
 
 Paper citation:
 ```
