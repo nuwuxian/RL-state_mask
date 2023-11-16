@@ -12,7 +12,7 @@ year={2023}
 ```
 
 ## Requirement
-Most of the codebase is written for ```python3.7``` and ```Pytorch``` except for `You-Shall-Not-Pass` and `Kick-And-Defend` which requires `TensorFlow`. Most of the games require gym==0.19.0. Installing the requirements of `You-Shall-Not-Pass` and `Kick-And-Defend` could refer to https://github.com/openai/multiagent-competition. If you run errors in some programs, install the missing lib via pip install as the error report. 
+Most of the codebase is written for ```python3.7``` and ```Pytorch``` except for `You-Shall-Not-Pass` and `Kick-And-Defend` which requires `TensorFlow`. Most of the games require `gym==0.19.0`. Installing the requirements of `You-Shall-Not-Pass` and `Kick-And-Defend` could refer to https://github.com/openai/multiagent-competition. If you run errors in some programs, install the missing lib via pip install as the error report. 
 
 ## Introduction
 ### Basics
