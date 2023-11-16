@@ -17,8 +17,6 @@ We provide a pre-trained target agent in `./ppo_test/baseline/Pong-v0_+0.896_121
 - `attack.py`: launch adversarial attacks based on explanation.
 - `generate_retraining_data.py`: generate trajectories with the corresponding explanation for retraining.
 
-- 
-
 
 # StateMask
 
