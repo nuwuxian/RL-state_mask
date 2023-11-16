@@ -1,7 +1,6 @@
 import gym
 import numpy as np
 from ppo_lasso import Masknet
-from utils import plot_learning_curve
 import torch as T
 from stable_baselines3 import PPO
 
@@ -86,6 +85,4 @@ if __name__ == '__main__':
                 'time_steps', n_steps, 'learning_steps', learn_iters)
     np.savetxt("final_reward.out", score_history)
     np.savetxt("discounted_reward.out", discounted_reward_history)
-    x = [i+1 for i in range(len(score_history))]
-    plot_learning_curve(x, score_history, figure_file)
-    plot_learning_curve(x, discounted_reward_history, figure_file_2)
+
