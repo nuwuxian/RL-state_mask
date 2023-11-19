@@ -19,8 +19,8 @@ from .utils import get_buffer, log, create_env, create_buffers, act
 
 mean_episode_return_buf = {p:deque(maxlen=100) for p in ['landlord', 'landlord_up', 'landlord_down']}
 clip_param = 0.2
-
-
+eta_origin = 0.402
+lr_LAMBDA = 1e-3
 C_1 = 0.5 # squared loss coefficient
 C_2 = 0.0 # entropy coefficient
 
@@ -38,7 +38,7 @@ def sample(buffer, mbinds):
         ret_sample[k] = buffer[k][mbinds, ...]
     return ret_sample
 
-def learn(model, batch, optimizer, flags):
+def learn(model, batch, optimizer, LAMBDA, flags):
     """PPO update."""
     if flags.training_device != "cpu":
         device = torch.device('cuda:'+str(flags.training_device))
@@ -51,9 +51,10 @@ def learn(model, batch, optimizer, flags):
     log_probs = batch['logpac'].to(device)
     ret = batch['ret'].to(device)
     adv = batch['adv'].to(device)
+    disc_rewards = batch['reward'].to(device).cpu().detach().numpy()
 
     batch_sz = adv.size(0)
-
+    unnormed_adv = adv
     # normalize the adv
     adv = (adv - torch.mean(adv,dim=0))/(1e-7 + torch.std(adv,dim=0))
 
@@ -66,12 +67,16 @@ def learn(model, batch, optimizer, flags):
     new_log_probs = dist.log_prob(act)
     ratio = (new_log_probs - log_probs).exp() # new_prob/old_prob
     surr1 = ratio * adv
+    unnorm_actor_loss = - ratio * unnormed_adv.mean()
     surr2 = torch.clamp(ratio, 1.0 - clip_param, 1.0 + clip_param) * adv
     actor_loss = - torch.min(surr1, surr2).mean()
     critic_loss = (ret - value).pow(2).mean()
     entropy = dist.entropy().mean()
 
     num_nomasks = torch.sum(onehot_action[:, 1]) / batch_sz
+
+    if LAMBDA > 1:
+        actor_loss = - actor_loss
 
     loss = C_1 * critic_loss + actor_loss - C_2 * entropy + flags.lasso_coeff * num_nomasks
 
@@ -83,7 +88,12 @@ def learn(model, batch, optimizer, flags):
     nn.utils.clip_grad_norm_(model.parameters(), flags.max_grad_norm)
     optimizer.step()
 
-    return loss.item(), critic_loss.item(), actor_loss.item(), entropy.item(), avg_mask_ratio, avg_return
+    loss_buff = unnorm_actor_loss.cpu().detach().numpy()
+
+    LAMBDA -= lr_LAMBDA * (np.mean(loss_buff) - 2 * np.mean(disc_rewards) + 2 * eta_origin)
+    LAMBDA = max(LAMBDA, 0)
+
+    return loss.item(), critic_loss.item(), actor_loss.item(), entropy.item(), avg_mask_ratio, avg_return, LAMBDA
 
 def train(flags):  
     """
@@ -228,6 +238,7 @@ def train(flags):
             # ppo update
             avg_loss, avg_actor_loss, avg_critic_loss, avg_entropy_loss = [], [], [], []
             avg_mask_ratio, avg_return = [], []
+            LAMBDA = 0
 
             n_batch = int(T * B * flags.num_actor_devices)
             nbatch_train = int(n_batch // flags.nminibatches)
@@ -239,7 +250,7 @@ def train(flags):
                     end = start + nbatch_train
                     mbinds = inds[start:end]
                     batch = sample(x_buffer, mbinds)
-                    _loss, _critic_loss, _actor_loss, _entropy_loss, _avg_mask_ratio, _avg_return = learn(learner_model, batch, optimizer, flags)
+                    _loss, _critic_loss, _actor_loss, _entropy_loss, _avg_mask_ratio, _avg_return, LAMBDA = learn(learner_model, batch, optimizer, LAMBDA, flags)
                     avg_loss.append(_loss)
                     avg_critic_loss.append(_critic_loss)
                     avg_actor_loss.append(_actor_loss)
