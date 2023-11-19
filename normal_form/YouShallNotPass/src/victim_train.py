@@ -8,7 +8,7 @@ from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv
 from stable_baselines.common.vec_env.vec_normalize import VecNormalize
 from scheduling import ConstantAnnealer, Scheduler
 from shaping_wrappers import apply_reward_wrapper
-from environment import Monitor, Multi_Monitor, make_mixadv_multi2single_env
+from retrain_environment import Monitor, Multi_Monitor, make_mixadv_multi2single_env
 from logger import setup_logger
 from ppo2_retrain import MyPPO2
 from value import MlpValue, MlpLstmValue
