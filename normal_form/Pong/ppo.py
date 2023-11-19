@@ -243,8 +243,7 @@ def ppo_update(states, actions, log_probs, returns, advantages, unnorm_advantage
             num_masks = torch.sum(no_mask_probs.exp()) / (T // M)
 
             if LAMBDA > 1:
-                print("monotone decrease!")
-                critic_loss = - critic_loss
+                actor_loss = - actor_loss
 
             loss = C_1 * critic_loss + actor_loss - C_2 * entropy + lambda_1 * num_masks  # loss function clip+vs+f
 
