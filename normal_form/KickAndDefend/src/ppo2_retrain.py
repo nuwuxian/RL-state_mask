@@ -438,8 +438,6 @@ class MyPPO2(ActorCriticRLModel):
                 if self.retrain_vicitim and not self.use_baseline_policy:
                     if 'You' in self.env_name.split('/')[1]:
                         tag = 2
-                    # elif 'Kick' in env_name.split('/')[1]:
-                    #     tag = 1
                     else:
                         tag = 1
 
