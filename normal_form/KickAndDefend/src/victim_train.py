@@ -8,9 +8,9 @@ from stable_baselines.common.vec_env import DummyVecEnv, SubprocVecEnv
 from stable_baselines.common.vec_env.vec_normalize import VecNormalize
 from scheduling import ConstantAnnealer, Scheduler
 from shaping_wrappers import apply_reward_wrapper
-from environment import Monitor, Multi_Monitor, make_mixadv_multi2single_env
+from retrain_environment import Monitor, Multi_Monitor, make_mixadv_multi2single_env
 from logger import setup_logger
-from ppo2_wrap import MyPPO2
+from ppo2_retrain import MyPPO2
 from value import MlpValue, MlpLstmValue
 from stable_baselines.common.policies import MlpPolicy, MlpLstmPolicy
 
@@ -22,7 +22,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = ' '
 ##################
 parser = argparse.ArgumentParser()
 # game env
-parser.add_argument("--env", type=int, default=2)
+parser.add_argument("--env", type=int, default=3)
 # random seed
 parser.add_argument("--seed", type=int, default=0)
 # number of game environment. should be divisible by NBATCHES if using a LSTM policy
@@ -31,10 +31,10 @@ parser.add_argument("--n_games", type=int, default=8) # N_GAME = 8
 parser.add_argument("--vic_agt_id", type=int, default=1)
 
 # adversarial agent path
-parser.add_argument("--adv_path", type=str, default='/home/zxc5262/rl_adv_valuediff/MuJoCo/adv-agent/ucb/you/model.npy')
+parser.add_argument("--adv_path", type=str, default='/data/jiahao/mujoco/retrain_kicker/adv-agent/ucb/kick/model.npy')
 parser.add_argument("--adv_ismlp", type=bool, default=True)
 # adversarial agent's observation norm mean / variance path
-parser.add_argument("--adv_obs_normpath", type=str, default='/home/zxc5262/rl_adv_valuediff/MuJoCo/adv-agent/ucb/you/obs_rms.pkl')
+parser.add_argument("--adv_obs_normpath", type=str, default='/data/jiahao/mujoco/retrain_kicker/adv-agent/ucb/kick/obs_rms.pkl')
 # victim agent network
 parser.add_argument("--vic_net", type=str, default='MLP')
 
@@ -62,7 +62,7 @@ parser.add_argument("--use_baseline_policy", type=bool, default=False)
 # whether use zoo_utils's policy normalization when retrain victim
 parser.add_argument("--load_victim_norm", type=bool, default=True)
 # percentage of playing with adv-agent during mix-retraining
-parser.add_argument("--mix_ratio", type=float, default=0.8)
+parser.add_argument("--mix_ratio", type=float, default=0.0)
 
 # load pretrained agent
 parser.add_argument("--load", type=int, default=0)
@@ -100,10 +100,10 @@ VIC_NET = args.vic_net
 MIX_RATIO = args.mix_ratio
 # training hyperparameters
 # total training iterations.
-TRAINING_ITER = 10000000
+TRAINING_ITER = 200000
 NBATCHES = 4
 NEPOCHS = 4
-LR = 0.0
+LR = 1e-6
 LR_SCHEDULE = args.lr_sch
 NSTEPS = args.nsteps
 CHECKPOINT_STEP = 1000000
@@ -187,11 +187,6 @@ if __name__=="__main__":
         scheduler = Scheduler(annealer_dict={'lr': ConstantAnnealer(LR)})
         env_name = GAME_ENV
         # multi to single
-        '''
-        venv = SubprocVecEnv([lambda: make_adv_multi2single_env(env_name, ADV_AGENT_PATH, ADV_AGENT_NORM_PATH,
-                                                                REW_SHAPE_PARAMS, scheduler, ADV_ISMLP,
-                                                                reverse=REVERSE) for i in range(N_GAME)])
-        '''
         venv = SubprocVecEnv([lambda: make_mixadv_multi2single_env(env_name, VIC_AGT_ID, ADV_AGENT_PATH, ADV_AGENT_NORM_PATH,
                                                   REW_SHAPE_PARAMS, scheduler, ADV_ISMLP,
                                                   reverse=REVERSE, ratio=MIX_RATIO, total_step=TRAINING_ITER) for i in range(N_GAME)])

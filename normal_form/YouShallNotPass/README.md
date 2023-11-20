@@ -4,6 +4,7 @@ Please install the MuJoCo environment before executing any program. We use the `
 # Code Structure
 - `src/mask_train.py`: main script to execture training a mask network.
 - `src/victim_retrain.py`: main script to retrain the target agent (i.e., the runner).
+- `src/attack.py`: launch attacks based on explanation.
 - `src/traj.py`: test the performance of the masknet.
 - `src/replay.py`: replay the target agent by the masknet.
 - `src/fidelity_score.py`: calculate the masknet's fidelity.

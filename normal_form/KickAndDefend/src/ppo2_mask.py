@@ -669,7 +669,7 @@ class MyPPO2(ActorCriticRLModel):
                 cliprangenow = self.cliprange(0)
                 # true_reward is the reward without discount
                 obs, returns, masks, actions, values, neglogpacs, states, ep_infos, true_reward, opp_true_reward, \
-                abs_true_reward, opp_obs, opp_states, opp_returns, opp_values, abs_states, abs_returns, abs_values \
+                abs_true_reward, opp_obs, opp_states, opp_returns, opp_values, abs_states, abs_returns, abs_values, eta_old \
                     = runner.run()
                 # obs (n_envs*n_steps, 137), returns (n_envs*n_steps, ), masks (n_envs*n_steps, ), actions (n_envs*n_steps, ac_space), values (n_envs*n_steps, ), neglogpacs (n_envs*n_steps, ), states (n_envs, 512), true_reward, opp_true_reward, abs_true_reward, opp_obs, opp_states, opp_returns, opp_values, abs_states, abs_returns, abs_values
                 ep_info_buf.extend(ep_infos)
@@ -752,7 +752,7 @@ class MyPPO2(ActorCriticRLModel):
                 est = loss_vals[0]
                 # update lambda_penalty
                 # loss_vals[0] is the est
-                self.lambda_penalty -= self.L_RATE_LAMBDA * (est + 2 * self.eta_origin)
+                self.lambda_penalty -= self.L_RATE_LAMBDA * (est + 2 * self.eta_origin - 0.01 * eta_old)
                 self.lambda_penalty = max(self.lambda_penalty, 0)
                 # delete the est
                 loss_vals = loss_vals[1:]
@@ -1060,6 +1060,9 @@ class Runner(AbstractEnvRunner):
         mb_opp_returns = mb_opp_advs + mb_opp_values
         mb_abs_returns = mb_abs_advs + mb_abs_values
 
+        num_games = self.env.get_attr('num_games')
+        assert num_games != 0
+        eta_old = self.env.get_attr('eta') * 1.0 / num_games
 
         # attack the rewards and opp_returns
         mb_obs, mb_returns, mb_dones, mb_actions, mb_values, mb_neglogpacs, true_reward, opp_true_reward, abs_true_reward, \
@@ -1068,7 +1071,7 @@ class Runner(AbstractEnvRunner):
                                    abs_true_reward, mb_opp_obs, mb_opp_returns, mb_opp_values, mb_abs_returns, mb_abs_values))
 
         return mb_obs, mb_returns, mb_dones, mb_actions, mb_values, mb_neglogpacs, mb_states, ep_infos, true_reward, opp_true_reward, \
-               abs_true_reward, mb_opp_obs, mb_opp_states, mb_opp_returns, mb_opp_values, mb_abs_states, mb_abs_returns, mb_abs_values
+               abs_true_reward, mb_opp_obs, mb_opp_states, mb_opp_returns, mb_opp_values, mb_abs_states, mb_abs_returns, mb_abs_values, eta_old
 
 
 def get_schedule_fn(value_schedule, schedule):

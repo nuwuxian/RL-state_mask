@@ -20,7 +20,6 @@ def func(x):
   else:
     return x
 
-
 # norm-agent
 class Monitor(VecEnvWrapper):
     def __init__(self, venv, agent_idx):
@@ -31,9 +30,12 @@ class Monitor(VecEnvWrapper):
         VecEnvWrapper.__init__(self, venv)
         self.outcomes = []
         self.num_games = 0
+        self.eta = 0
         self.agent_idx = agent_idx
+        self.steps = np.zeros((8)).astype('int32')
 
     def reset(self):
+        self.steps = np.zeros((8)).astype('int32')
         return self.venv.reset()
 
     def step_wait(self):
@@ -44,8 +46,12 @@ class Monitor(VecEnvWrapper):
         :return: infos: winning information.
         """
         obs, rew, dones, infos = self.venv.step_wait()
+        self.steps += 1
+        cnt = 0
         for done, info in zip(dones, infos):
             if done:
+                self.eta  += 0.01 * infos[1 - self.agent_idx]['reward_remaining'] * (0.99 ** (self.steps[cnt] - 1))
+                self.steps[cnt] = 0
                 if 'winner' in info:
                     self.outcomes.append(1 - self.agent_idx)
                 elif 'loser' in info:
@@ -53,6 +59,7 @@ class Monitor(VecEnvWrapper):
                 else:
                     self.outcomes.append(None)
                 self.num_games += 1
+            cnt += 1
 
         return obs, rew, dones, infos
 
@@ -67,10 +74,11 @@ class Monitor(VecEnvWrapper):
             logger.logkv("game_win0", c.get(0, 0) / num_games) # agent 0 winning rate.
             logger.logkv("game_win1", c.get(1, 0) / num_games) # agent 1 winning rate.
             logger.logkv("game_tie", c.get(None, 0) / num_games) # tie rate.
+            logger.logkv("game_diff_eta", abs(self.eta / num_games + 0.40270))
         logger.logkv("game_total", num_games)
+        self.eta = 0
         self.num_games = 0
         self.outcomes = []
-
 
 class Multi_Monitor(VecEnvWrapper):
     def __init__(self, venv, agent_idx):
