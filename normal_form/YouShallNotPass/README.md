@@ -11,4 +11,4 @@ Please install the MuJoCo environment before executing any program. We use the `
 # StateMask
 - run `src/mask_train.py` or `src/run.sh` to train the masknet.
 - run `src/victim_train.py` to retrain the agent.
-- run `src/run_play.sh` and `src/fidelity_score.py` to calculate the fidelity of the masknet
+- run `src/traj.py`, `src/select_critical_steps.py` , `src/run_play.sh`, and `src/fidelity_score.py` to calculate the fidelity of the masknet.
