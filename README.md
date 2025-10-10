@@ -6,7 +6,7 @@ Paper citation:
 ```
 @inproceedings{cheng2023statemask,
 title={StateMask: Explainable Deep Reinforcement Learning through State Mask},
-author={Zelei Cheng and Xian Wu and Jiahao Yu and Wenhai Sun and Wenbo Guo and Xinyu Xing},
+author={Zelei Cheng* and Xian Wu* and Jiahao Yu and Wenhai Sun and Wenbo Guo and Xinyu Xing},
 booktitle={Proc. of NeurIPS},
 year={2023}
 ```
