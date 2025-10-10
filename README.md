@@ -23,3 +23,6 @@ Most of the codebase is written for ```python3.7``` and ```Pytorch``` except for
 
 ### Usage
 - To run all the experiments, please refer to the README for detailed instructions in each corresponding subfolder.
+
+### Contact
+Xian Wu: ```sysuwuxian@gmail.com```
